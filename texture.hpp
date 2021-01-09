@@ -21,4 +21,10 @@ SDL_Texture *CreateTextureFromIndex(SDL_Renderer *renderer,
                                     const int &index, const float &scale,
                                     const SDL_Color &color, int &advance,
                                     SDL_Rect &dst);
+
+SDL_Texture *CreateTextureFromBitmap(SDL_Renderer *renderer,
+                                     SDL_PixelFormat *format,
+                                     unsigned char *bitmap, const int &width,
+                                     const int &height);
+
 #endif

@@ -69,35 +69,14 @@ SDL_Texture *CreateTextureFromCodePoint(SDL_Renderer *renderer,
   stbtt_MakeCodepointBitmap(&info, bitmap, width, height, width, scale, scale,
                             static_cast<int>(codepoint));
 
-  auto surface = SDL_CreateRGBSurfaceWithFormat(
-      0, width, height, format->BitsPerPixel, format->format);
-
-  SDL_LockSurface(surface);
-
-  for (int sy = 0; sy < height; sy++) {
-    for (int sx = 0; sx < width; sx++) {
-      unsigned char &alpha = bitmap[sy * width + sx];
-
-      auto pixel = reinterpret_cast<Uint32 *>(surface->pixels) +
-                   (sy * (surface->pitch / sizeof(Uint32)) + sx);
-
-      *pixel = SDL_MapRGBA(format, color.r, color.g, color.b, alpha);
-    }
-  }
+  auto texture =
+      CreateTextureFromBitmap(renderer, format, bitmap, width, height);
 
   delete[] bitmap;
-
-  SDL_UnlockSurface(surface);
-
-  auto texture = SDL_CreateTextureFromSurface(renderer, surface);
-  if (texture != nullptr) {
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-  }
 
   dst = {bearing, static_cast<int>(y), width, height};
 
   SDL_FreeFormat(format);
-  SDL_FreeSurface(surface);
 
   return texture;
 }
@@ -130,23 +109,38 @@ SDL_Texture *CreateTextureFromIndex(SDL_Renderer *renderer,
   stbtt_MakeGlyphBitmap(&info, bitmap, width, height, width, scale, scale,
                         index);
 
+  auto texture =
+      CreateTextureFromBitmap(renderer, format, bitmap, width, height);
+
+  delete[] bitmap;
+
+  dst = {c_x1, y, width, height};
+
+  SDL_FreeFormat(format);
+
+  return texture;
+}
+
+SDL_Texture *CreateTextureFromBitmap(SDL_Renderer *renderer,
+                                     SDL_PixelFormat *format,
+                                     unsigned char *bitmap, const int &width,
+                                     const int &height) {
+
   auto surface = SDL_CreateRGBSurfaceWithFormat(
       0, width, height, format->BitsPerPixel, format->format);
 
   SDL_LockSurface(surface);
 
-  for (int sy = 0; sy < height; sy++) {
-    for (int sx = 0; sx < width; sx++) {
-      unsigned char &alpha = bitmap[sy * width + sx];
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      unsigned char &alpha = bitmap[y * width + x];
 
       auto pixel = reinterpret_cast<Uint32 *>(surface->pixels) +
-                   (sy * (surface->pitch / sizeof(Uint32)) + sx);
+                   (y * (surface->pitch / sizeof(Uint32)) + x);
 
-      *pixel = SDL_MapRGBA(format, color.r, color.g, color.b, alpha);
+      *pixel = SDL_MapRGBA(format, 0xff, 0xff, 0xff, alpha);
     }
   }
-
-  delete[] bitmap;
 
   SDL_UnlockSurface(surface);
 
@@ -155,9 +149,6 @@ SDL_Texture *CreateTextureFromIndex(SDL_Renderer *renderer,
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
   }
 
-  dst = {c_x1, y, width, height};
-
-  SDL_FreeFormat(format);
   SDL_FreeSurface(surface);
 
   return texture;

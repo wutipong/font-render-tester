@@ -17,6 +17,7 @@ bool MainScene::Init(const Context &context) {
 }
 
 void MainScene::Tick(const Context &context) {
+  int newSelected = selectedFontIndex;
   ImGui::Begin("Menu");
   {
     if (ImGui::CollapsingHeader("Font Directory",
@@ -28,12 +29,15 @@ void MainScene::Tick(const Context &context) {
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
-      if (ImGui::BeginCombo("Font", (selectedFontIndex == -1) ? "<None>": fontNames[selectedFontIndex].c_str())) {
-          for (int i = 0; i < fontNames.size(); i++) {
-              if (ImGui::Selectable(fontNames[i].c_str(), i == selectedFontIndex)) {
-                  selectedFontIndex = i;
-              }
+      if (ImGui::BeginCombo("Font",
+                            (selectedFontIndex == -1)
+                                ? "<None>"
+                                : fontNames[selectedFontIndex].c_str())) {
+        for (int i = 0; i < fontNames.size(); i++) {
+          if (ImGui::Selectable(fontNames[i].c_str(), i == selectedFontIndex)) {
+            newSelected = i;
           }
+        }
 
         ImGui::EndCombo();
       }
@@ -57,76 +61,94 @@ void MainScene::Tick(const Context &context) {
 
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
-      OnDirectorySelected(dirChooser.GetSelected());
-      dirChooser.ClearSelected();
+    OnDirectorySelected(dirChooser.GetSelected());
+    dirChooser.ClearSelected();
+    newSelected = -1;
   }
+
+  if (newSelected != selectedFontIndex) {
+    selectedFontIndex = newSelected;
+    if (selectedFontIndex == -1) {
+      font = Font();
+    } else {
+      font = Font(fontPaths[selectedFontIndex]);
+    }
+  }
+  font.SetFontSize(fontSize);
+  font.DrawTextWithoutShaping(context.renderer, std::string(buffer.data()),
+                              color);
 }
 
 void MainScene::Cleanup(const Context &context) {}
 
-void MainScene::OnDirectorySelected(const std::filesystem::path& path) {
-    currentDirectory = path.string();
-    fontPaths = ListFontFiles(currentDirectory);
+void MainScene::OnDirectorySelected(const std::filesystem::path &path) {
+  currentDirectory = path.string();
+  fontPaths = ListFontFiles(currentDirectory);
 
-    fontNames.clear();
-    for (auto& p : fontPaths) {
-        fontNames.push_back(GetFontName(p));
-    }
-
-    selectedFontIndex = -1;
+  fontNames.clear();
+  for (auto &p : fontPaths) {
+    fontNames.push_back(GetFontName(p));
+  }
 }
 
-
-std::vector<std::string> MainScene::ListFontFiles(const std::string& path) {
-    std::vector<std::string> output;
-    for (auto& p : std::filesystem::directory_iterator(path)) {
-        if (!p.is_regular_file()) {
-            continue;
-        }
-
-        auto entryPath = p.path();
-        auto extension = entryPath.extension().string();
-        if (extension != ".otf" && extension != ".ttf")
-            continue;
-
-        output.push_back(p.path().string());
+std::vector<std::string> MainScene::ListFontFiles(const std::string &path) {
+  std::vector<std::string> output;
+  for (auto &p : std::filesystem::directory_iterator(path)) {
+    if (!p.is_regular_file()) {
+      continue;
     }
 
-    return output;
+    auto entryPath = p.path();
+    auto extension = entryPath.extension().string();
+    if (extension != ".otf" && extension != ".ttf")
+      continue;
+
+    output.push_back(p.path().string());
+  }
+
+  return output;
 }
 
-static std::string ConvertFromFontString(const char* str, const int& length) {
-    const char16_t* c16str = reinterpret_cast<const char16_t*>(str);
-    std::vector<char16_t> buffer;
-    for (int i = 0; i < length/2; i++) {
-        buffer.push_back(SDL_SwapBE16(c16str[i]));
-    }
+static std::string ConvertFromFontString(const char *str, const int &length) {
+  const char16_t *c16str = reinterpret_cast<const char16_t *>(str);
+  std::vector<char16_t> buffer;
+  for (int i = 0; i < length / 2; i++) {
+    buffer.push_back(SDL_SwapBE16(c16str[i]));
+  }
 
-    std::string output;
-    utf8::utf16to8(buffer.begin(), buffer.end(), std::back_inserter(output));
+  std::string output;
+  utf8::utf16to8(buffer.begin(), buffer.end(), std::back_inserter(output));
 
-    return output;
+  return output;
 }
 
-std::string MainScene::GetFontName(const std::string& path) {
-    stbtt_fontinfo font;
-    std::vector<unsigned char> data;
+std::string MainScene::GetFontName(const std::string &path) {
+  stbtt_fontinfo font;
+  std::vector<unsigned char> data;
 
-    std::basic_ifstream<unsigned char> file(path, std::ios::binary);
-    data =
-        std::vector<unsigned char>{ std::istreambuf_iterator<unsigned char>(file),
-                                   std::istreambuf_iterator<unsigned char>() };
+  std::basic_ifstream<unsigned char> file(path, std::ios::binary);
+  data =
+      std::vector<unsigned char>{std::istreambuf_iterator<unsigned char>(file),
+                                 std::istreambuf_iterator<unsigned char>()};
 
-    file.close();
+  file.close();
 
-    if (!stbtt_InitFont(&font,
-        reinterpret_cast<unsigned char*>(data.data()), 0)) {
-        return "";
-    }
+  if (!stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()),
+                      0)) {
+    return "";
+  }
 
-    int length;
-    auto fontName = ConvertFromFontString(stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT, STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH, 1), length);
-    auto style = ConvertFromFontString(stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT, STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH, 2), length);
+  int length;
+  auto fontName = ConvertFromFontString(
+      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                              1),
+      length);
+  auto style = ConvertFromFontString(
+      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                              2),
+      length);
 
-    return fontName + " - " + style;
+  return fontName + " - " + style;
 }

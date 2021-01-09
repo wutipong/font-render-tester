@@ -10,6 +10,8 @@
 #include "imgui.h"
 #include "imgui-filebrowser/imfilebrowser.h"
 
+#include "font.hpp"
+
 class MainScene : public Scene {
 public:
   virtual bool Init(const Context &context);
@@ -36,4 +38,6 @@ private:
 	std::vector<unsigned char> fontData;
 
 	ImGui::FileBrowser dirChooser{ ImGuiFileBrowserFlags_SelectDirectory };
+
+	Font font{};
 };
