@@ -7,14 +7,15 @@
 #include "main_scene.hpp"
 #include "scene.hpp"
 
-constexpr int WIDTH = 1280;
-constexpr int HEIGHT = 720;
+constexpr int WIDTH = 800;
+constexpr int HEIGHT = 600;
 
 int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
   SDL_Window *window =
       SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0);
+                       SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
+  SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
   SDL_Renderer *renderer;
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
@@ -40,6 +41,13 @@ int main(int argc, char **argv) {
 
   while (true) {
     SDL_Event event;
+
+    int width;
+    int height;
+
+    SDL_GetWindowSize(window, &width, &height);
+    io.DisplaySize = { static_cast<float>(width), static_cast<float>(height) };
+
     if (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
@@ -61,7 +69,7 @@ int main(int argc, char **argv) {
     ImGuiSDL::Render(ImGui::GetDrawData());
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(10);
+    SDL_Delay(1);
   }
 
   ImGui_ImplSDL2_Shutdown();
