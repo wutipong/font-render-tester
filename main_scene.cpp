@@ -41,7 +41,7 @@ void MainScene::Tick(const Context &context) {
   ImGui::End();
 
   ImGui::Begin("Input Text");
-  { ImGui::InputText("text", buffer.data(), buffer.size()); }
+  { ImGui::InputTextMultiline("", buffer.data(), buffer.size()); }
   ImGui::End();
 
   dirChooser.Display();

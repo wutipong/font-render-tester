@@ -15,7 +15,7 @@ public:
   virtual void Cleanup(const Context &context);
 
 private:
-	std::array<char, 256> buffer = { 0 };
+	std::array<char, 4096> buffer = { 0 };
 	SDL_Color color = { 0, 0, 0, 255 };
 	int fontSize = 64;
 	bool isShape = false;
