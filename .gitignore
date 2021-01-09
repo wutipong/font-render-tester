@@ -6,3 +6,4 @@
 /.vs
 /CMakeSettings.json
 /.vscode
+/out
