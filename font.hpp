@@ -30,6 +30,9 @@ public:
 
   void SetFontSize(const int &size);
 
+  std::string GetFamilyName() { return family; }
+  std::string GetSubFamilyName() { return subFamily; }
+
 private:
   void Initialize();
   static void LoadFile(const std::string &path, std::vector<unsigned char>& data);
@@ -60,4 +63,7 @@ private:
   float scaledAscend{0};
   float scaledDescend{0};
   float scaledLinegap{0};
+
+  std::string family;
+  std::string subFamily;
 };

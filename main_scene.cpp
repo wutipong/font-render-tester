@@ -28,19 +28,30 @@ void MainScene::Tick(const Context &context) {
       }
     }
 
-    if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
-      if (ImGui::BeginCombo("Font",
-                            (selectedFontIndex == -1)
-                                ? "<None>"
-                                : fontNames[selectedFontIndex].c_str())) {
-        for (int i = 0; i < fontNames.size(); i++) {
-          if (ImGui::Selectable(fontNames[i].c_str(), i == selectedFontIndex)) {
-            newSelected = i;
-          }
+    if (ImGui::CollapsingHeader("Font",
+        ImGuiTreeNodeFlags_DefaultOpen)) {
+
+        if (ImGui::BeginCombo("Font File",
+            (selectedFontIndex == -1)
+            ? "<None>"
+            : fontPaths[selectedFontIndex].filename().string().c_str())) {
+            for (int i = 0; i < fontPaths.size(); i++) {
+                if (ImGui::Selectable(fontPaths[i].filename().string().c_str(), i == selectedFontIndex)) {
+                    newSelected = i;
+                }
+            }
+
+            ImGui::EndCombo();
         }
 
-        ImGui::EndCombo();
-      }
+        auto familyName = font.GetFamilyName();
+        auto subFamily = font.GetSubFamilyName();
+        ImGui::InputText("Family Name", const_cast<char*>(familyName.c_str()), familyName.size(), ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputText("Sub Family Name", const_cast<char*>(subFamily.c_str()), subFamily.size(), ImGuiInputTextFlags_ReadOnly);
+    }
+
+    if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+      
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
       ImGui::Checkbox("Shape Text", &isShape);
 
@@ -71,7 +82,7 @@ void MainScene::Tick(const Context &context) {
     if (selectedFontIndex == -1) {
       font = Font();
     } else {
-      font = Font(fontPaths[selectedFontIndex]);
+      font = Font(fontPaths[selectedFontIndex].string());
     }
   }
   font.SetFontSize(fontSize);
@@ -89,15 +100,10 @@ void MainScene::Cleanup(const Context &context) {}
 void MainScene::OnDirectorySelected(const std::filesystem::path &path) {
   currentDirectory = path.string();
   fontPaths = ListFontFiles(currentDirectory);
-
-  fontNames.clear();
-  for (auto &p : fontPaths) {
-    fontNames.push_back(GetFontName(p));
-  }
 }
 
-std::vector<std::string> MainScene::ListFontFiles(const std::string &path) {
-  std::vector<std::string> output;
+std::vector<std::filesystem::path> MainScene::ListFontFiles(const std::string &path) {
+  std::vector<std::filesystem::path> output;
   for (auto &p : std::filesystem::directory_iterator(path)) {
     if (!p.is_regular_file()) {
       continue;
@@ -108,52 +114,8 @@ std::vector<std::string> MainScene::ListFontFiles(const std::string &path) {
     if (extension != ".otf" && extension != ".ttf")
       continue;
 
-    output.push_back(p.path().string());
+    output.push_back(p);
   }
 
   return output;
-}
-
-static std::string ConvertFromFontString(const char *str, const int &length) {
-  const char16_t *c16str = reinterpret_cast<const char16_t *>(str);
-  std::vector<char16_t> buffer;
-  for (int i = 0; i < length / 2; i++) {
-    buffer.push_back(SDL_SwapBE16(c16str[i]));
-  }
-
-  std::string output;
-  utf8::utf16to8(buffer.begin(), buffer.end(), std::back_inserter(output));
-
-  return output;
-}
-
-std::string MainScene::GetFontName(const std::string &path) {
-  stbtt_fontinfo font;
-  std::vector<unsigned char> data;
-
-  std::basic_ifstream<unsigned char> file(path, std::ios::binary);
-  data =
-      std::vector<unsigned char>{std::istreambuf_iterator<unsigned char>(file),
-                                 std::istreambuf_iterator<unsigned char>()};
-
-  file.close();
-
-  if (!stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()),
-                      0)) {
-    return "";
-  }
-
-  int length;
-  auto fontName = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              1),
-      length);
-  auto style = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              2),
-      length);
-
-  return fontName + " - " + style;
 }

@@ -20,8 +20,7 @@ public:
 
   void OnDirectorySelected(const std::filesystem::path& path);
 
-  static std::vector<std::string> ListFontFiles(const std::string& path);
-  static std::string GetFontName(const std::string& path);
+  static std::vector<std::filesystem::path> ListFontFiles(const std::string& path);
 
 private:
 	std::array<char, 4096> buffer = { 0 };
@@ -32,8 +31,7 @@ private:
 	std::string currentDirectory = "<none>";
 
 	int selectedFontIndex = -1;
-	std::vector<std::string> fontNames;
-	std::vector<std::string> fontPaths;
+	std::vector<std::filesystem::path> fontPaths;
 
 	std::vector<unsigned char> fontData;
 
