@@ -28,30 +28,33 @@ void MainScene::Tick(const Context &context) {
       }
     }
 
-    if (ImGui::CollapsingHeader("Font",
-        ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
 
-        if (ImGui::BeginCombo("Font File",
-            (selectedFontIndex == -1)
-            ? "<None>"
-            : fontPaths[selectedFontIndex].filename().string().c_str())) {
-            for (int i = 0; i < fontPaths.size(); i++) {
-                if (ImGui::Selectable(fontPaths[i].filename().string().c_str(), i == selectedFontIndex)) {
-                    newSelected = i;
-                }
-            }
-
-            ImGui::EndCombo();
+      if (ImGui::BeginCombo(
+              "Font File",
+              (selectedFontIndex == -1)
+                  ? "<None>"
+                  : fontPaths[selectedFontIndex].filename().string().c_str())) {
+        for (int i = 0; i < fontPaths.size(); i++) {
+          if (ImGui::Selectable(fontPaths[i].filename().string().c_str(),
+                                i == selectedFontIndex)) {
+            newSelected = i;
+          }
         }
 
-        auto familyName = font.GetFamilyName();
-        auto subFamily = font.GetSubFamilyName();
-        ImGui::InputText("Family Name", const_cast<char*>(familyName.c_str()), familyName.size(), ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputText("Sub Family Name", const_cast<char*>(subFamily.c_str()), subFamily.size(), ImGuiInputTextFlags_ReadOnly);
+        ImGui::EndCombo();
+      }
+
+      auto familyName = font.GetFamilyName();
+      auto subFamily = font.GetSubFamilyName();
+      ImGui::InputText("Family Name", const_cast<char *>(familyName.c_str()),
+                       familyName.size(), ImGuiInputTextFlags_ReadOnly);
+      ImGui::InputText("Sub Family Name", const_cast<char *>(subFamily.c_str()),
+                       subFamily.size(), ImGuiInputTextFlags_ReadOnly);
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
-      
+
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
       ImGui::Checkbox("Shape Text", &isShape);
 
@@ -102,7 +105,8 @@ void MainScene::OnDirectorySelected(const std::filesystem::path &path) {
   fontPaths = ListFontFiles(currentDirectory);
 }
 
-std::vector<std::filesystem::path> MainScene::ListFontFiles(const std::string &path) {
+std::vector<std::filesystem::path>
+MainScene::ListFontFiles(const std::string &path) {
   std::vector<std::filesystem::path> output;
   for (auto &p : std::filesystem::directory_iterator(path)) {
     if (!p.is_regular_file()) {

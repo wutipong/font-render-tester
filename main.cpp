@@ -12,9 +12,9 @@ constexpr int HEIGHT = 600;
 
 int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
-  SDL_Window *window =
-      SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
+  SDL_Window *window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
+                                        SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
+                                        SDL_WINDOW_RESIZABLE);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
   SDL_Renderer *renderer;
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     int height;
 
     SDL_GetWindowSize(window, &width, &height);
-    io.DisplaySize = { static_cast<float>(width), static_cast<float>(height) };
+    io.DisplaySize = {static_cast<float>(width), static_cast<float>(height)};
 
     if (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);

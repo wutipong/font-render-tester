@@ -16,17 +16,17 @@ public:
   Font(const std::vector<unsigned char> &data);
   Font(const Font &f);
 
-  Font& operator=(const Font& f);
+  Font &operator=(const Font &f);
 
   ~Font();
 
   void Invalidate();
 
   void DrawTextWithoutShaping(SDL_Renderer *renderer, const std::string &str,
-                const SDL_Color &color);
+                              const SDL_Color &color);
 
-  void DrawTextWithShaping(SDL_Renderer* renderer, const std::string& str,
-      const SDL_Color& color);
+  void DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
+                           const SDL_Color &color);
 
   void SetFontSize(const int &size);
 
@@ -35,7 +35,8 @@ public:
 
 private:
   void Initialize();
-  static void LoadFile(const std::string &path, std::vector<unsigned char>& data);
+  static void LoadFile(const std::string &path,
+                       std::vector<unsigned char> &data);
 
   struct Glyph {
     SDL_Texture *texture;
@@ -50,8 +51,8 @@ private:
   std::vector<unsigned char> data{};
   stbtt_fontinfo font;
 
-  int fontSize{ -1 };
-  hb_font_t* hb_font{nullptr};
+  int fontSize{-1};
+  hb_font_t *hb_font{nullptr};
 
   std::map<unsigned int, Glyph> glyphMap;
 

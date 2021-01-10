@@ -2,13 +2,13 @@
 
 #include "scene.hpp"
 #include <SDL2/SDL.h>
-#include <stb_truetype.h>
 #include <array>
-#include <string>
 #include <filesystem>
+#include <stb_truetype.h>
+#include <string>
 
-#include "imgui.h"
 #include "imgui-filebrowser/imfilebrowser.h"
+#include "imgui.h"
 
 #include "font.hpp"
 
@@ -18,24 +18,25 @@ public:
   virtual void Tick(const Context &context);
   virtual void Cleanup(const Context &context);
 
-  void OnDirectorySelected(const std::filesystem::path& path);
+  void OnDirectorySelected(const std::filesystem::path &path);
 
-  static std::vector<std::filesystem::path> ListFontFiles(const std::string& path);
+  static std::vector<std::filesystem::path>
+  ListFontFiles(const std::string &path);
 
 private:
-	std::array<char, 4096> buffer = { 0 };
-	SDL_Color color = { 0, 0, 0, 255 };
-	int fontSize = 64;
-	bool isShape = false;
+  std::array<char, 4096> buffer = {0};
+  SDL_Color color = {0, 0, 0, 255};
+  int fontSize = 64;
+  bool isShape = false;
 
-	std::string currentDirectory = "<none>";
+  std::string currentDirectory = "<none>";
 
-	int selectedFontIndex = -1;
-	std::vector<std::filesystem::path> fontPaths;
+  int selectedFontIndex = -1;
+  std::vector<std::filesystem::path> fontPaths;
 
-	std::vector<unsigned char> fontData;
+  std::vector<unsigned char> fontData;
 
-	ImGui::FileBrowser dirChooser{ ImGuiFileBrowserFlags_SelectDirectory };
+  ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
 
-	Font font{};
+  Font font{};
 };

@@ -6,6 +6,9 @@
 
 #include "texture.hpp"
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#include <stb_truetype.h>
+
 Font::Font(){};
 
 Font::Font(const std::string &path) {
@@ -38,37 +41,36 @@ Font::~Font() {
   data.clear();
 }
 
-static std::string ConvertFromFontString(const char* str, const int& length) {
-    const char16_t* c16str = reinterpret_cast<const char16_t*>(str);
-    std::vector<char16_t> buffer;
-    for (int i = 0; i < length / 2; i++) {
-        buffer.push_back(SDL_SwapBE16(c16str[i]));
-    }
+static std::string ConvertFromFontString(const char *str, const int &length) {
+  const char16_t *c16str = reinterpret_cast<const char16_t *>(str);
+  std::vector<char16_t> buffer;
+  for (int i = 0; i < length / 2; i++) {
+    buffer.push_back(SDL_SwapBE16(c16str[i]));
+  }
 
-    std::string output;
-    utf8::utf16to8(buffer.begin(), buffer.end(), std::back_inserter(output));
+  std::string output;
+  utf8::utf16to8(buffer.begin(), buffer.end(), std::back_inserter(output));
 
-    return output;
+  return output;
 }
 
-static std::pair<std::string, std::string> GetFontName(const  stbtt_fontinfo& font) {
-    int length;
-    auto family = ConvertFromFontString(
-        stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-            1),
-        length);
+static std::pair<std::string, std::string>
+GetFontName(const stbtt_fontinfo &font) {
+  int length;
+  auto family = ConvertFromFontString(
+      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                              1),
+      length);
 
-    auto sub = ConvertFromFontString(
-        stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-            2),
-        length);
+  auto sub = ConvertFromFontString(
+      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                              2),
+      length);
 
-    return { family,  sub };
+  return {family, sub};
 }
-
-
 
 void Font::Initialize() {
   stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()), 0);
@@ -178,8 +180,8 @@ void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
         SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
         SDL_Rect dst = g.bound;
-        dst.x += x + (glyph_positions[i].x_offset *scale);
-        dst.y = y + dst.y - (glyph_positions[i].y_offset *scale);
+        dst.x += x + (glyph_positions[i].x_offset * scale);
+        dst.y = y + dst.y - (glyph_positions[i].y_offset * scale);
 
         SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
       }
@@ -260,4 +262,3 @@ Font::Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer,
 
   return CreateGlyph(renderer, index);
 }
-
