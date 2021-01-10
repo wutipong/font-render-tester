@@ -26,7 +26,9 @@ public:
                               const SDL_Color &color);
 
   void DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
-                           const SDL_Color &color);
+                           const SDL_Color &color,
+                           const hb_direction_t &direction = HB_DIRECTION_LTR,
+                           const hb_script_t &script = HB_SCRIPT_COMMON);
 
   void SetFontSize(const int &size);
 

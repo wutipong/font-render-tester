@@ -7,8 +7,9 @@
 #include <stb_truetype.h>
 #include <string>
 
-#include "imgui-filebrowser/imfilebrowser.h"
 #include "imgui.h"
+
+#include "imgui-filebrowser/imfilebrowser.h"
 
 #include "font.hpp"
 

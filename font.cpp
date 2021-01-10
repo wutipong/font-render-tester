@@ -134,7 +134,7 @@ void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
 }
 
 void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
-                               const SDL_Color &color) {
+                               const SDL_Color &color, const hb_direction_t& direction , const hb_script_t& script ) {
   if (data.empty())
     return;
 
@@ -148,8 +148,8 @@ void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
     std::u16string line(lineStart, lineEnd);
 
     hb_buffer_t *buffer = hb_buffer_create();
-    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
-    hb_buffer_set_script(buffer, HB_SCRIPT_THAI);
+    hb_buffer_set_direction(buffer, direction);
+    hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
                         reinterpret_cast<const uint16_t *>(line.c_str()),
