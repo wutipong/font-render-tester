@@ -16,6 +16,8 @@ public:
   Font(const std::vector<unsigned char> &data);
   Font(const Font &f);
 
+  Font& operator=(const Font& f);
+
   ~Font();
 
   void Invalidate();

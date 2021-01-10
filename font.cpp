@@ -20,6 +20,13 @@ Font::Font(const std::vector<unsigned char> &data)
   Initialize();
 }
 
+Font& Font::operator=(const Font& f) {
+    data = f.data;
+    Initialize();
+
+    return *this;
+}
+
 Font::~Font() {
   hb_font_destroy(hb_font);
   hb_font = nullptr;
@@ -43,9 +50,11 @@ void Font::Initialize() {
   hb_font = hb_font_create(hb_face);
 
   stbtt_GetFontVMetrics(&font, &ascend, &descend, &linegap);
+  Invalidate();
+  fontSize = -1;
 }
 
-void Font::Invalidate() { glyphMap.clear(); }
+void Font::Invalidate() { glyphMap.clear();  }
 
 void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
                                   const std::string &str,
@@ -53,13 +62,13 @@ void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
   if (data.empty())
     return;
 
-  int x = 0, y = ascend;
+  int x = 0, y = scaledAscend;
   auto u16str = utf8::utf8to16(str);
 
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
-      y += descend + linegap + ascend;
+      y += -scaledDescend + scaledLinegap + scaledAscend;
 
       continue;
     }
@@ -67,18 +76,22 @@ void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
     auto iter = glyphMap.find(u);
     if (iter == glyphMap.end()) {
       Glyph g = CreateGlyphFromChar(renderer, u);
-      auto [iter, success] = glyphMap.insert({u, g});
+      auto [i, success] = glyphMap.insert({u, g});
+
+      iter = i;
     }
 
     auto &g = iter->second;
+    if (g.texture != nullptr) {
+        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
-    SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+        SDL_Rect dst = g.bound;
+        dst.x += x;
+        dst.y = y + dst.y;
 
-    SDL_Rect dst = g.bound;
-    dst.x += x;
-    dst.y = y + dst.y;
-
-    SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+    }
+    x += g.advance;
   }
 }
 
