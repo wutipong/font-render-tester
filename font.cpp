@@ -20,11 +20,11 @@ Font::Font(const std::vector<unsigned char> &data)
   Initialize();
 }
 
-Font& Font::operator=(const Font& f) {
-    data = f.data;
-    Initialize();
+Font &Font::operator=(const Font &f) {
+  data = f.data;
+  Initialize();
 
-    return *this;
+  return *this;
 }
 
 Font::~Font() {
@@ -54,7 +54,7 @@ void Font::Initialize() {
   fontSize = -1;
 }
 
-void Font::Invalidate() { glyphMap.clear();  }
+void Font::Invalidate() { glyphMap.clear(); }
 
 void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
                                   const std::string &str,
@@ -83,13 +83,13 @@ void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
 
     auto &g = iter->second;
     if (g.texture != nullptr) {
-        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+      SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
-        SDL_Rect dst = g.bound;
-        dst.x += x;
-        dst.y = y + dst.y;
+      SDL_Rect dst = g.bound;
+      dst.x += x;
+      dst.y = y + dst.y;
 
-        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+      SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
     }
     x += g.advance;
   }
@@ -99,6 +99,62 @@ void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
                                const SDL_Color &color) {
   if (data.empty())
     return;
+
+  auto u16str = utf8::utf8to16(str);
+  auto lineStart = u16str.begin();
+  int y = scaledAscend;
+
+  while (true) {
+    auto lineEnd = std::find(lineStart, u16str.end(), '\n');
+
+    std::u16string line(lineStart, lineEnd);
+    hb_buffer_t *buffer = hb_buffer_create();
+    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+
+    hb_buffer_add_utf16(buffer,
+                        reinterpret_cast<const uint16_t *>(line.c_str()),
+                        line.size(), 0, line.size());
+
+    hb_shape(hb_font, buffer, NULL, 0);
+
+    unsigned int glyph_count = hb_buffer_get_length(buffer);
+    hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer, NULL);
+    hb_glyph_position_t *glyph_positions =
+        hb_buffer_get_glyph_positions(buffer, NULL);
+
+    int x = 0;
+
+    for (int i = 0; i < glyph_count; i++) {
+      auto index = glyph_infos[i].codepoint;
+
+      auto iter = glyphMap.find(index);
+      if (iter == glyphMap.end()) {
+        Glyph g = CreateGlyph(renderer, index);
+        auto [it, success] = glyphMap.insert({index, g});
+
+        iter = it;
+      }
+
+      auto &g = iter->second;
+      if (g.texture != nullptr) {
+        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+
+        SDL_Rect dst = g.bound;
+        dst.x += x + (glyph_positions[i].x_offset *scale);
+        dst.y = y + dst.y - (glyph_positions[i].y_offset *scale);
+
+        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+      }
+      x += g.advance;
+    }
+    hb_buffer_destroy(buffer);
+
+    if (lineEnd == u16str.end())
+      break;
+
+    lineStart = lineEnd + 1;
+    y += -scaledDescend + scaledLinegap + scaledAscend;
+  }
 }
 
 void Font::SetFontSize(const int &size) {

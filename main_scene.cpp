@@ -75,8 +75,13 @@ void MainScene::Tick(const Context &context) {
     }
   }
   font.SetFontSize(fontSize);
-  font.DrawTextWithoutShaping(context.renderer, std::string(buffer.data()),
-                              color);
+  if (isShape) {
+    font.DrawTextWithShaping(context.renderer, std::string(buffer.data()),
+                             color);
+  } else {
+    font.DrawTextWithoutShaping(context.renderer, std::string(buffer.data()),
+                                color);
+  }
 }
 
 void MainScene::Cleanup(const Context &context) {}
