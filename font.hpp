@@ -32,8 +32,8 @@ public:
 
   void SetFontSize(const int &size);
 
-  std::string GetFamilyName() { return family; }
-  std::string GetSubFamilyName() { return subFamily; }
+  std::string GetFamilyName() const { return family; }
+  std::string GetSubFamilyName() const { return subFamily; }
 
 private:
   void Initialize();
@@ -49,6 +49,8 @@ private:
 
   Glyph CreateGlyph(SDL_Renderer *renderer, const int &ch);
   Glyph CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch);
+
+  bool IsValid() const { return !data.empty(); }
 
   std::vector<unsigned char> data{};
   stbtt_fontinfo font;

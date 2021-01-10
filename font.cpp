@@ -25,6 +25,9 @@ Font::Font(const std::vector<unsigned char> &data)
 
 Font &Font::operator=(const Font &f) {
   data = f.data;
+  family = "";
+  subFamily = "";
+
   Initialize();
 
   return *this;
@@ -73,6 +76,8 @@ GetFontName(const stbtt_fontinfo &font) {
 }
 
 void Font::Initialize() {
+    if (!IsValid()) return;
+
   stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()), 0);
 
   hb_blob_t *blob =
@@ -97,7 +102,7 @@ void Font::Invalidate() { glyphMap.clear(); }
 void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
                                   const std::string &str,
                                   const SDL_Color &color) {
-  if (data.empty())
+  if (!IsValid())
     return;
 
   int x = 0, y = scaledAscend;
@@ -135,7 +140,7 @@ void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
 
 void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
                                const SDL_Color &color, const hb_direction_t& direction , const hb_script_t& script ) {
-  if (data.empty())
+  if (!IsValid())
     return;
 
   auto u16str = utf8::utf8to16(str);
@@ -198,7 +203,7 @@ void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
 }
 
 void Font::SetFontSize(const int &size) {
-  if (data.empty())
+  if (!IsValid())
     return;
 
   if (fontSize == size) {
