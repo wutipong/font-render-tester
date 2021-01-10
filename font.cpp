@@ -144,8 +144,10 @@ void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
     std::u16string line(lineStart, lineEnd);
+
     hb_buffer_t *buffer = hb_buffer_create();
     hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+    hb_buffer_set_script(buffer, HB_SCRIPT_THAI);
 
     hb_buffer_add_utf16(buffer,
                         reinterpret_cast<const uint16_t *>(line.c_str()),
