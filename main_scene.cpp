@@ -58,6 +58,17 @@ void MainScene::Tick(const Context &context) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
       ImGui::Checkbox("Shape Text", &isShape);
 
+      if (isShape) {
+        if (ImGui::BeginCombo("Script", scriptStrs[currentScriptIndex])) {
+          for (int i = 0; i < scriptStrs.size(); i++) {
+            if (ImGui::Selectable(scriptStrs[i], i == currentScriptIndex)) {
+                currentScriptIndex = i;
+            }
+          }
+          ImGui::EndCombo();
+        }
+      }
+
       float c[3]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
 
       ImGui::ColorPicker3("color", c, ImGuiColorEditFlags_InputRGB);
@@ -91,7 +102,7 @@ void MainScene::Tick(const Context &context) {
   font.SetFontSize(fontSize);
   if (isShape) {
     font.DrawTextWithShaping(context.renderer, std::string(buffer.data()),
-                             color);
+                             color, HB_DIRECTION_LTR, scripts[currentScriptIndex]);
   } else {
     font.DrawTextWithoutShaping(context.renderer, std::string(buffer.data()),
                                 color);

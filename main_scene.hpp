@@ -40,4 +40,13 @@ private:
   ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
 
   Font font{};
+
+  static constexpr std::array<hb_script_t, 6> scripts = {
+      HB_SCRIPT_COMMON,   HB_SCRIPT_THAI, HB_SCRIPT_HIRAGANA,
+      HB_SCRIPT_KATAKANA, HB_SCRIPT_HAN,  HB_SCRIPT_HANGUL};
+
+  static constexpr std::array<char *, 6> scriptStrs = {
+      "Common", "Thai", "Hiragana", "Katakana", "Han", "Hangul"};
+
+  int currentScriptIndex = 0;
 };
