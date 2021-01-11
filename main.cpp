@@ -41,13 +41,6 @@ int main(int argc, char **argv) {
 
   while (true) {
     SDL_Event event;
-
-    int width;
-    int height;
-
-    SDL_GetWindowSize(window, &width, &height);
-    io.DisplaySize = {static_cast<float>(width), static_cast<float>(height)};
-
     if (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
@@ -57,13 +50,10 @@ int main(int argc, char **argv) {
     SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
     SDL_RenderClear(renderer);
 
+    ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 
     Scene::TickCurrent(c);
-
-    ImGui_ImplSDL2_UpdateMousePosAndButtons();
-    ImGui_ImplSDL2_UpdateMouseCursor();
-    ImGui_ImplSDL2_UpdateGamepads();
 
     ImGui::Render();
     ImGuiSDL::Render(ImGui::GetDrawData());
