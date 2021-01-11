@@ -22,17 +22,17 @@ int main(int argc, char **argv) {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
 
-  io.Fonts->AddFontDefault();
-  /*
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 20.0f);
 
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 16.0f, NULL,
+  ImFontConfig config;
+  config.MergeMode = true;
+  
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 20.0f, &config,
                                io.Fonts->GetGlyphRangesJapanese());
-
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSansThai-Regular.ttf", 16.0f, NULL,
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansThai-Regular.ttf", 20.0f, &config,
                                io.Fonts->GetGlyphRangesThai());
-
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 16.0f, NULL);
-  */
+  
+  io.Fonts->Build();
 
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
   ImGui_ImplSDL2_Init(window);
