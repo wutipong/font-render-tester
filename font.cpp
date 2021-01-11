@@ -76,7 +76,8 @@ GetFontName(const stbtt_fontinfo &font) {
 }
 
 void Font::Initialize() {
-    if (!IsValid()) return;
+  if (!IsValid())
+    return;
 
   stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()), 0);
 
@@ -88,7 +89,7 @@ void Font::Initialize() {
 
   hb_font = hb_font_create(hb_face);
 
-  stbtt_GetFontVMetrics(&font, &ascend, &descend, &linegap);
+  stbtt_GetFontVMetrics(&font, &rawAscend, &rawDescend, &rawLineGap);
   Invalidate();
   fontSize = -1;
 
@@ -98,109 +99,6 @@ void Font::Initialize() {
 }
 
 void Font::Invalidate() { glyphMap.clear(); }
-
-void Font::DrawTextWithoutShaping(SDL_Renderer *renderer,
-                                  const std::string &str,
-                                  const SDL_Color &color) {
-  if (!IsValid())
-    return;
-
-  int x = 0, y = scaledAscend;
-  auto u16str = utf8::utf8to16(str);
-
-  for (auto &u : u16str) {
-    if (u == '\n') {
-      x = 0;
-      y += -scaledDescend + scaledLinegap + scaledAscend;
-
-      continue;
-    }
-
-    auto iter = glyphMap.find(u);
-    if (iter == glyphMap.end()) {
-      Glyph g = CreateGlyphFromChar(renderer, u);
-      auto [i, success] = glyphMap.insert({u, g});
-
-      iter = i;
-    }
-
-    auto &g = iter->second;
-    if (g.texture != nullptr) {
-      SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
-
-      SDL_Rect dst = g.bound;
-      dst.x += x;
-      dst.y = y + dst.y;
-
-      SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-    }
-    x += g.advance;
-  }
-}
-
-void Font::DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
-                               const SDL_Color &color, const hb_direction_t& direction , const hb_script_t& script ) {
-  if (!IsValid())
-    return;
-
-  auto u16str = utf8::utf8to16(str);
-  auto lineStart = u16str.begin();
-  int y = scaledAscend;
-
-  while (true) {
-    auto lineEnd = std::find(lineStart, u16str.end(), '\n');
-
-    std::u16string line(lineStart, lineEnd);
-
-    hb_buffer_t *buffer = hb_buffer_create();
-    hb_buffer_set_direction(buffer, direction);
-    hb_buffer_set_script(buffer, script);
-
-    hb_buffer_add_utf16(buffer,
-                        reinterpret_cast<const uint16_t *>(line.c_str()),
-                        line.size(), 0, line.size());
-
-    hb_shape(hb_font, buffer, NULL, 0);
-
-    unsigned int glyph_count = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer, NULL);
-    hb_glyph_position_t *glyph_positions =
-        hb_buffer_get_glyph_positions(buffer, NULL);
-
-    int x = 0;
-
-    for (int i = 0; i < glyph_count; i++) {
-      auto index = glyph_infos[i].codepoint;
-
-      auto iter = glyphMap.find(index);
-      if (iter == glyphMap.end()) {
-        Glyph g = CreateGlyph(renderer, index);
-        auto [it, success] = glyphMap.insert({index, g});
-
-        iter = it;
-      }
-
-      auto &g = iter->second;
-      if (g.texture != nullptr) {
-        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
-
-        SDL_Rect dst = g.bound;
-        dst.x += x + (glyph_positions[i].x_offset * scale);
-        dst.y = y + dst.y - (glyph_positions[i].y_offset * scale);
-
-        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-      }
-      x += g.advance;
-    }
-    hb_buffer_destroy(buffer);
-
-    if (lineEnd == u16str.end())
-      break;
-
-    lineStart = lineEnd + 1;
-    y += -scaledDescend + scaledLinegap + scaledAscend;
-  }
-}
 
 void Font::SetFontSize(const int &size) {
   if (!IsValid())
@@ -214,9 +112,9 @@ void Font::SetFontSize(const int &size) {
   Invalidate();
 
   scale = stbtt_ScaleForPixelHeight(&font, fontSize);
-  scaledAscend = roundf(scale * ascend);
-  scaledDescend = roundf(scale * descend);
-  scaledLinegap = roundf(scale * linegap);
+  ascend = roundf(scale * rawAscend);
+  descend = roundf(scale * rawDescend);
+  linegap = roundf(scale * rawLineGap);
 }
 
 void Font::LoadFile(const std::string &path, std::vector<unsigned char> &data) {
@@ -227,7 +125,7 @@ void Font::LoadFile(const std::string &path, std::vector<unsigned char> &data) {
   file.close();
 }
 
-Font::Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   int bearing;
   int advance;
 
@@ -261,9 +159,43 @@ Font::Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   return {texture, bound, advance, bearing};
 }
 
-Font::Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer,
-                                      const char16_t &ch) {
+Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   auto index = stbtt_FindGlyphIndex(&font, ch);
 
   return CreateGlyph(renderer, index);
+}
+
+Glyph Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
+  auto iter = glyphMap.find(index);
+  if (iter == glyphMap.end()) {
+    Glyph g = CreateGlyph(renderer, index);
+    auto [i, success] = glyphMap.insert({index, g});
+
+    iter = i;
+  }
+
+  return iter->second;
+}
+
+Glyph Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+  auto iter = glyphMap.find(ch);
+  if (iter == glyphMap.end()) {
+    Glyph g = CreateGlyphFromChar(renderer, ch);
+    auto [i, success] = glyphMap.insert({ch, g});
+
+    iter = i;
+  }
+
+  return iter->second;
+}
+
+void Font::SetTextRenderer(const TextRenderer &t) {
+  textRenderer = t;
+  Invalidate();
+}
+
+void Font::RenderText(SDL_Renderer *renderer, const SDL_Rect &bound, 
+                    const std::string &str, const SDL_Color &color,
+                    const hb_script_t &script) {
+  textRenderer(renderer, bound, *this, str, color, script);
 }

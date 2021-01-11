@@ -37,7 +37,8 @@ int main(int argc, char **argv) {
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
   ImGui_ImplSDL2_Init(window);
 
-  Context c{renderer};
+  Context c{ renderer, SDL_Rect{} };
+  SDL_GetWindowSize(window, &c.windowBound.w, &c.windowBound.h);
 
   while (true) {
     SDL_Event event;

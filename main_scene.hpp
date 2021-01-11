@@ -13,6 +13,8 @@
 
 #include "font.hpp"
 
+#include "text_renderer.hpp"
+
 class MainScene : public Scene {
 public:
   virtual bool Init(const Context &context);
@@ -49,4 +51,6 @@ private:
       "Common", "Thai", "Hiragana", "Katakana", "Han", "Hangul"};
 
   int currentScriptIndex = 0;
+
+  TextRendererEnum textRender = TextRendererEnum::None;
 };

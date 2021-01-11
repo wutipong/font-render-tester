@@ -12,7 +12,8 @@ add_executable(main
 	"imgui-filebrowser/imfilebrowser.h"
 	"texture.hpp" "texture.cpp" 
 	"main_scene.hpp" "main_scene.cpp" 
-	"font.cpp" "font.hpp")
+	"font.cpp" "font.hpp" 
+	"text_renderer.hpp" "text_renderer.cpp")
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)

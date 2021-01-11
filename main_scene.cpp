@@ -99,14 +99,28 @@ void MainScene::Tick(const Context &context) {
       font = Font(fontPaths[selectedFontIndex].string());
     }
   }
-  font.SetFontSize(fontSize);
+
+  TextRendererEnum newRenderer = TextRendererEnum::NoShape;
   if (isShape) {
-    font.DrawTextWithShaping(context.renderer, std::string(buffer.data()),
-                             color, HB_DIRECTION_LTR, scripts[currentScriptIndex]);
-  } else {
-    font.DrawTextWithoutShaping(context.renderer, std::string(buffer.data()),
-                                color);
+      newRenderer = TextRendererEnum::LeftToRight;
   }
+
+  if (textRender != newRenderer) {
+      textRender = newRenderer;
+      switch (textRender) {
+      case TextRendererEnum::NoShape:
+          font.SetTextRenderer(TextRenderNoShape);
+          break;
+      case TextRendererEnum::LeftToRight:
+          font.SetTextRenderer(TextRenderLeftToRight);
+          break;
+      }
+  }
+
+
+  font.SetFontSize(fontSize);
+
+  font.RenderText(context.renderer, context.windowBound, std::string(buffer.data()), color, scripts[currentScriptIndex]);
 }
 
 void MainScene::Cleanup(const Context &context) {}

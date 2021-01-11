@@ -8,6 +8,21 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <functional>
+
+struct Glyph {
+  SDL_Texture *texture;
+  SDL_Rect bound;
+  int advance;
+  int bearing;
+};
+
+class Font;
+
+typedef std::function<void(SDL_Renderer*, const SDL_Rect& bound, Font& font,
+    const std::string& str, const SDL_Color&,
+    const hb_script_t& script)>
+    TextRenderer;
 
 class Font {
 public:
@@ -22,35 +37,34 @@ public:
 
   void Invalidate();
 
-  void DrawTextWithoutShaping(SDL_Renderer *renderer, const std::string &str,
-                              const SDL_Color &color);
-
-  void DrawTextWithShaping(SDL_Renderer *renderer, const std::string &str,
-                           const SDL_Color &color,
-                           const hb_direction_t &direction = HB_DIRECTION_LTR,
-                           const hb_script_t &script = HB_SCRIPT_COMMON);
-
   void SetFontSize(const int &size);
 
   std::string GetFamilyName() const { return family; }
   std::string GetSubFamilyName() const { return subFamily; }
+  bool IsValid() const { return !data.empty(); }
+
+  Glyph GetGlyph(SDL_Renderer *renderer, const int &index);
+  Glyph GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
+
+  float Scale() const { return scale; }
+  float Ascend() const { return ascend; }
+  float Descend() const { return descend; }
+  float LineGap() const { return linegap; }
+
+  hb_font_t* HbFont() const { return hb_font; }
+
+  void SetTextRenderer(const TextRenderer& t);
+  void RenderText(SDL_Renderer*, const SDL_Rect& bound,
+      const std::string& str, const SDL_Color&,
+      const hb_script_t& script);
 
 private:
   void Initialize();
   static void LoadFile(const std::string &path,
                        std::vector<unsigned char> &data);
 
-  struct Glyph {
-    SDL_Texture *texture;
-    SDL_Rect bound;
-    int advance;
-    int bearing;
-  };
-
   Glyph CreateGlyph(SDL_Renderer *renderer, const int &ch);
   Glyph CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch);
-
-  bool IsValid() const { return !data.empty(); }
 
   std::vector<unsigned char> data{};
   stbtt_fontinfo font;
@@ -60,15 +74,20 @@ private:
 
   std::map<unsigned int, Glyph> glyphMap;
 
-  int ascend;
-  int descend;
-  int linegap;
+  int rawAscend{0};
+  int rawDescend{0};
+  int rawLineGap{0};
 
   float scale{0};
-  float scaledAscend{0};
-  float scaledDescend{0};
-  float scaledLinegap{0};
+
+  float ascend{0};
+  float descend{0};
+  float linegap{0};
 
   std::string family;
   std::string subFamily;
+
+  TextRenderer textRenderer = [](SDL_Renderer*, const SDL_Rect& bound, Font& font,
+      const std::string& str, const SDL_Color&,
+      const hb_script_t& script) {};
 };
