@@ -1,11 +1,21 @@
 #pragma once
 #include <functional>
 
-#include "font.hpp"
 #include <SDL2/SDL.h>
 #include <harfbuzz/hb.h>
 
-enum class TextRendererEnum { None, NoShape, LeftToRight, TopToBottom };
+
+enum class TextRenderEnum {
+    None,
+    NoShape,
+    LeftToRight
+};
+class Font;
+
+typedef std::function<void(SDL_Renderer *, const SDL_Rect &bound, Font &font,
+                           const std::string &str, const SDL_Color &,
+                           const hb_script_t &script)>
+    TextRenderFunction;
 
 void TextRenderNoShape(SDL_Renderer *, const SDL_Rect &bound, Font &font,
                        const std::string &str, const SDL_Color &,

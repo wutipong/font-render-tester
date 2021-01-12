@@ -27,6 +27,7 @@ Font &Font::operator=(const Font &f) {
   data = f.data;
   family = "";
   subFamily = "";
+  textRenderer = TextRenderNoShape;
 
   Initialize();
 
@@ -189,13 +190,24 @@ Glyph Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   return iter->second;
 }
 
-void Font::SetTextRenderer(const TextRenderer &t) {
-  textRenderer = t;
+void Font::SetTextRenderer(const TextRenderEnum &t) {
+  if (textRendererEnum == t)
+    return;
+
+  textRendererEnum = t;
+  switch (textRendererEnum) {
+  case TextRenderEnum::NoShape:
+    textRenderer = TextRenderNoShape;
+    break;
+  case TextRenderEnum::LeftToRight:
+    textRenderer = TextRenderLeftToRight;
+    break;
+  }
   Invalidate();
 }
 
-void Font::RenderText(SDL_Renderer *renderer, const SDL_Rect &bound, 
-                    const std::string &str, const SDL_Color &color,
-                    const hb_script_t &script) {
+void Font::RenderText(SDL_Renderer *renderer, const SDL_Rect &bound,
+                      const std::string &str, const SDL_Color &color,
+                      const hb_script_t &script) {
   textRenderer(renderer, bound, *this, str, color, script);
 }

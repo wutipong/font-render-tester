@@ -2,6 +2,8 @@
 
 #include <utf8/cpp11.h>
 
+#include "font.hpp"
+
 void TextRenderNoShape(SDL_Renderer* renderer, const SDL_Rect& bound, Font& font,
     const std::string& str, const SDL_Color& color,
     const hb_script_t& script) {

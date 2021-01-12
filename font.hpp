@@ -4,11 +4,13 @@
 #include <harfbuzz/hb.h>
 #include <stb_truetype.h>
 
+#include <functional>
 #include <iterator>
 #include <map>
 #include <string>
 #include <vector>
-#include <functional>
+
+#include "text_renderer.hpp"
 
 struct Glyph {
   SDL_Texture *texture;
@@ -16,13 +18,6 @@ struct Glyph {
   int advance;
   int bearing;
 };
-
-class Font;
-
-typedef std::function<void(SDL_Renderer*, const SDL_Rect& bound, Font& font,
-    const std::string& str, const SDL_Color&,
-    const hb_script_t& script)>
-    TextRenderer;
 
 class Font {
 public:
@@ -51,12 +46,12 @@ public:
   float Descend() const { return descend; }
   float LineGap() const { return linegap; }
 
-  hb_font_t* HbFont() const { return hb_font; }
+  hb_font_t *HbFont() const { return hb_font; }
 
-  void SetTextRenderer(const TextRenderer& t);
-  void RenderText(SDL_Renderer*, const SDL_Rect& bound,
-      const std::string& str, const SDL_Color&,
-      const hb_script_t& script);
+  void SetTextRenderer(const TextRenderEnum &t);
+
+  void RenderText(SDL_Renderer *, const SDL_Rect &bound, const std::string &str,
+                  const SDL_Color &, const hb_script_t &script);
 
 private:
   void Initialize();
@@ -87,7 +82,6 @@ private:
   std::string family;
   std::string subFamily;
 
-  TextRenderer textRenderer = [](SDL_Renderer*, const SDL_Rect& bound, Font& font,
-      const std::string& str, const SDL_Color&,
-      const hb_script_t& script) {};
+  TextRenderFunction textRenderer = TextRenderNoShape;
+  TextRenderEnum textRendererEnum;
 };

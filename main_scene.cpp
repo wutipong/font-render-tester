@@ -9,6 +9,8 @@
 #include <utf8cpp/utf8.h>
 #include <utf8cpp/utf8/cpp11.h>
 
+#include "text_renderer.hpp"
+
 bool MainScene::Init(const Context &context) {
 
   dirChooser.SetTitle("Browse for font directory");
@@ -62,7 +64,7 @@ void MainScene::Tick(const Context &context) {
         if (ImGui::BeginCombo("Script", scriptStrs[currentScriptIndex])) {
           for (int i = 0; i < scriptStrs.size(); i++) {
             if (ImGui::Selectable(scriptStrs[i], i == currentScriptIndex)) {
-                currentScriptIndex = i;
+              currentScriptIndex = i;
             }
           }
           ImGui::EndCombo();
@@ -100,27 +102,17 @@ void MainScene::Tick(const Context &context) {
     }
   }
 
-  TextRendererEnum newRenderer = TextRendererEnum::NoShape;
+  auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
-      newRenderer = TextRendererEnum::LeftToRight;
+    textRender = TextRenderEnum::LeftToRight;
   }
-
-  if (textRender != newRenderer) {
-      textRender = newRenderer;
-      switch (textRender) {
-      case TextRendererEnum::NoShape:
-          font.SetTextRenderer(TextRenderNoShape);
-          break;
-      case TextRendererEnum::LeftToRight:
-          font.SetTextRenderer(TextRenderLeftToRight);
-          break;
-      }
-  }
-
+  font.SetTextRenderer(textRender);
 
   font.SetFontSize(fontSize);
 
-  font.RenderText(context.renderer, context.windowBound, std::string(buffer.data()), color, scripts[currentScriptIndex]);
+  font.RenderText(context.renderer, context.windowBound,
+                  std::string(buffer.data()), color,
+                  scripts[currentScriptIndex]);
 }
 
 void MainScene::Cleanup(const Context &context) {}
