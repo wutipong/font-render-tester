@@ -70,12 +70,12 @@ void MainScene::Tick(const Context &context) {
           ImGui::EndCombo();
         }
         if (ImGui::BeginCombo("Direction", directionStrs[selectedDirection])) {
-            for (int i = 0; i < directionStrs.size(); i++) {
-                if (ImGui::Selectable(directionStrs[i], i == selectedDirection)) {
-                    selectedDirection = i;
-                }
+          for (int i = 0; i < directionStrs.size(); i++) {
+            if (ImGui::Selectable(directionStrs[i], i == selectedDirection)) {
+              selectedDirection = i;
             }
-            ImGui::EndCombo();
+          }
+          ImGui::EndCombo();
         }
       }
 
@@ -112,23 +112,24 @@ void MainScene::Tick(const Context &context) {
 
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
-      switch (directions[selectedDirection]) {
-      case HB_DIRECTION_LTR:
-          textRender = TextRenderEnum::LeftToRight;
-          break;
-      case HB_DIRECTION_TTB:
-          textRender = TextRenderEnum::TopToBottom;
-          break;
-      }
-    
+    switch (directions[selectedDirection]) {
+    case HB_DIRECTION_LTR:
+      textRender = TextRenderEnum::LeftToRight;
+      break;
+    case HB_DIRECTION_TTB:
+      textRender = TextRenderEnum::TopToBottom;
+      break;
+    case HB_DIRECTION_RTL:
+      textRender = TextRenderEnum::RightToLeft;
+      break;
+    }
   }
   font.SetTextRenderer(textRender);
 
   font.SetFontSize(fontSize);
 
   font.RenderText(context.renderer, context.windowBound,
-                  std::string(buffer.data()), color,
-                  scripts[selectedScript]);
+                  std::string(buffer.data()), color, scripts[selectedScript]);
 }
 
 void MainScene::Cleanup(const Context &context) {}

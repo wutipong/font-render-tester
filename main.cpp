@@ -30,8 +30,7 @@ int main(int argc, char **argv) {
   io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 20.0f, &config,
                                io.Fonts->GetGlyphRangesJapanese());
   io.Fonts->AddFontFromFileTTF("fonts/NotoSansThai-Regular.ttf", 20.0f, &config,
-                               io.Fonts->GetGlyphRangesThai());
-  
+                               io.Fonts->GetGlyphRangesThai());  
   io.Fonts->Build();
 
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
