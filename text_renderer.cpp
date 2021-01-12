@@ -116,7 +116,6 @@ void TextRenderTopToBottom(SDL_Renderer* renderer, const SDL_Rect& bound, Font& 
     while (true) {
 
         SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xff);
-        SDL_RenderDrawLine(renderer, x, 0, x, bound.h);
 
         auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
@@ -152,7 +151,7 @@ void TextRenderTopToBottom(SDL_Renderer* renderer, const SDL_Rect& bound, Font& 
 
                 SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
             }
-            y += glyph_positions[i].y_advance;
+            y -= roundf(glyph_positions[i].y_advance * font.Scale());
         }
         hb_buffer_destroy(buffer);
 

@@ -6,9 +6,9 @@
 
 
 enum class TextRenderEnum {
-    None,
     NoShape,
-    LeftToRight
+    LeftToRight,
+    TopToBottom
 };
 class Font;
 

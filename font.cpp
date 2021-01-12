@@ -202,6 +202,9 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
   case TextRenderEnum::LeftToRight:
     textRenderer = TextRenderLeftToRight;
     break;
+  case TextRenderEnum::TopToBottom:
+    textRenderer = TextRenderTopToBottom;
+    break;
   }
   Invalidate();
 }

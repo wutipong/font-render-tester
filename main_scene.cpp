@@ -61,13 +61,21 @@ void MainScene::Tick(const Context &context) {
       ImGui::Checkbox("Shape Text", &isShape);
 
       if (isShape) {
-        if (ImGui::BeginCombo("Script", scriptStrs[currentScriptIndex])) {
+        if (ImGui::BeginCombo("Script", scriptStrs[selectedScript])) {
           for (int i = 0; i < scriptStrs.size(); i++) {
-            if (ImGui::Selectable(scriptStrs[i], i == currentScriptIndex)) {
-              currentScriptIndex = i;
+            if (ImGui::Selectable(scriptStrs[i], i == selectedScript)) {
+              selectedScript = i;
             }
           }
           ImGui::EndCombo();
+        }
+        if (ImGui::BeginCombo("Direction", directionStrs[selectedDirection])) {
+            for (int i = 0; i < directionStrs.size(); i++) {
+                if (ImGui::Selectable(directionStrs[i], i == selectedDirection)) {
+                    selectedDirection = i;
+                }
+            }
+            ImGui::EndCombo();
         }
       }
 
@@ -104,7 +112,15 @@ void MainScene::Tick(const Context &context) {
 
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
-    textRender = TextRenderEnum::LeftToRight;
+      switch (directions[selectedDirection]) {
+      case HB_DIRECTION_LTR:
+          textRender = TextRenderEnum::LeftToRight;
+          break;
+      case HB_DIRECTION_TTB:
+          textRender = TextRenderEnum::TopToBottom;
+          break;
+      }
+    
   }
   font.SetTextRenderer(textRender);
 
@@ -112,7 +128,7 @@ void MainScene::Tick(const Context &context) {
 
   font.RenderText(context.renderer, context.windowBound,
                   std::string(buffer.data()), color,
-                  scripts[currentScriptIndex]);
+                  scripts[selectedScript]);
 }
 
 void MainScene::Cleanup(const Context &context) {}

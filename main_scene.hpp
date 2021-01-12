@@ -48,5 +48,11 @@ private:
   static constexpr std::array<char *, 6> scriptStrs = {
       "Common", "Thai", "Hiragana", "Katakana", "Han", "Hangul"};
 
-  int currentScriptIndex = 0;
+  static constexpr std::array<hb_direction_t, 2> directions = { HB_DIRECTION_LTR, HB_DIRECTION_TTB };
+    
+
+  static constexpr std::array<char*, 2> directionStrs = {"Left to Right", "Top to Bottom"};
+
+  int selectedScript = 0;
+  int selectedDirection = 0;
 };

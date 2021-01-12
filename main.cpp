@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_Init(window);
 
   Context c{ renderer, SDL_Rect{} };
-  SDL_GetWindowSize(window, &c.windowBound.w, &c.windowBound.h);
+
 
   while (true) {
     SDL_Event event;
@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
       if (event.type == SDL_QUIT)
         break;
     }
+    SDL_GetWindowSize(window, &c.windowBound.w, &c.windowBound.h);
 
     SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
     SDL_RenderClear(renderer);
