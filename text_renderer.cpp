@@ -23,15 +23,7 @@ void TextRenderNoShape(SDL_Renderer *renderer, const SDL_Rect &bound,
     }
 
     auto &g = font.GetGlyphFromChar(renderer, u);
-    if (g.texture != nullptr) {
-      SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
-
-      SDL_Rect dst = g.bound;
-      dst.x += x;
-      dst.y = y + dst.y;
-
-      SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-    }
+    DrawGlyph(renderer, font, g, color, x, y);
     x += g.advance;
   }
 }
@@ -72,15 +64,7 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, const SDL_Rect &bound,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
-      if (g.texture != nullptr) {
-        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
-
-        SDL_Rect dst = g.bound;
-        dst.x += x + (glyph_positions[i].x_offset * font.Scale());
-        dst.y = y + dst.y - (glyph_positions[i].y_offset * font.Scale());
-
-        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-      }
+      DrawGlyph(renderer, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
     hb_buffer_destroy(buffer);
@@ -133,15 +117,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, const SDL_Rect &bound,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
-      if (g.texture != nullptr) {
-        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
-
-        SDL_Rect dst = g.bound;
-        dst.x += x + (glyph_positions[i].x_offset * font.Scale());
-        dst.y = y + dst.y - (glyph_positions[i].y_offset * font.Scale());
-
-        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-      }
+      DrawGlyph(renderer, font, g, color, x, y, glyph_positions[i]);
       x -= glyph_positions[i].x_advance * font.Scale();
     }
     hb_buffer_destroy(buffer);
@@ -201,15 +177,8 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, const SDL_Rect &bound,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
-      if (g.texture != nullptr) {
-        SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+      DrawGlyph(renderer, font, g, color, x, y, glyph_positions[i]);
 
-        SDL_Rect dst = g.bound;
-        dst.x += x + (glyph_positions[i].x_offset * font.Scale());
-        dst.y = y + dst.y - (glyph_positions[i].y_offset * font.Scale());
-
-        SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
-      }
       y -= roundf(glyph_positions[i].y_advance * font.Scale());
     }
     hb_buffer_destroy(buffer);
@@ -219,5 +188,32 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, const SDL_Rect &bound,
 
     lineStart = lineEnd + 1;
     x -= -font.Descend() + font.LineGap() + font.Ascend();
+  }
+}
+
+void DrawGlyph(SDL_Renderer *renderer, const Font& font, const Glyph &g, const SDL_Color &color,
+               const int &x, const int &y) {
+  if (g.texture != nullptr) {
+    SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+
+    SDL_Rect dst = g.bound;
+    dst.x += x;
+    dst.y = y + dst.y;
+
+    SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+  }
+}
+
+void DrawGlyph(SDL_Renderer *renderer, const Font& font, const Glyph &g, const SDL_Color &color,
+               const int &x, const int &y,
+               const hb_glyph_position_t &hb_glyph_pos) {
+  if (g.texture != nullptr) {
+    SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+
+    SDL_Rect dst = g.bound;
+    dst.x += x + (hb_glyph_pos.x_offset * font.Scale());
+    dst.y = y + dst.y - (hb_glyph_pos.y_offset * font.Scale());
+
+    SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
   }
 }

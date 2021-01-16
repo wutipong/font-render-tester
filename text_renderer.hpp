@@ -3,14 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <harfbuzz/hb.h>
-
-enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
-class Font;
-
-typedef std::function<void(SDL_Renderer *, const SDL_Rect &bound, Font &font,
-                           const std::string &str, const SDL_Color &,
-                           const hb_script_t &script)>
-    TextRenderFunction;
+#include "font.hpp"
 
 void TextRenderNoShape(SDL_Renderer *, const SDL_Rect &bound, Font &font,
                        const std::string &str, const SDL_Color &,
@@ -27,3 +20,9 @@ void TextRenderRightToLeft(SDL_Renderer *, const SDL_Rect &bound, Font &font,
 void TextRenderTopToBottom(SDL_Renderer *, const SDL_Rect &bound, Font &font,
                            const std::string &str, const SDL_Color &,
                            const hb_script_t &script);
+
+void DrawGlyph(SDL_Renderer *renderer, const Font& font, const Glyph &g, const SDL_Color &color,
+               const int &x, const int &y);
+
+void DrawGlyph(SDL_Renderer* renderer, const Font& font, const Glyph& g, const SDL_Color& color,
+    const int& x, const int& y, const hb_glyph_position_t& hb_glyph_pos);

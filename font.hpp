@@ -10,7 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "text_renderer.hpp"
+enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
+class Font;
+
+typedef std::function<void(SDL_Renderer*, const SDL_Rect& bound, Font& font,
+    const std::string& str, const SDL_Color&,
+    const hb_script_t& script)>
+    TextRenderFunction;
 
 struct Glyph {
   SDL_Texture *texture;
@@ -82,6 +88,6 @@ private:
   std::string family;
   std::string subFamily;
 
-  TextRenderFunction textRenderer = TextRenderNoShape;
+  TextRenderFunction textRenderer;
   TextRenderEnum textRendererEnum;
 };
