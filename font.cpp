@@ -2,16 +2,16 @@
 #include <fstream>
 #include <streambuf>
 
-#include <utf8/cpp11.h>
 #include "text_renderer.hpp"
 #include "texture.hpp"
+#include <utf8/cpp11.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_truetype.h>
 
 Font::Font(){};
 
-Font::Font(const std::string &path): textRenderer(TextRenderNoShape) {
+Font::Font(const std::string &path) : textRenderer(TextRenderNoShape) {
   Font::LoadFile(path, data);
   Initialize();
 }
@@ -19,7 +19,7 @@ Font::Font(const std::string &path): textRenderer(TextRenderNoShape) {
 Font::Font(const Font &f) : Font(f.data) {}
 
 Font::Font(const std::vector<unsigned char> &data)
-    : data(data.begin(), data.end()), textRenderer(TextRenderNoShape){
+    : data(data.begin(), data.end()), textRenderer(TextRenderNoShape) {
   Initialize();
 }
 
@@ -212,9 +212,9 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
   Invalidate();
 }
 
-void Font::RenderText(SDL_Renderer *renderer, const SDL_Rect &bound,
-                      const std::string &str, const SDL_Color &color,
-                      const hb_script_t &script) {
-    if (!IsValid()) return;
-  textRenderer(renderer, bound, *this, str, color, script);
+void Font::RenderText(Context &ctx, const std::string &str,
+                      const SDL_Color &color, const hb_script_t &script) {
+  if (!IsValid())
+    return;
+  textRenderer(ctx, *this, str, color, script);
 }

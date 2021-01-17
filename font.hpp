@@ -4,6 +4,7 @@
 #include <harfbuzz/hb.h>
 #include <stb_truetype.h>
 
+#include "context.hpp"
 #include <functional>
 #include <iterator>
 #include <map>
@@ -13,9 +14,8 @@
 enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
 
-typedef std::function<void(SDL_Renderer*, const SDL_Rect& bound, Font& font,
-    const std::string& str, const SDL_Color&,
-    const hb_script_t& script)>
+typedef std::function<void(Context &ctx, Font &font, const std::string &str,
+                           const SDL_Color &, const hb_script_t &script)>
     TextRenderFunction;
 
 struct Glyph {
@@ -56,8 +56,8 @@ public:
 
   void SetTextRenderer(const TextRenderEnum &t);
 
-  void RenderText(SDL_Renderer *, const SDL_Rect &bound, const std::string &str,
-                  const SDL_Color &, const hb_script_t &script);
+  void RenderText(Context &ctx, const std::string &str, const SDL_Color &,
+                  const hb_script_t &script);
 
 private:
   void Initialize();

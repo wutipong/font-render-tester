@@ -12,7 +12,6 @@
 #include "text_renderer.hpp"
 
 bool MainScene::Init(Context &context) {
-
   dirChooser.SetTitle("Browse for font directory");
 
   return true;
@@ -31,7 +30,6 @@ void MainScene::Tick(Context &context) {
     }
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
-
       if (ImGui::BeginCombo(
               "Font File",
               (selectedFontIndex == -1)
@@ -56,7 +54,6 @@ void MainScene::Tick(Context &context) {
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
-
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
       ImGui::Checkbox("Shape Text", &isShape);
 
@@ -130,8 +127,8 @@ void MainScene::Tick(Context &context) {
 
   font.SetFontSize(fontSize);
 
-  font.RenderText(context.renderer, context.windowBound,
-                  std::string(buffer.data()), color, scripts[selectedScript]);
+  font.RenderText(context, std::string(buffer.data()), color,
+                  scripts[selectedScript]);
 }
 
 void MainScene::Cleanup(Context &context) {}
