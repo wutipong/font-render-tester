@@ -15,9 +15,9 @@
 
 class MainScene : public Scene {
 public:
-  virtual bool Init(const Context &context);
-  virtual void Tick(const Context &context);
-  virtual void Cleanup(const Context &context);
+  virtual bool Init(Context &context);
+  virtual void Tick(Context &context);
+  virtual void Cleanup(Context &context);
 
   void OnDirectorySelected(const std::filesystem::path &path);
 

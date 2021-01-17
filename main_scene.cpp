@@ -11,14 +11,14 @@
 
 #include "text_renderer.hpp"
 
-bool MainScene::Init(const Context &context) {
+bool MainScene::Init(Context &context) {
 
   dirChooser.SetTitle("Browse for font directory");
 
   return true;
 }
 
-void MainScene::Tick(const Context &context) {
+void MainScene::Tick(Context &context) {
   int newSelected = selectedFontIndex;
   ImGui::Begin("Menu");
   {
@@ -86,6 +86,8 @@ void MainScene::Tick(const Context &context) {
       color.g = c[1] * 255;
       color.b = c[2] * 255;
       color.a = 255;
+
+      ImGui::Checkbox("Debug", &context.debug);
     }
   }
   ImGui::End();
@@ -132,7 +134,7 @@ void MainScene::Tick(const Context &context) {
                   std::string(buffer.data()), color, scripts[selectedScript]);
 }
 
-void MainScene::Cleanup(const Context &context) {}
+void MainScene::Cleanup(Context &context) {}
 
 void MainScene::OnDirectorySelected(const std::filesystem::path &path) {
   currentDirectory = path.string();

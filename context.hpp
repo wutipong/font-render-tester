@@ -6,6 +6,7 @@
 struct Context {
   SDL_Renderer *renderer;
   SDL_Rect windowBound;
+  bool debug;
 };
 
 #endif

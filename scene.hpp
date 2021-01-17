@@ -8,18 +8,18 @@
 
 class Scene {
 public:
-  virtual bool Init(const Context &context) = 0;
-  virtual void Tick(const Context &context) = 0;
-  virtual void Cleanup(const Context &context) = 0;
+  virtual bool Init(Context &context) = 0;
+  virtual void Tick(Context &context) = 0;
+  virtual void Cleanup(Context &context) = 0;
 
-  static void TickCurrent(const Context &context);
-  template <class T> static void ChangeScene(const Context &context);
+  static void TickCurrent(Context &context);
+  template <class T> static void ChangeScene(Context &context);
 
 private:
   static std::unique_ptr<Scene> currentScene;
 };
 
-template <class T> void Scene::ChangeScene(const Context &context) {
+template <class T> void Scene::ChangeScene(Context &context) {
   auto newScene = std::make_unique<T>();
 
   if (!newScene->Init(context))
