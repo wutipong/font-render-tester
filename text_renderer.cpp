@@ -6,23 +6,23 @@
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
                        const SDL_Color &color, const hb_script_t &script) {
-
   if (!font.IsValid())
     return;
 
   int x = 0, y = font.Ascend();
   auto u16str = utf8::utf8to16(str);
 
+  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
-      y += -font.Descend() + font.LineGap() + font.Ascend();
+      y += lineHeight;
 
       continue;
     }
 
     auto &g = font.GetGlyphFromChar(ctx.renderer, u);
-    DrawGlyph(ctx.renderer, font, g, color, x, y);
+    DrawGlyph(ctx, font, g, color, x, y);
     x += g.advance;
   }
 }
@@ -35,6 +35,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
   int y = font.Ascend();
+  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
@@ -62,7 +63,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(ctx.renderer, index);
-      DrawGlyph(ctx.renderer, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
     hb_buffer_destroy(buffer);
@@ -71,7 +72,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    y += -font.Descend() + font.LineGap() + font.Ascend();
+    y += lineHeight;
   }
 }
 
@@ -109,12 +110,13 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
         hb_buffer_get_glyph_positions(buffer, NULL);
 
     int x = ctx.windowBound.w;
+    const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(ctx.renderer, index);
-      DrawGlyph(ctx.renderer, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x -= glyph_positions[i].x_advance * font.Scale();
     }
     hb_buffer_destroy(buffer);
@@ -123,13 +125,12 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    y += -font.Descend() + font.LineGap() + font.Ascend();
+    y += lineHeight;
   }
 }
 
 void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
                            const SDL_Color &color, const hb_script_t &script) {
-
   if (!font.IsValid())
     return;
 
@@ -144,8 +145,9 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   auto lineStart = u16str.begin();
   int x = ctx.windowBound.w - ascend;
 
-  while (true) {
+  const auto lineWidth = -ascend + descend + linegap;
 
+  while (true) {
     SDL_SetRenderDrawColor(ctx.renderer, 0xff, 0, 0, 0xff);
 
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
@@ -173,7 +175,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(ctx.renderer, index);
-      DrawGlyph(ctx.renderer, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
       y -= roundf(glyph_positions[i].y_advance * font.Scale());
     }
@@ -183,11 +185,11 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    x -= -font.Descend() + font.LineGap() + font.Ascend();
+    x += lineWidth;
   }
 }
 
-void DrawGlyph(SDL_Renderer *renderer, const Font &font, const Glyph &g,
+void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y) {
   if (g.texture != nullptr) {
     SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
@@ -196,11 +198,11 @@ void DrawGlyph(SDL_Renderer *renderer, const Font &font, const Glyph &g,
     dst.x += x;
     dst.y = y + dst.y;
 
-    SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
   }
 }
 
-void DrawGlyph(SDL_Renderer *renderer, const Font &font, const Glyph &g,
+void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
   if (g.texture != nullptr) {
@@ -210,6 +212,6 @@ void DrawGlyph(SDL_Renderer *renderer, const Font &font, const Glyph &g,
     dst.x += x + (hb_glyph_pos.x_offset * font.Scale());
     dst.y = y + dst.y - (hb_glyph_pos.y_offset * font.Scale());
 
-    SDL_RenderCopy(renderer, g.texture, nullptr, &dst);
+    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
   }
 }
