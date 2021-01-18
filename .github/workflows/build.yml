@@ -16,4 +16,8 @@ jobs:
         working-directory: out
 
       - name: Build the project.
-        run: cmake --build out
+        run: cmake --build out --config Release
+
+      - name: Copy font files.
+        run: xcopy fonts out\Release\fonts\*
+      
