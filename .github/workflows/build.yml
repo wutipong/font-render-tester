@@ -6,4 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: "Get-ChildItem Env:"
-      - run: cmake -D CMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake
+      - run: cmake -D CMAKE_TOOLCHAIN_FILE=c:\scripts\buildsystems\vcpkg.cmake .
