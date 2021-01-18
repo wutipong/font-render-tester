@@ -4,5 +4,5 @@ jobs:
   build:
     runs-on: windows-latest
       steps:
-        uses: actions/checkout@v2
-        run: vcpkg --help
+        - uses: actions/checkout@v2
+        - run: vcpkg --help
