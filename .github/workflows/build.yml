@@ -12,7 +12,7 @@ jobs:
         run: mkdir out
         
       - name: Configure the project.
-        run: cmake -D CMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake %GITHUB_WORKSPACE%
+        run: cmake -D CMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake $env:GITHUB_WORKSPACE
         working-directory: $GITHUB_WORKSPACE/out
 
       - name: Build the project.
