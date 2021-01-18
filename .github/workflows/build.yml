@@ -21,3 +21,7 @@ jobs:
       - name: Copy font files.
         run: xcopy fonts out\Release\fonts\*
       
+      - uses: actions/upload-artifact@v2
+        with:
+          name: windows
+          path: out/Release
