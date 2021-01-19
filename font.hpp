@@ -29,7 +29,7 @@ class Font {
 public:
   Font();
   Font(const std::string &path);
-  Font(const std::vector<unsigned char> &data);
+  Font(const std::vector<char> &data);
   Font(const Font &f);
 
   Font &operator=(const Font &f);
@@ -44,8 +44,8 @@ public:
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return !data.empty(); }
 
-  Glyph& GetGlyph(SDL_Renderer *renderer, const int &index);
-  Glyph& GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
+  Glyph &GetGlyph(SDL_Renderer *renderer, const int &index);
+  Glyph &GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
 
   float Scale() const { return scale; }
   float Ascend() const { return ascend; }
@@ -61,13 +61,12 @@ public:
 
 private:
   void Initialize();
-  static void LoadFile(const std::string &path,
-                       std::vector<unsigned char> &data);
+  static void LoadFile(const std::string &path, std::vector<char> &data);
 
   Glyph CreateGlyph(SDL_Renderer *renderer, const int &ch);
   Glyph CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch);
 
-  std::vector<unsigned char> data{};
+  std::vector<char> data{};
   stbtt_fontinfo font;
 
   int fontSize{-1};

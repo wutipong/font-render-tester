@@ -18,7 +18,7 @@ Font::Font(const std::string &path) : textRenderer(TextRenderNoShape) {
 
 Font::Font(const Font &f) : Font(f.data) {}
 
-Font::Font(const std::vector<unsigned char> &data)
+Font::Font(const std::vector<char> &data)
     : data(data.begin(), data.end()), textRenderer(TextRenderNoShape) {
   Initialize();
 }
@@ -118,11 +118,12 @@ void Font::SetFontSize(const int &size) {
   linegap = roundf(scale * rawLineGap);
 }
 
-void Font::LoadFile(const std::string &path, std::vector<unsigned char> &data) {
-  std::basic_ifstream<unsigned char> file(path, std::ios::binary);
-  data =
-      std::vector<unsigned char>{std::istreambuf_iterator<unsigned char>(file),
-                                 std::istreambuf_iterator<unsigned char>()};
+void Font::LoadFile(const std::string &path, std::vector<char> &data) {
+  std::basic_ifstream<char> file(path, std::ios::in | std::ios::binary);
+
+  data = {std::istreambuf_iterator<char>(file),
+          std::istreambuf_iterator<char>()};
+
   file.close();
 }
 
@@ -166,7 +167,7 @@ Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   return CreateGlyph(renderer, index);
 }
 
-Glyph& Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
   auto iter = glyphMap.find(index);
   if (iter == glyphMap.end()) {
     Glyph g = CreateGlyph(renderer, index);
@@ -178,7 +179,7 @@ Glyph& Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
   return iter->second;
 }
 
-Glyph& Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   auto iter = glyphMap.find(ch);
   if (iter == glyphMap.end()) {
     Glyph g = CreateGlyphFromChar(renderer, ch);
