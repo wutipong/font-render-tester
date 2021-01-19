@@ -44,5 +44,6 @@ jobs:
           files: windows-latest.zip
           name: Latest
           prerelease: true
+          tag_name: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
