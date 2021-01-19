@@ -36,26 +36,13 @@ jobs:
         run: |
           Get-ChildItem -Path out\Release -Recurse | Compress-Archive -DestinationPath windows-latest.zip
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: latest
-          release_name: Latest
           body: |
             This is the latest, the bleeding edge. Might not work properly and might harm your system. Use with care.
-          draft: false
+          files: windows-latest.zip
+          name: Latest
           prerelease: true
-
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./windows-latest.zip
-          asset_name: windows-latest.zip
-          asset_content_type: application/zip
