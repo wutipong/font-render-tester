@@ -36,7 +36,7 @@ jobs:
         run: |
           Get-ChildItem -Path out\Release -Recurse | Compress-Archive -DestinationPath windows-latest.zip
 
-      name: Release
+      - name: Release
         uses: softprops/action-gh-release@v1
         with:
           body: |
