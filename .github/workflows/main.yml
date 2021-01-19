@@ -34,7 +34,7 @@ jobs:
       
       - name: "Create latest release file"
         run: |
-          Get-ChildItem -Path out\Release -Recurse | Compress-Archive -DestinationPath windows-latest.zip
+          Get-ChildItem -Path out\Release | Compress-Archive -DestinationPath windows-latest.zip
 
       - name: Release
         uses: softprops/action-gh-release@v1
