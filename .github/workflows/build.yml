@@ -28,9 +28,11 @@ jobs:
           name: windows
           path: out/Release
       
-      - name: "Create release file"
-        run: "zip -r ../../font-render-tester_latest.zip *"
-        working-directory: out/Release
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'windows-latest.zip'
+          directory: out/Release
 
       - name: Create Release
         id: create_release
@@ -52,6 +54,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./font-render-tester_latest.zip
-          asset_name: font-render-tester_latest.zip
+          asset_path: ./windows-latest.zip
+          asset_name: windows-latest.zip
           asset_content_type: application/zip
