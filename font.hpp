@@ -44,8 +44,8 @@ public:
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return !data.empty(); }
 
-  Glyph GetGlyph(SDL_Renderer *renderer, const int &index);
-  Glyph GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
+  Glyph& GetGlyph(SDL_Renderer *renderer, const int &index);
+  Glyph& GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
 
   float Scale() const { return scale; }
   float Ascend() const { return ascend; }
