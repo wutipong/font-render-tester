@@ -1,0 +1,30 @@
+name: non-main
+on: 
+  push:
+    branches-ignore:
+      - main
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: "Get-ChildItem Env:"
+      - name: Create output dir
+        run: mkdir out
+        
+      - name: Configure the project.
+        run: cmake -D CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake $env:GITHUB_WORKSPACE
+        working-directory: out
+
+      - name: Build the project.
+        run: cmake --build out --config Release
+
+      - name: Copy font files.
+        run: xcopy fonts out\Release\fonts\*
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: windows
+          path: out/Release

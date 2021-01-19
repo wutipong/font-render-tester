@@ -1,5 +1,9 @@
-name: build
-on: [push]
+name: main
+on: 
+  push:
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: windows-latest
