@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
 
   SDL_Window *window = SDL_CreateWindow(
-      "Test Window", ctx.windowBound.x, ctx.windowBound.y, ctx.windowBound.w,
+      "font-render-tester", ctx.windowBound.x, ctx.windowBound.y, ctx.windowBound.w,
       ctx.windowBound.h, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
