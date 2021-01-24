@@ -37,7 +37,7 @@ private:
 
   std::vector<unsigned char> fontData;
 
-  ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
+  ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory, };
 
   Font font{};
 

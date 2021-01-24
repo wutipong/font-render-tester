@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
 
   Context c{ renderer, SDL_Rect{} };
 
+  Scene::ChangeScene<MainScene>(c);
 
   while (true) {
     SDL_Event event;

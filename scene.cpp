@@ -1,8 +1,6 @@
 #include "scene.hpp"
 
-#include "main_scene.hpp"
-
-std::unique_ptr<Scene> Scene::currentScene = std::make_unique<MainScene>();
+std::unique_ptr<Scene> Scene::currentScene;
 
 void Scene::TickCurrent(Context &context) {
   if (currentScene == nullptr)

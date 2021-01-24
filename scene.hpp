@@ -25,7 +25,9 @@ template <class T> void Scene::ChangeScene(Context &context) {
   if (!newScene->Init(context))
     return;
 
-  currentScene->Cleanup(context);
+  if(currentScene)
+    currentScene->Cleanup(context);
+  
   currentScene = std::move(newScene);
 }
 
