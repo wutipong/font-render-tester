@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
   SDL_Window *window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
                                         SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
-                                        SDL_WINDOW_RESIZABLE);
+                                        SDL_WINDOW_RESIZABLE |SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
   SDL_Renderer *renderer;
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.17)
 project(font-render-tester)
 
 # add the executable
-add_executable(main 
+add_executable(font-render-tester 
 	"main.cpp" 
 	"scene.hpp" "scene.cpp" 
 	"imgui_sdl/imgui_sdl.h" "imgui_sdl/imgui_sdl.cpp" 
@@ -22,11 +22,11 @@ find_package(utf8cpp CONFIG REQUIRED)
 
 find_path(STB_INCLUDE_DIRS "stb_truetype.h")
 
-target_include_directories(main PRIVATE ${STB_INCLUDE_DIRS})
+target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 
-target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui harfbuzz::harfbuzz utf8cpp)
+target_link_libraries(font-render-tester PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui harfbuzz::harfbuzz utf8cpp)
 
-target_compile_features(main PRIVATE cxx_std_17)
+target_compile_features(font-render-tester PRIVATE cxx_std_17)
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSans-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansThai-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
