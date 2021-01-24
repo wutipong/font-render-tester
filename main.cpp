@@ -7,19 +7,20 @@
 #include "main_scene.hpp"
 #include "scene.hpp"
 
-constexpr int WIDTH = 800;
-constexpr int HEIGHT = 600;
-
 int main(int argc, char **argv) {
-  SDL_Init(SDL_INIT_EVERYTHING);
-  SDL_Window *window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
-                                        SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
-                                        SDL_WINDOW_RESIZABLE |SDL_WINDOW_ALLOW_HIGHDPI);
-  SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
-  SDL_Renderer *renderer;
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+  Context ctx{};
 
-  auto preferencePath = std::filesystem::path(SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
+  SDL_Init(SDL_INIT_EVERYTHING);
+
+  SDL_Window *window = SDL_CreateWindow(
+      "Test Window", ctx.windowBound.x, ctx.windowBound.y, ctx.windowBound.w,
+      ctx.windowBound.h, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+  SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
+
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+
+  auto preferencePath = std::filesystem::path(
+      SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
   auto imguiIni = preferencePath / "imgui.ini";
   std::string imguiIniStr = imguiIni.string();
 
@@ -44,29 +45,30 @@ int main(int argc, char **argv) {
 
   io.Fonts->Build();
 
-  ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
+  ImGuiSDL::Initialize(renderer, ctx.windowBound.w, ctx.windowBound.h);
   ImGui_ImplSDL2_Init(window);
 
-  Context c{renderer, SDL_Rect{}};
-
-  Scene::ChangeScene<MainScene>(c);
+  Scene::ChangeScene<MainScene>(ctx);
 
   while (true) {
+    ctx.renderer = renderer;
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);
       if (event.type == SDL_QUIT)
         break;
     }
-    SDL_GetWindowSize(window, &c.windowBound.w, &c.windowBound.h);
+    SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
-    SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
+    SDL_SetRenderDrawColor(renderer, ctx.backgroundColor.r,
+                           ctx.backgroundColor.g, ctx.backgroundColor.b,
+                           ctx.backgroundColor.a);
     SDL_RenderClear(renderer);
 
     ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 
-    Scene::TickCurrent(c);
+    Scene::TickCurrent(ctx);
 
     ImGui::Render();
     ImGuiSDL::Render(ImGui::GetDrawData());
