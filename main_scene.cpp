@@ -13,8 +13,8 @@
 
 bool MainScene::Init(Context &context) {
   dirChooser.SetTitle("Browse for font directory");
-  OnDirectorySelected(std::filesystem::absolute("fonts"));
-  dirChooser.SetPwd(currentDirectory);
+  OnDirectorySelected(context, context.fontPath);
+  dirChooser.SetPwd(context.fontPath);
 
   return true;
 }
@@ -25,7 +25,7 @@ void MainScene::Tick(Context &context) {
   {
     if (ImGui::CollapsingHeader("Font Directory",
                                 ImGuiTreeNodeFlags_DefaultOpen)) {
-      ImGui::Text(currentDirectory.c_str());
+      ImGui::Text(context.fontPath.c_str());
       if (ImGui::Button("Browse")) {
         dirChooser.Open();
       }
@@ -97,7 +97,7 @@ void MainScene::Tick(Context &context) {
 
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
-    OnDirectorySelected(dirChooser.GetSelected());
+    OnDirectorySelected(context, dirChooser.GetSelected());
     dirChooser.ClearSelected();
     newSelected = -1;
   }
@@ -135,13 +135,18 @@ void MainScene::Tick(Context &context) {
 
 void MainScene::Cleanup(Context &context) {}
 
-void MainScene::OnDirectorySelected(const std::filesystem::path &path) {
-  currentDirectory = path.string();
-  fontPaths = ListFontFiles(currentDirectory);
+void MainScene::OnDirectorySelected(Context& ctx, const std::filesystem::path &path) {
+  std::filesystem::path newPath = path;
+
+  if (!std::filesystem::exists(newPath)) {
+    newPath = std::filesystem::absolute("fonts");
+  }
+  ctx.fontPath = path.string();
+  fontPaths = ListFontFiles(ctx.fontPath);
 }
 
 std::vector<std::filesystem::path>
-MainScene::ListFontFiles(const std::string &path) {
+MainScene::ListFontFiles(const std::filesystem::path &path) {
   std::vector<std::filesystem::path> output;
   for (auto &p : std::filesystem::directory_iterator(path)) {
     if (!p.is_regular_file()) {

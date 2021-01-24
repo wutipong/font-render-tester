@@ -19,18 +19,16 @@ public:
   virtual void Tick(Context &context);
   virtual void Cleanup(Context &context);
 
-  void OnDirectorySelected(const std::filesystem::path &path);
+  void OnDirectorySelected(Context& context, const std::filesystem::path &path);
 
   static std::vector<std::filesystem::path>
-  ListFontFiles(const std::string &path);
+  ListFontFiles(const std::filesystem::path&path);
 
 private:
   std::array<char, 4096> buffer = {0};
   SDL_Color color = {0, 0, 0, 255};
   int fontSize = 64;
   bool isShape = false;
-
-  std::string currentDirectory = "<none>";
 
   int selectedFontIndex = -1;
   std::vector<std::filesystem::path> fontPaths;
