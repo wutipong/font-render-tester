@@ -44,12 +44,6 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
   const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
   while (true) {
-    if (ctx.debug) {
-      SDL_SetRenderDrawColor(ctx.renderer, ctx.debugLineColor.r,
-                             ctx.debugLineColor.g, ctx.debugLineColor.b,
-                             ctx.debugLineColor.a);
-      SDL_RenderDrawLine(ctx.renderer, 0, y, ctx.windowBound.w, y);
-    }
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
     std::u16string line(lineStart, lineEnd);
@@ -79,6 +73,13 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       x += g.advance;
     }
     hb_buffer_destroy(buffer);
+
+    if (ctx.debug) {
+      SDL_SetRenderDrawColor(ctx.renderer, ctx.debugLineColor.r,
+                             ctx.debugLineColor.g, ctx.debugLineColor.b,
+                             ctx.debugLineColor.a);
+      SDL_RenderDrawLine(ctx.renderer, 0, y, ctx.windowBound.w, y);
+    }
 
     if (lineEnd == u16str.end())
       break;
@@ -166,12 +167,6 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   const auto lineWidth = -ascend + descend + linegap;
 
   while (true) {
-    if (ctx.debug) {
-      SDL_SetRenderDrawColor(ctx.renderer, ctx.debugLineColor.r,
-                             ctx.debugLineColor.g, ctx.debugLineColor.b,
-                             ctx.debugLineColor.a);
-      SDL_RenderDrawLine(ctx.renderer, x, 0, x, ctx.windowBound.h);
-    }
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
     std::u16string line(lineStart, lineEnd);
@@ -203,6 +198,13 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     }
     hb_buffer_destroy(buffer);
 
+    if (ctx.debug) {
+      SDL_SetRenderDrawColor(ctx.renderer, ctx.debugLineColor.r,
+                             ctx.debugLineColor.g, ctx.debugLineColor.b,
+                             ctx.debugLineColor.a);
+      SDL_RenderDrawLine(ctx.renderer, x, 0, x, ctx.windowBound.h);
+    }
+
     if (lineEnd == u16str.end())
       break;
 
@@ -220,14 +222,14 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
     dst.x += x;
     dst.y = y + dst.y;
 
+    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
+
     if (ctx.debug) {
       SDL_SetRenderDrawColor(
           ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
           ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
       SDL_RenderDrawRect(ctx.renderer, &dst);
     }
-
-    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
   }
 }
 
@@ -241,13 +243,12 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
     dst.x += x + (hb_glyph_pos.x_offset * font.Scale());
     dst.y = y + dst.y - (hb_glyph_pos.y_offset * font.Scale());
 
+    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
     if (ctx.debug) {
       SDL_SetRenderDrawColor(
           ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
           ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
       SDL_RenderDrawRect(ctx.renderer, &dst);
     }
-
-    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
   }
 }
