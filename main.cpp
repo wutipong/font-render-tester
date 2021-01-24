@@ -26,17 +26,23 @@ int main(int argc, char **argv) {
 
   ImFontConfig config;
   config.MergeMode = true;
-  
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 20.0f, &config,
-                               io.Fonts->GetGlyphRangesJapanese());
+
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 20.0f,
+                               &config, io.Fonts->GetGlyphRangesJapanese());
   io.Fonts->AddFontFromFileTTF("fonts/NotoSansThai-Regular.ttf", 20.0f, &config,
-                               io.Fonts->GetGlyphRangesThai());  
+                               io.Fonts->GetGlyphRangesThai());
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKkr-Regular.otf", 20.0f,
+                               &config, io.Fonts->GetGlyphRangesKorean());
+  io.Fonts->AddFontFromFileTTF(
+      "fonts/NotoSansCJKsc-Regular.otf", 20.0f, &config,
+      io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+
   io.Fonts->Build();
 
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
   ImGui_ImplSDL2_Init(window);
 
-  Context c{ renderer, SDL_Rect{} };
+  Context c{renderer, SDL_Rect{}};
 
   Scene::ChangeScene<MainScene>(c);
 
