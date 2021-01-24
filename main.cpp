@@ -7,8 +7,17 @@
 #include "main_scene.hpp"
 #include "scene.hpp"
 
+constexpr char imguiIni[] = "imgui.ini";
+constexpr char contextJson[] = "context.json";
+
 int main(int argc, char **argv) {
   Context ctx{};
+  auto preferencePath = std::filesystem::path(
+      SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
+  auto imguiIniPath = preferencePath / imguiIni;
+  auto contextIniPath = preferencePath / contextJson;
+
+  LoadContext(ctx, contextIniPath);
 
   SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -17,12 +26,10 @@ int main(int argc, char **argv) {
       ctx.windowBound.h, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+  SDL_Renderer *renderer =
+      SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
-  auto preferencePath = std::filesystem::path(
-      SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
-  auto imguiIni = preferencePath / "imgui.ini";
-  std::string imguiIniStr = imguiIni.string();
+  std::string imguiIniStr = imguiIniPath.string();
 
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -76,6 +83,8 @@ int main(int argc, char **argv) {
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
+
+  SaveContext(ctx, contextIniPath);
 
   ImGui_ImplSDL2_Shutdown();
   ImGuiSDL::Deinitialize();
