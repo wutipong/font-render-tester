@@ -14,6 +14,8 @@
 bool MainScene::Init(Context &context) {
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(std::filesystem::absolute("fonts"));
+  dirChooser.SetPwd(currentDirectory);
+
   return true;
 }
 
