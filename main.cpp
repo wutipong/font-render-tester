@@ -19,8 +19,13 @@ int main(int argc, char **argv) {
   SDL_Renderer *renderer;
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
+  auto preferencePath = std::filesystem::path(SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
+  auto imguiIni = preferencePath / "imgui.ini";
+  std::string imguiIniStr = imguiIni.string();
+
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
+  io.IniFilename = imguiIniStr.c_str();
 
   io.Fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 20.0f);
 
