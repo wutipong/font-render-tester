@@ -218,7 +218,7 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
 }
 
 void Font::RenderText(Context &ctx, const std::string &str,
-                      const SDL_Color &color, const hb_script_t &script) {
+                      const glm::vec4 &color, const hb_script_t &script) {
   if (!IsValid())
     return;
   textRenderer(ctx, *this, str, color, script);

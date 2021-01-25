@@ -11,12 +11,13 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 
 enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
 
 typedef std::function<void(Context &ctx, Font &font, const std::string &str,
-                           const SDL_Color &, const hb_script_t &script)>
+                           const glm::vec4&, const hb_script_t &script)>
     TextRenderFunction;
 
 struct Glyph {
@@ -57,7 +58,7 @@ public:
 
   void SetTextRenderer(const TextRenderEnum &t);
 
-  void RenderText(Context &ctx, const std::string &str, const SDL_Color &,
+  void RenderText(Context &ctx, const std::string &str, const glm::vec4 &,
                   const hb_script_t &script);
 
 private:
