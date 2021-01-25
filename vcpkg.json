@@ -7,6 +7,9 @@
     "harfbuzz",
     "stb",
     "utfcpp",
-    "nlohmann-json"
+    "nlohmann-json",
+    "opengl",
+    "gl3w",
+    "glm"
   ]
 }

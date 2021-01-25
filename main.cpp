@@ -1,9 +1,10 @@
+#include <GL/gl3w.h>
 #include <SDL2/SDL.h>
 #include <imgui.h>
 
 #include "context.hpp"
+#include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
-#include "imgui_sdl/imgui_sdl.h"
 #include "main_scene.hpp"
 #include "scene.hpp"
 
@@ -21,17 +22,36 @@ int main(int argc, char **argv) {
 
   SDL_Init(SDL_INIT_EVERYTHING);
 
-  SDL_Window *window =
-      SDL_CreateWindow("font-render-tester", ctx.windowBound.x,
-                       ctx.windowBound.y, ctx.windowBound.w, ctx.windowBound.h,
-                       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+  const char *glsl_version = "#version 450";
+  SDL_GL_SetAttribute(
+      SDL_GL_CONTEXT_FLAGS,
+      SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+  SDL_Window *window = SDL_CreateWindow(
+      "font-render-tester", ctx.windowBound.x, ctx.windowBound.y,
+      ctx.windowBound.w, ctx.windowBound.h,
+      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
-  SDL_Renderer *renderer =
-      SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+  // SDL_Renderer *renderer =
+  //    SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
   std::string imguiIniStr = imguiIniPath.string();
 
+  SDL_GLContext glCtx = SDL_GL_CreateContext(window);
+  SDL_GL_MakeCurrent(window, glCtx);
+  SDL_GL_SetSwapInterval(1); // Enable vsync
+
+  gl3wInit();
+
+  IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   io.IniFilename = imguiIniStr.c_str();
@@ -53,13 +73,12 @@ int main(int argc, char **argv) {
 
   io.Fonts->Build();
 
-  ImGuiSDL::Initialize(renderer, ctx.windowBound.w, ctx.windowBound.h);
-  ImGui_ImplSDL2_Init(window);
+  ImGui_ImplSDL2_InitForOpenGL(window, glCtx);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   Scene::ChangeScene<MainScene>(ctx);
 
   while (true) {
-    ctx.renderer = renderer;
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
       ImGui_ImplSDL2_ProcessEvent(&event);
@@ -68,30 +87,37 @@ int main(int argc, char **argv) {
     }
     SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
-    SDL_SetRenderDrawColor(renderer, ctx.backgroundColor.r,
-                           ctx.backgroundColor.g, ctx.backgroundColor.b,
-                           ctx.backgroundColor.a);
-    SDL_RenderClear(renderer);
-
+    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 
-    Scene::TickCurrent(ctx);
+    Scene::Current()->DoUI(ctx);
 
     ImGui::Render();
-    ImGuiSDL::Render(ImGui::GetDrawData());
+    glClearColor(ctx.backgroundColor.r, ctx.backgroundColor.g,
+                 ctx.backgroundColor.b, ctx.backgroundColor.a);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    SDL_RenderPresent(renderer);
+    Scene::Current()->Tick(ctx);
+
+    glViewport(0, 0, ctx.windowBound.w, ctx.windowBound.h);
+    glDisable(GL_SCISSOR_TEST);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    SDL_GL_SwapWindow(window);
     SDL_Delay(1);
   }
 
   SaveContext(ctx, contextIniPath);
 
+  ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL2_Shutdown();
-  ImGuiSDL::Deinitialize();
   ImGui::DestroyContext();
 
+  SDL_GL_DeleteContext(glCtx);
   SDL_DestroyWindow(window);
   SDL_Quit();
+
   return 0;
 }
