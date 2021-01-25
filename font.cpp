@@ -39,7 +39,7 @@ Font::~Font() {
   hb_font = nullptr;
 
   for (auto &g : glyphMap) {
-    SDL_DestroyTexture(g.second.texture);
+    glDeleteTextures(1, &g.second.texture);
   }
 
   data.clear();
@@ -99,7 +99,12 @@ void Font::Initialize() {
   subFamily = names.second;
 }
 
-void Font::Invalidate() { glyphMap.clear(); }
+void Font::Invalidate() {
+  for (auto &g : glyphMap) {
+    glDeleteTextures(1, &g.second.texture);
+  }
+  glyphMap.clear();
+}
 
 void Font::SetFontSize(const int &size) {
   if (!IsValid())
@@ -127,7 +132,7 @@ void Font::LoadFile(const std::string &path, std::vector<char> &data) {
   file.close();
 }
 
-Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph Font::CreateGlyph(const int &index) {
   int bearing;
   int advance;
 
@@ -149,8 +154,7 @@ Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   stbtt_MakeGlyphBitmap(&font, bitmap, width, height, width, scale, scale,
                         index);
 
-  auto texture =
-      CreateTextureFromBitmap(renderer, format, bitmap, width, height);
+  auto texture = LoadTextureFromBitmap(bitmap, width, height);
 
   delete[] bitmap;
 
@@ -161,16 +165,16 @@ Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   return {texture, bound, advance, bearing};
 }
 
-Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+Glyph Font::CreateGlyphFromChar(const char16_t &ch) {
   auto index = stbtt_FindGlyphIndex(&font, ch);
 
-  return CreateGlyph(renderer, index);
+  return CreateGlyph(index);
 }
 
-Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph &Font::GetGlyph(const int &index) {
   auto iter = glyphMap.find(index);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyph(renderer, index);
+    Glyph g = CreateGlyph(index);
     auto [i, success] = glyphMap.insert({index, g});
 
     iter = i;
@@ -179,10 +183,10 @@ Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
   return iter->second;
 }
 
-Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+Glyph &Font::GetGlyphFromChar(const char16_t &ch) {
   auto iter = glyphMap.find(ch);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyphFromChar(renderer, ch);
+    Glyph g = CreateGlyphFromChar(ch);
     auto [i, success] = glyphMap.insert({ch, g});
 
     iter = i;

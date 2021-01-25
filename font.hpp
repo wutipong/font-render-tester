@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/gl3w.h>
 #include <SDL2/SDL.h>
 #include <harfbuzz/hb.h>
 #include <stb_truetype.h>
@@ -19,7 +20,7 @@ typedef std::function<void(Context &ctx, Font &font, const std::string &str,
     TextRenderFunction;
 
 struct Glyph {
-  SDL_Texture *texture;
+  GLuint texture;
   SDL_Rect bound;
   int advance;
   int bearing;
@@ -44,8 +45,8 @@ public:
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return !data.empty(); }
 
-  Glyph &GetGlyph(SDL_Renderer *renderer, const int &index);
-  Glyph &GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
+  Glyph &GetGlyph(const int &index);
+  Glyph &GetGlyphFromChar(const char16_t &index);
 
   float Scale() const { return scale; }
   float Ascend() const { return ascend; }
@@ -63,8 +64,8 @@ private:
   void Initialize();
   static void LoadFile(const std::string &path, std::vector<char> &data);
 
-  Glyph CreateGlyph(SDL_Renderer *renderer, const int &ch);
-  Glyph CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch);
+  Glyph CreateGlyph( const int &ch);
+  Glyph CreateGlyphFromChar(const char16_t &ch);
 
   std::vector<char> data{};
   stbtt_fontinfo font;

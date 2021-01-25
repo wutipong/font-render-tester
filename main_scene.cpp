@@ -20,7 +20,7 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(Context &context) {
-  /*
+  
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
     switch (directions[selectedDirection]) {
@@ -41,7 +41,6 @@ void MainScene::Tick(Context &context) {
 
   font.RenderText(context, std::string(buffer.data()), color,
                   scripts[selectedScript]);
-                  */
 }
 
 void MainScene::Cleanup(Context &context) {}
