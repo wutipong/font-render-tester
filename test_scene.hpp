@@ -12,7 +12,8 @@ public:
   virtual void DoUI(Context &context) override;
 
 private:
-  glm::vec4 lineColor = glm::vec4(1, 1, 1, 1);
-  glm::vec4 point1 = glm::vec4{ 0,0,1.0f,1.0f };
-  glm::vec4 point2 = glm::vec4{ WIDTH, HEIGHT, 1.0f, 1.0f };
+  glm::vec4 color1 = glm::vec4{1, 1, 1, 1};
+  glm::vec4 point1 = glm::vec4{0, 0, 1.0f, 1.0f};
+  glm::vec4 color2 = glm::vec4{1, 1, 1, 1};
+  glm::vec4 point2 = glm::vec4{WIDTH, HEIGHT, 1.0f, 1.0f};
 };
