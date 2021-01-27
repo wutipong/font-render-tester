@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scene.hpp"
-
+#include "GL/gl3w.h"
 #include "glm/glm.hpp"
 
 class TestScene : public Scene {
@@ -16,4 +16,11 @@ private:
   glm::vec4 point1 = glm::vec4{0, 0, 1.0f, 1.0f};
   glm::vec4 color2 = glm::vec4{1, 1, 1, 1};
   glm::vec4 point2 = glm::vec4{WIDTH, HEIGHT, 1.0f, 1.0f};
+
+  GLuint program;
+  GLuint vertShader;
+  GLuint fragShader;
+
+  GLuint vao;
+  GLuint vbo;
 };
