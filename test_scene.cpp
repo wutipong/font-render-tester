@@ -5,65 +5,68 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
 
-static const std::string vertShaderSrc =
-    "#version 150\n"
+#include "draw_rect.hpp"
 
-    "in  vec2 in_Position;"
-    "in  vec3 in_Color;"
+#include <chrono>
+#include <random>
 
-    "out vec3 ex_Color;"
+static std::vector<glm::vec2>
+RecreatePositions(const int &count, const int &width, const int &height) {
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
 
-    "void main(void) {"
-    "    gl_Position = vec4(in_Position.x, in_Position.y, 0.0, 1.0);"
+  std::vector<glm::vec2> output;
+  output.resize(count);
 
-    "    ex_Color = in_Color;"
-    "}";
+  std::uniform_real_distribution<float> xGen(0, width);
+  std::uniform_real_distribution<float> yGen(0, height);
 
-static const std::string fragShaderSrc =
-    "#version 150\n"
+  for (auto &v : output) {
+    v.x = xGen(generator);
+    v.y = yGen(generator);
+  }
 
-    "precision highp float;"
-
-    "in  vec3 ex_Color;"
-    "out vec4 gl_FragColor;"
-
-    "void main(void) {"
-    "    gl_FragColor = vec4(ex_Color, 1.0);"
-    "}";
+  return output;
+}
 
 bool TestScene::Init(Context &ctx) {
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc.c_str();
-  glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(vertShader);
-
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc.c_str();
-  glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(fragShader);
-
-  program = glCreateProgram();
-  glAttachShader(program, vertShader);
-  glAttachShader(program, fragShader);
+  positions = RecreatePositions(count, ctx.windowBound.w, ctx.windowBound.h);
+  
+  InitDrawRect();
 
   return true;
 };
 
 void TestScene::Tick(Context &ctx) {
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   glClearColor(ctx.backgroundColor.r, ctx.backgroundColor.g,
                ctx.backgroundColor.b, ctx.backgroundColor.a);
   glClear(GL_COLOR_BUFFER_BIT);
+
+  for (auto &v : positions) {
+      DrawRect(v.x, v.y, w, h, color, ctx.windowBound.w, ctx.windowBound.h);
+  }
 };
-void TestScene::Cleanup(Context &context){};
+
+void TestScene::Cleanup(Context &context) {
+    CleanUpDrawRect();
+};
+
 void TestScene::DoUI(Context &context) {
   ImGui::Begin("Input");
   {
-    ImGui::InputFloat4("Point 1", glm::value_ptr(point1), 2);
-    ImGui::ColorEdit4("Color 1", glm::value_ptr(color1),
+    if (ImGui::SliderInt("Count", &count, 1, 1000)) {
+      positions = RecreatePositions(count, context.windowBound.w,
+                                    context.windowBound.h);
+    }
+    ImGui::ColorEdit4("Color", glm::value_ptr(color),
                       ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar);
-    ImGui::InputFloat4("Point 2", glm::value_ptr(point2), 2);
-    ImGui::ColorEdit4("Color 2", glm::value_ptr(color2),
-                      ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar);
+
+    ImGui::SliderFloat("Width", &w, 0, 2000);
+    ImGui::SliderFloat("Height", &h, 0, 2000);
   }
   ImGui::End();
 };

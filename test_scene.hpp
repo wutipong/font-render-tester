@@ -1,8 +1,8 @@
 #pragma once
 
-#include "scene.hpp"
-#include "GL/gl3w.h"
 #include "glm/glm.hpp"
+#include "scene.hpp"
+#include <vector>
 
 class TestScene : public Scene {
 public:
@@ -12,15 +12,11 @@ public:
   virtual void DoUI(Context &context) override;
 
 private:
-  glm::vec4 color1 = glm::vec4{1, 1, 1, 1};
-  glm::vec4 point1 = glm::vec4{0, 0, 1.0f, 1.0f};
-  glm::vec4 color2 = glm::vec4{1, 1, 1, 1};
-  glm::vec4 point2 = glm::vec4{WIDTH, HEIGHT, 1.0f, 1.0f};
+  glm::vec4 color = glm::vec4{1, 0, 1, 1};
+  float w = 200;
+  float h = 300;
 
-  GLuint program;
-  GLuint vertShader;
-  GLuint fragShader;
+  int count = 10;
 
-  GLuint vao;
-  GLuint vbo;
+  std::vector<glm::vec2> positions;
 };
