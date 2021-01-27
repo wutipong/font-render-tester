@@ -35,12 +35,12 @@ SDL_Texture *CreateTextureFromBitmap(SDL_Renderer *renderer,
 
 GLuint LoadTextureFromBitmap(unsigned char *bitmap, const int &width,
                              const int &height) {
+  if (width == 0 || height == 0) {
+    return 0;
+  }
+
   GLuint texture;
   glGenTextures(1, &texture);
-
-  if (width == 0 || height == 0) {
-    return texture;
-  }
 
   glBindTexture(GL_TEXTURE_2D, texture);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
