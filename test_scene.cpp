@@ -6,6 +6,7 @@
 #include "imgui.h"
 
 #include "draw_rect.hpp"
+#include "draw_glyph.hpp"
 
 #include <chrono>
 #include <random>
@@ -33,6 +34,7 @@ bool TestScene::Init(Context &ctx) {
   positions = RecreatePositions(count, ctx.windowBound.w, ctx.windowBound.h);
   
   InitDrawRect();
+  InitDrawGlyph();
 
   return true;
 };
@@ -52,6 +54,7 @@ void TestScene::Tick(Context &ctx) {
 };
 
 void TestScene::Cleanup(Context &context) {
+    CleanUpDrawGlyph();
     CleanUpDrawRect();
 };
 
