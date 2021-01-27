@@ -94,6 +94,7 @@ int main(int argc, char **argv) {
 
     Scene::Current()->DoUI(ctx);
 
+    ImGui::EndFrame();
     ImGui::Render();
 
     Scene::Current()->Tick(ctx);
