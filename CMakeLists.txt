@@ -13,7 +13,7 @@ add_executable(font-render-tester
 	"texture.hpp" "texture.cpp" 
 	"main_scene.hpp" "main_scene.cpp" 
 	"font.cpp" "font.hpp" 
-	"text_renderer.hpp" "text_renderer.cpp" "context.cpp")
+	"text_renderer.hpp" "text_renderer.cpp" "context.cpp" "test_scene.cpp")
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
