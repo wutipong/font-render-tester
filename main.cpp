@@ -6,6 +6,7 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
 #include "main_scene.hpp"
+#include "test_scene.hpp"
 #include "scene.hpp"
 
 constexpr char imguiIni[] = "imgui.ini";
@@ -76,7 +77,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, glCtx);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  Scene::ChangeScene<MainScene>(ctx);
+  Scene::ChangeScene<TestScene>(ctx);
 
   while (true) {
     SDL_Event event;
@@ -94,9 +95,6 @@ int main(int argc, char **argv) {
     Scene::Current()->DoUI(ctx);
 
     ImGui::Render();
-    glClearColor(ctx.backgroundColor.r, ctx.backgroundColor.g,
-                 ctx.backgroundColor.b, ctx.backgroundColor.a);
-    glClear(GL_COLOR_BUFFER_BIT);
 
     Scene::Current()->Tick(ctx);
 
