@@ -15,9 +15,9 @@ struct Context {
   bool debug = false;
   std::string fontPath = std::filesystem::absolute("fonts").string();
 
-  const SDL_Color debugGlyphBoundColor = {0xff, 0xff, 0x80, 0xff};
-  const SDL_Color debugLineColor = {0x80, 0xff, 0x80, 0xff};
-  const glm::vec4 backgroundColor = { 0.313725501f, 0.509803951f, 0.666666687f, 1.0f };
+  const glm::vec4 debugGlyphBoundColor = {1.0f, 1.0f, 0.5f, 1.0f};
+  const glm::vec4 debugLineColor = {0.5f, 1.0f, 0.5f, 1.0f};
+  const glm::vec4 backgroundColor = {1/3.0f, 0.5f, 2/3.0f, 1.0f };
 };
 
 void SaveContext(const Context& ctx, const std::filesystem::path& path);

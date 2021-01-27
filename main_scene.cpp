@@ -12,6 +12,8 @@
 #include "text_renderer.hpp"
 
 bool MainScene::Init(Context &context) {
+
+  InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
   dirChooser.SetPwd(context.fontPath);
@@ -20,7 +22,7 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(Context &context) {
-  /*
+
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
     switch (directions[selectedDirection]) {
@@ -41,10 +43,9 @@ void MainScene::Tick(Context &context) {
 
   font.RenderText(context, std::string(buffer.data()), color,
                   scripts[selectedScript]);
-                  */
 }
 
-void MainScene::Cleanup(Context &context) {}
+void MainScene::Cleanup(Context &context) { CleanUpTextRenderers(); }
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
@@ -105,13 +106,13 @@ void MainScene::DoUI(Context &context) {
         }
       }
 
-      float c[3]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
+      float c[3]{color.r, color.g, color.b};
 
       ImGui::ColorPicker3("color", c, ImGuiColorEditFlags_InputRGB);
-      color.r = c[0] * 255;
-      color.g = c[1] * 255;
-      color.b = c[2] * 255;
-      color.a = 255;
+      color.r = c[0];
+      color.g = c[1];
+      color.b = c[2];
+      color.a = 1.0f;
 
       ImGui::Checkbox("Debug", &context.debug);
     }

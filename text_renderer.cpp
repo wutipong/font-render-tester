@@ -3,9 +3,115 @@
 #include <utf8/cpp11.h>
 
 #include "font.hpp"
+#include <cstring>
+
+static const std::string glyphFrag =
+    "#version 450 core \n"
+    "out vec4 FragColor; "
+    "in vec2 TexCoord; "
+
+    "layout(binding = 0) uniform sampler2D alphaMap; "
+    "uniform vec4 glyphColor; "
+
+    "void main() { "
+    "    float alpha = texture(alphaMap, TexCoord).r; "
+
+    "    FragColor = glyphColor; "
+    "    FragColor.a = glyphColor.a * alpha; "
+    "}";
+
+static const std::string glyphVert =
+    "#version 450 core \n"
+
+    "layout(location = 0) in vec3 aPos; "
+    "layout(location = 1) in vec2 aTexCoord; "
+
+    "layout(location = 0) uniform vec2 screen; "
+    "layout(location = 1) uniform mat4 glyphTransform; "
+    "layout(location = 2) uniform mat4 transform; "
+
+    "out vec2 TexCoord; "
+
+    "void main() { "
+    "    vec4 pos = glyphTransform * vec4(aPos, 1.0f); "
+    "    pos = transform * pos; "
+
+    "    vec2 halfScreen = screen / 2; "
+
+    "    gl_Position = vec4((pos.x - halfScreen.x) / halfScreen.x, "
+    "        (pos.y - halfScreen.y) / halfScreen.y, pos.z, pos.w); "
+
+    "    TexCoord = aTexCoord; "
+    "} ";
+
+static const float vertices[] = {0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+
+                                 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+
+                                 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+
+                                 0.0f, 1.0f, 0.0f, 0.0f, 0.0f};
+
+static const GLubyte indices[] = {0, 1, 2,
+
+                                  2, 3, 0};
+
+static GLuint program;
+static GLuint vertexShader;
+static GLuint fragmentShader;
+static GLuint colorUniform;
+
+static GLuint ReadShader(const GLenum &shaderType, const std::string &src) {
+  auto shader = glCreateShader(shaderType);
+
+  GLint size = src.size();
+  const GLchar *code = src.c_str();
+
+  glShaderSource(shader, 1, &code, &size);
+  glCompileShader(shader);
+
+  GLint result;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+
+  if (result == GL_FALSE) {
+    GLint length;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+    std::vector<GLchar> log;
+    log.reserve(length);
+
+    glGetShaderInfoLog(shader, length, nullptr, log.data());
+
+    SDL_Log("Compile results: %s", log.data());
+
+    throw "error";
+  }
+
+  return shader;
+}
+
+void InitTextRenderers() {
+  vertexShader = ReadShader(GL_VERTEX_SHADER, glyphVert);
+  fragmentShader = ReadShader(GL_FRAGMENT_SHADER, glyphFrag);
+
+  program = glCreateProgram();
+
+  glAttachShader(program, vertexShader);
+  glAttachShader(program, fragmentShader);
+  glLinkProgram(program);
+
+  glUseProgram(program);
+  colorUniform = glGetUniformLocation(program, "glyphColor");
+}
+
+void CleanUpTextRenderers() {
+  glDeleteProgram(program);
+  glDeleteShader(fragmentShader);
+  glDeleteShader(vertexShader);
+}
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
-                       const SDL_Color &color, const hb_script_t &script) {
+                       const glm::vec4& color, const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -27,14 +133,14 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
       SDL_RenderDrawLine(ctx.renderer, 0, y, ctx.windowBound.w, y);
     }
 
-    auto &g = font.GetGlyphFromChar(ctx.renderer, u);
+    auto &g = font.GetGlyphFromChar(u);
     DrawGlyph(ctx, font, g, color, x, y);
     x += g.advance;
   }
 }
 
 void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
-                           const SDL_Color &color, const hb_script_t &script) {
+                           const glm::vec4& color, const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -68,7 +174,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(ctx.renderer, index);
+      auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
@@ -90,7 +196,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
-                           const SDL_Color &color, const hb_script_t &script) {
+                           const glm::vec4 &color, const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -134,7 +240,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(ctx.renderer, index);
+      auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x -= glyph_positions[i].x_advance * font.Scale();
     }
@@ -149,7 +255,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
-                           const SDL_Color &color, const hb_script_t &script) {
+                           const glm::vec4 &color, const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -191,7 +297,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(ctx.renderer, index);
+      auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
       y -= roundf(glyph_positions[i].y_advance * font.Scale());
@@ -214,41 +320,51 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
 }
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y) {
-  if (g.texture != nullptr) {
-    SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+               const glm::vec4 &color, const int &x, const int &y) {
+  if (g.bound.w == 0 || g.bound.h == 0)
+    return;
 
-    SDL_Rect dst = g.bound;
-    dst.x += x;
-    dst.y = y + dst.y;
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
 
-    if (ctx.debug) {
-      SDL_SetRenderDrawColor(
-          ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
-          ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
-      SDL_RenderDrawRect(ctx.renderer, &dst);
-    }
-  }
+  glUniform4f(colorUniform, color.r, color.g, color.b, color.a);
+
+  SDL_Rect dst = g.bound;
+  dst.x += x;
+  dst.y = y + dst.y;
+
+  // SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
+
+  /* if (ctx.debug) {
+    SDL_SetRenderDrawColor(
+        ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
+        ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+    SDL_RenderDrawRect(ctx.renderer, &dst);
+  } */
 }
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y,
+               const glm::vec4 &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
-  if (g.texture != nullptr) {
-    SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
+  if (g.bound.w == 0 || g.bound.h == 0)
+    return;
 
-    SDL_Rect dst = g.bound;
-    dst.x += x + (hb_glyph_pos.x_offset * font.Scale());
-    dst.y = y + dst.y - (hb_glyph_pos.y_offset * font.Scale());
+  glUniform4f(colorUniform, color.r, color.g, color.b, color.a);
 
-    SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
-    if (ctx.debug) {
-      SDL_SetRenderDrawColor(
-          ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
-          ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
-      SDL_RenderDrawRect(ctx.renderer, &dst);
-    }
-  }
+  SDL_Rect dst = g.bound;
+  dst.x += x + (hb_glyph_pos.x_offset * font.Scale());
+  dst.y = y + dst.y - (hb_glyph_pos.y_offset * font.Scale());
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // SDL_RenderCopy(ctx.renderer, g.texture, nullptr, &dst);
+  /* if (ctx.debug) {
+    SDL_SetRenderDrawColor(
+        ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
+        ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+    SDL_RenderDrawRect(ctx.renderer, &dst);
+  } */
+
 }
