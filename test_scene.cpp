@@ -39,7 +39,7 @@ bool TestScene::Init(Context &ctx) {
   font = { "fonts/NotoSans-Regular.ttf" };
   font.SetFontSize(256);
 
-  glyph = font.GetGlyphFromChar('j');
+  glyph = font.GetGlyphFromChar('^');
 
   return true;
 };

@@ -23,6 +23,12 @@ bool MainScene::Init(Context &context) {
 
 void MainScene::Tick(Context &context) {
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glClearColor(context.backgroundColor.r, context.backgroundColor.g,
+               context.backgroundColor.b, context.backgroundColor.a);
+  glClear(GL_COLOR_BUFFER_BIT);
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
     switch (directions[selectedDirection]) {

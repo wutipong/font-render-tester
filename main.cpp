@@ -41,9 +41,6 @@ int main(int argc, char **argv) {
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
-  // SDL_Renderer *renderer =
-  //    SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
   std::string imguiIniStr = imguiIniPath.string();
 
   SDL_GLContext glCtx = SDL_GL_CreateContext(window);
@@ -77,7 +74,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, glCtx);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  Scene::ChangeScene<TestScene>(ctx);
+  Scene::ChangeScene<MainScene>(ctx);
 
   while (true) {
     SDL_Event event;
