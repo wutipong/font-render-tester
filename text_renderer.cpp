@@ -207,7 +207,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     hb_buffer_destroy(buffer);
 
     if (ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
+      DrawRect(x, 0, x, ctx.windowBound.h, ctx.debugLineColor,
                ctx.windowBound.w, ctx.windowBound.h);
     }
 
@@ -233,12 +233,12 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const glm::vec4 &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
   DrawGlyph(g, x + (hb_glyph_pos.x_offset * font.Scale()),
-            y - (hb_glyph_pos.y_offset * font.Scale()), color,
+            y + (hb_glyph_pos.y_offset * font.Scale()), color,
             ctx.windowBound.w, ctx.windowBound.h);
 
   if (ctx.debug) {
     DrawRect(x + (hb_glyph_pos.x_offset * font.Scale()) + g.bound.x,
-             y - (hb_glyph_pos.y_offset * font.Scale()) + g.bound.y, g.bound.w,
+             y + (hb_glyph_pos.y_offset * font.Scale()) + g.bound.y, g.bound.w,
              g.bound.h, ctx.debugGlyphBoundColor, ctx.windowBound.w,
              ctx.windowBound.h);
   }
