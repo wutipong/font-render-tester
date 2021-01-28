@@ -1,7 +1,4 @@
 
-[submodule "imgui_sdl"]
-	path = imgui_sdl
-	url = https://github.com/Tyyppi77/imgui_sdl.git
 [submodule "imgui-filebrowser"]
 	path = imgui-filebrowser
 	url = https://github.com/AirGuanZ/imgui-filebrowser
