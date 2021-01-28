@@ -9,7 +9,6 @@ constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
 
 struct Context {
-  SDL_Renderer *renderer = nullptr;
   SDL_Rect windowBound = {SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                           WIDTH, HEIGHT};
   bool debug = false;
