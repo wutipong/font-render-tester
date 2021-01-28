@@ -13,7 +13,7 @@ add_executable(font-render-tester
 	"texture.hpp" "texture.cpp" 
 	"main_scene.hpp" "main_scene.cpp" 
 	"font.cpp" "font.hpp" 
-	"text_renderer.hpp" "text_renderer.cpp" "context.cpp" "test_scene.cpp" "draw_rect.cpp" "draw_glyph.hpp" "draw_glyph.cpp")
+	"text_renderer.hpp" "text_renderer.cpp" "context.cpp" "test_scene.cpp" "draw_rect.cpp" "draw_glyph.hpp" "draw_glyph.cpp" "io_util.hpp")
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
@@ -35,3 +35,8 @@ file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansThai-Regular.ttf" DESTINATI
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKjp-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKkr-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKsc-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders/draw_rect.vert" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders/draw_rect.frag" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders/draw_glyph.vert" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders/draw_glyph.frag" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders")

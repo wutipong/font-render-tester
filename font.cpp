@@ -1,6 +1,4 @@
 #include "font.hpp"
-#include <fstream>
-#include <streambuf>
 
 #include "text_renderer.hpp"
 #include "texture.hpp"
@@ -9,10 +7,12 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_truetype.h>
 
+#include "io_util.hpp"
+
 Font::Font(){};
 
 Font::Font(const std::string &path) : textRenderer(TextRenderNoShape) {
-  Font::LoadFile(path, data);
+  LoadFile(path, data, std::ios::in | std::ios::binary);
   Initialize();
 }
 
@@ -121,15 +121,6 @@ void Font::SetFontSize(const int &size) {
   ascend = roundf(scale * rawAscend);
   descend = roundf(scale * rawDescend);
   linegap = roundf(scale * rawLineGap);
-}
-
-void Font::LoadFile(const std::string &path, std::vector<char> &data) {
-  std::basic_ifstream<char> file(path, std::ios::in | std::ios::binary);
-
-  data = {std::istreambuf_iterator<char>(file),
-          std::istreambuf_iterator<char>()};
-
-  file.close();
 }
 
 Glyph Font::CreateGlyph(const int &index) {

@@ -5,49 +5,7 @@
 #include <GL/gl3w.h>
 #include <glm/gtc/type_ptr.hpp>
 
-static const char vertShaderSrc[] =
-    "#version 450 core\n"
-
-    "layout(location = 0) in vec3 aPos;"
-    "layout(location = 1) in vec2 aTexCoord;"
-
-    "layout(location = 0) uniform vec2 screen;"
-    "layout(location = 1) uniform mat4 glyphTransform;"
-    "layout(location = 2) uniform mat4 transform;"
-    "layout(location = 3) uniform vec4 color;"
-
-    "out vec2 TexCoord;"
-    "out vec4 exColor;"
-
-    "void main() {"
-    "    vec4 pos = glyphTransform * vec4(aPos, 1.0f);"
-    "    pos = transform * pos;"
-
-    "    vec2 halfScreen = screen / 2;"
-
-    "    gl_Position = vec4((pos.x - halfScreen.x) / halfScreen.x,"
-    "                       (pos.y - halfScreen.y) / halfScreen.y, pos.z, "
-    "pos.w);"
-
-    "    TexCoord = aTexCoord;"
-    "    exColor = color;"
-    "}";
-
-static const char fragShaderSrc[] =
-    "#version 450 core\n"
-    "out vec4 FragColor;"
-
-    "in vec2 TexCoord;"
-    "in vec4 exColor;"
-
-    "layout(binding = 0) uniform sampler2D alphaMap;"
-
-    "void main() {"
-    "    float alpha = texture(alphaMap, TexCoord).r;"
-
-    "    FragColor = exColor;"
-    "    FragColor.a = exColor.a * alpha;"
-    "}";
+#include "io_util.hpp"
 
 static GLuint program;
 static GLuint vertShader;
@@ -58,13 +16,17 @@ static GLuint vbo;
 static GLuint ibo;
 
 void InitDrawGlyph() {
+  std::string vertShaderSrc;
+  LoadFile("shaders/draw_glyph.vert", vertShaderSrc);
   vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc;
+  auto src = vertShaderSrc.c_str();
   glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
   glCompileShader(vertShader);
 
+  std::string fragShaderSrc;
+  LoadFile("shaders/draw_glyph.frag", fragShaderSrc);
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc;
+  src = fragShaderSrc.c_str();
   glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
   glCompileShader(fragShader);
 

@@ -1,39 +1,9 @@
 #include "draw_rect.hpp"
 
+#include "io_util.hpp"
 #include <GL/gl3w.h>
 #include <glm/gtc/type_ptr.hpp>
-
-static const char vertShaderSrc[] =
-    "#version 450 core\n"
-
-    "layout(location = 0) in vec2 in_Position;"
-
-    "layout(location = 0) uniform vec2 screen;"
-    "layout(location = 1) uniform vec4 in_Color;"
-    "layout(location = 2) uniform mat4 transform;"
-
-    "out vec4 ex_Color;"
-
-    "void main(void) {"
-    "    vec4 pos = transform * vec4(in_Position.x, in_Position.y, 0.0, 1.0);"
-
-    "    vec2 halfScreen = screen / 2;"
-    "    gl_Position = vec4((pos.x - halfScreen.x) / halfScreen.x,"
-    "                       (pos.y - halfScreen.y) / halfScreen.y, pos.z, pos.w); "
-
-    "    ex_Color = in_Color;"
-    "}";
-
-static const char fragShaderSrc[] = "#version 450 core\n"
-
-                                    "precision highp float;"
-
-                                    "in  vec4 ex_Color;"
-                                    "out vec4 gl_FragColor;"
-
-                                    "void main(void) {"
-                                    "    gl_FragColor = ex_Color;"
-                                    "}";
+#include <string>
 
 static GLuint program;
 static GLuint vertShader;
@@ -43,13 +13,17 @@ static GLuint vao;
 static GLuint vbo;
 
 void InitDrawRect() {
+  std::string vertShaderSrc;
+  LoadFile("shaders/draw_rect.vert", vertShaderSrc);
   vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc;
+  auto src = vertShaderSrc.c_str();
   glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
   glCompileShader(vertShader);
 
+  std::string fragShaderSrc;
+  LoadFile("shaders/draw_rect.frag", fragShaderSrc);
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc;
+  src = fragShaderSrc.c_str();
   glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
   glCompileShader(fragShader);
 

@@ -63,7 +63,6 @@ public:
 
 private:
   void Initialize();
-  static void LoadFile(const std::string &path, std::vector<char> &data);
 
   Glyph CreateGlyph( const int &ch);
   Glyph CreateGlyphFromChar(const char16_t &ch);
