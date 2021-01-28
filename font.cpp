@@ -158,7 +158,7 @@ Glyph Font::CreateGlyph(const int &index) {
 
   delete[] bitmap;
 
-  SDL_Rect bound{x1, y1, width, height};
+  SDL_Rect bound{x1, -y2, width, height};
 
   SDL_FreeFormat(format);
 

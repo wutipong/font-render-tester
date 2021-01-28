@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 #include "scene.hpp"
+#include "font.hpp"
 #include <vector>
 
 class TestScene : public Scene {
@@ -19,4 +20,7 @@ private:
   int count = 10;
 
   std::vector<glm::vec2> positions;
+
+  Font font;
+  Glyph glyph;
 };

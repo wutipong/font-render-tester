@@ -36,6 +36,11 @@ bool TestScene::Init(Context &ctx) {
   InitDrawRect();
   InitDrawGlyph();
 
+  font = { "fonts/NotoSans-Regular.ttf" };
+  font.SetFontSize(256);
+
+  glyph = font.GetGlyphFromChar('j');
+
   return true;
 };
 
@@ -50,6 +55,7 @@ void TestScene::Tick(Context &ctx) {
 
   for (auto &v : positions) {
       DrawRect(v.x, v.y, w, h, color, ctx.windowBound.w, ctx.windowBound.h);
+      DrawGlyph(glyph, v.x, v.y, color, ctx.windowBound.w, ctx.windowBound.h);
   }
 };
 

@@ -19,8 +19,8 @@ static const char vertShaderSrc[] =
 
     "    vec2 halfScreen = screen / 2;"
     "    gl_Position = vec4((pos.x - halfScreen.x) / halfScreen.x,"
-    "                       (pos.y - halfScreen.y) / halfScreen.y, pos.z, "
-    "pos.w); "
+    "                       (pos.y - halfScreen.y) / halfScreen.y, pos.z, pos.w); "
+
     "    ex_Color = in_Color;"
     "}";
 

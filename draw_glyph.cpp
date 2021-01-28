@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 static const char vertShaderSrc[] =
-    "#version 450 core"
+    "#version 450 core\n"
 
     "layout(location = 0) in vec3 aPos;"
     "layout(location = 1) in vec2 aTexCoord;"
@@ -14,7 +14,7 @@ static const char vertShaderSrc[] =
     "layout(location = 0) uniform vec2 screen;"
     "layout(location = 1) uniform mat4 glyphTransform;"
     "layout(location = 2) uniform mat4 transform;"
-    "layout(location = 3) unicorm vec4 color;"
+    "layout(location = 3) uniform vec4 color;"
 
     "out vec2 TexCoord;"
     "out vec4 exColor;"
@@ -26,9 +26,11 @@ static const char vertShaderSrc[] =
     "    vec2 halfScreen = screen / 2;"
 
     "    gl_Position = vec4((pos.x - halfScreen.x) / halfScreen.x,"
-    "        (pos.y - halfScreen.y) / halfScreen.y, pos.z, pos.w);"
+    "                       (pos.y - halfScreen.y) / halfScreen.y, pos.z, "
+    "pos.w);"
 
     "    TexCoord = aTexCoord;"
+    "    exColor = color;"
     "}";
 
 static const char fragShaderSrc[] =
@@ -44,7 +46,7 @@ static const char fragShaderSrc[] =
     "    float alpha = texture(alphaMap, TexCoord).r;"
 
     "    FragColor = exColor;"
-    "    FragColor.a = glyphColor.a * alpha;"
+    "    FragColor.a = exColor.a * alpha;"
     "}";
 
 static GLuint program;
@@ -118,6 +120,7 @@ void CleanUpDrawGlyph() {
 void DrawGlyph(const Glyph &glyph, const float &x, const float &y,
                const glm::vec4 &color, const int &screenWidth,
                const int &screenHeight) {
+
   glUseProgram(program);
 
   glEnable(GL_BLEND);
@@ -126,12 +129,12 @@ void DrawGlyph(const Glyph &glyph, const float &x, const float &y,
   glBindTexture(GL_TEXTURE_2D, glyph.texture);
 
   glm::mat4 transform =
-      glm::scale(glm::translate(glm::identity<glm::mat4>(), glm::vec3(x, y, 0)),
-                 glm::vec3(glyph.bound.w, glyph.bound.h, 1.0f));
+      glm::translate(glm::identity<glm::mat4>(), glm::vec3(x, y, 0));
 
-  glm::mat4 glyphTransform{1.0f};
-  glyphTransform = glm::translate(
-      glyphTransform, glm::vec3(glyph.bound.x, glyph.bound.y, 0.0f));
+  glm::mat4 glyphTransform =
+      glm::scale(glm::translate(glm::identity<glm::mat4>(),
+                                glm::vec3(glyph.bound.x, glyph.bound.y, 0.0f)),
+                 glm::vec3(glyph.bound.w, glyph.bound.h, 1.0f));
 
   glUniform2f(0, screenWidth, screenHeight);
   glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(glyphTransform));
