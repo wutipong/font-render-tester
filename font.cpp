@@ -9,30 +9,16 @@
 
 #include "io_util.hpp"
 
-Font::Font(){};
-
-Font::Font(const std::string &path) : textRenderer(TextRenderNoShape) {
-  LoadFile(path, data, std::ios::in | std::ios::binary);
-  Initialize();
-}
-
-Font::Font(const Font &f) : Font(f.data) {}
-
-Font::Font(const std::vector<char> &data)
-    : data(data.begin(), data.end()), textRenderer(TextRenderNoShape) {
-  Initialize();
-}
+Font::Font() : textRenderer(TextRenderNoShape){};
 
 Font &Font::operator=(const Font &f) {
   data = f.data;
-  family = "";
-  subFamily = "";
-  textRenderer = TextRenderNoShape;
-
   Initialize();
 
   return *this;
 }
+
+Font::Font(const Font &f) : data(f.data) { Initialize(); }
 
 Font::~Font() {
   hb_font_destroy(hb_font);
@@ -43,6 +29,16 @@ Font::~Font() {
   }
 
   data.clear();
+}
+
+bool Font::LoadFile(const std::string &path) {
+  ::LoadFile(path, data, std::ios::in | std::ios::binary);
+  return Initialize();
+}
+
+bool Font::Load(const std::vector<char> &data) {
+  Font::data = data;
+  return Initialize();
 }
 
 static std::string ConvertFromFontString(const char *str, const int &length) {
@@ -76,11 +72,20 @@ GetFontName(const stbtt_fontinfo &font) {
   return {family, sub};
 }
 
-void Font::Initialize() {
+bool Font::Initialize() {
   if (!IsValid())
-    return;
+    return true;
 
-  stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()), 0);
+  family = "";
+  subFamily = "";
+  textRenderer = TextRenderNoShape;
+  textRendererEnum = TextRenderEnum::NoShape;
+
+  if (stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()),
+                     0) == 0) {
+    data.clear();
+    return false;
+  }
 
   hb_blob_t *blob =
       hb_blob_create(reinterpret_cast<char *>(data.data()), data.size(),
@@ -97,6 +102,8 @@ void Font::Initialize() {
   auto names = GetFontName(font);
   family = names.first;
   subFamily = names.second;
+
+  return true;
 }
 
 void Font::Invalidate() {

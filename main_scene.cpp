@@ -141,7 +141,7 @@ void MainScene::DoUI(Context &context) {
     if (selectedFontIndex == -1) {
       font = Font();
     } else {
-      font = Font(fontPaths[selectedFontIndex].string());
+      font.LoadFile(fontPaths[selectedFontIndex].string());
     }
   }
 }

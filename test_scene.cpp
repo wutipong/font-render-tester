@@ -36,7 +36,7 @@ bool TestScene::Init(Context &ctx) {
   InitDrawRect();
   InitDrawGlyph();
 
-  font = { "fonts/NotoSans-Regular.ttf" };
+  font.LoadFile("fonts/NotoSans-Regular.ttf");
   font.SetFontSize(256);
 
   glyph = font.GetGlyphFromChar('^');

@@ -30,13 +30,14 @@ struct Glyph {
 class Font {
 public:
   Font();
-  Font(const std::string &path);
-  Font(const std::vector<char> &data);
   Font(const Font &f);
 
   Font &operator=(const Font &f);
 
   ~Font();
+
+  bool LoadFile(const std::string& path);
+  bool Load(const std::vector<char>& data);
 
   void Invalidate();
 
@@ -62,7 +63,7 @@ public:
                   const hb_script_t &script);
 
 private:
-  void Initialize();
+  bool Initialize();
 
   Glyph CreateGlyph(const int &ch);
   Glyph CreateGlyphFromChar(const char16_t &ch);
