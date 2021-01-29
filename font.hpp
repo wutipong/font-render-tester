@@ -7,17 +7,17 @@
 
 #include "context.hpp"
 #include <functional>
+#include <glm/glm.hpp>
 #include <iterator>
 #include <map>
 #include <string>
 #include <vector>
-#include <glm/glm.hpp>
 
 enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
 
 typedef std::function<void(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4&, const hb_script_t &script)>
+                           const glm::vec4 &, const hb_script_t &script)>
     TextRenderFunction;
 
 struct Glyph {
@@ -64,11 +64,11 @@ public:
 private:
   void Initialize();
 
-  Glyph CreateGlyph( const int &ch);
+  Glyph CreateGlyph(const int &ch);
   Glyph CreateGlyphFromChar(const char16_t &ch);
 
   std::vector<char> data{};
-  stbtt_fontinfo font;
+  stbtt_fontinfo font{};
 
   int fontSize{-1};
   hb_font_t *hb_font{nullptr};
@@ -89,5 +89,5 @@ private:
   std::string subFamily;
 
   TextRenderFunction textRenderer;
-  TextRenderEnum textRendererEnum;
+  TextRenderEnum textRendererEnum{TextRenderEnum::NoShape};
 };

@@ -127,8 +127,6 @@ Glyph Font::CreateGlyph(const int &index) {
   int bearing;
   int advance;
 
-  auto format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-
   stbtt_GetGlyphHMetrics(&font, index, &advance, &bearing);
 
   advance = static_cast<int>(roundf(advance * scale));
@@ -150,8 +148,6 @@ Glyph Font::CreateGlyph(const int &index) {
   delete[] bitmap;
 
   SDL_Rect bound{x1, -y2, width, height};
-
-  SDL_FreeFormat(format);
 
   return {texture, bound, advance, bearing};
 }
@@ -187,9 +183,6 @@ Glyph &Font::GetGlyphFromChar(const char16_t &ch) {
 }
 
 void Font::SetTextRenderer(const TextRenderEnum &t) {
-  if (textRendererEnum == t)
-    return;
-
   textRendererEnum = t;
   switch (textRendererEnum) {
   case TextRenderEnum::NoShape:
@@ -205,7 +198,6 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
     textRenderer = TextRenderTopToBottom;
     break;
   }
-  Invalidate();
 }
 
 void Font::RenderText(Context &ctx, const std::string &str,
