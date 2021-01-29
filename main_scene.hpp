@@ -15,9 +15,10 @@
 
 class MainScene : public Scene {
 public:
-  virtual bool Init(Context &context);
-  virtual void Tick(Context &context);
-  virtual void Cleanup(Context &context);
+  virtual bool Init(Context &context) override;
+  virtual void Tick(Context &context) override;
+  virtual void Cleanup(Context &context) override;
+  virtual void DoUI(Context& context) override;
 
   void OnDirectorySelected(Context& context, const std::filesystem::path &path);
 
@@ -26,7 +27,7 @@ public:
 
 private:
   std::array<char, 4096> buffer = {0};
-  SDL_Color color = {0, 0, 0, 255};
+  glm::vec4 color = {0, 0, 0, 1.0f};
   int fontSize = 64;
   bool isShape = false;
 

@@ -1,6 +1,4 @@
 #include "font.hpp"
-#include <fstream>
-#include <streambuf>
 
 #include "text_renderer.hpp"
 #include "texture.hpp"
@@ -9,10 +7,12 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_truetype.h>
 
+#include "io_util.hpp"
+
 Font::Font(){};
 
 Font::Font(const std::string &path) : textRenderer(TextRenderNoShape) {
-  Font::LoadFile(path, data);
+  LoadFile(path, data, std::ios::in | std::ios::binary);
   Initialize();
 }
 
@@ -39,7 +39,7 @@ Font::~Font() {
   hb_font = nullptr;
 
   for (auto &g : glyphMap) {
-    SDL_DestroyTexture(g.second.texture);
+    glDeleteTextures(1, &g.second.texture);
   }
 
   data.clear();
@@ -99,7 +99,12 @@ void Font::Initialize() {
   subFamily = names.second;
 }
 
-void Font::Invalidate() { glyphMap.clear(); }
+void Font::Invalidate() {
+  for (auto &g : glyphMap) {
+    glDeleteTextures(1, &g.second.texture);
+  }
+  glyphMap.clear();
+}
 
 void Font::SetFontSize(const int &size) {
   if (!IsValid())
@@ -118,16 +123,7 @@ void Font::SetFontSize(const int &size) {
   linegap = roundf(scale * rawLineGap);
 }
 
-void Font::LoadFile(const std::string &path, std::vector<char> &data) {
-  std::basic_ifstream<char> file(path, std::ios::in | std::ios::binary);
-
-  data = {std::istreambuf_iterator<char>(file),
-          std::istreambuf_iterator<char>()};
-
-  file.close();
-}
-
-Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph Font::CreateGlyph(const int &index) {
   int bearing;
   int advance;
 
@@ -149,28 +145,27 @@ Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   stbtt_MakeGlyphBitmap(&font, bitmap, width, height, width, scale, scale,
                         index);
 
-  auto texture =
-      CreateTextureFromBitmap(renderer, format, bitmap, width, height);
+  auto texture = LoadTextureFromBitmap(bitmap, width, height);
 
   delete[] bitmap;
 
-  SDL_Rect bound{x1, y1, width, height};
+  SDL_Rect bound{x1, -y2, width, height};
 
   SDL_FreeFormat(format);
 
   return {texture, bound, advance, bearing};
 }
 
-Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+Glyph Font::CreateGlyphFromChar(const char16_t &ch) {
   auto index = stbtt_FindGlyphIndex(&font, ch);
 
-  return CreateGlyph(renderer, index);
+  return CreateGlyph(index);
 }
 
-Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
+Glyph &Font::GetGlyph(const int &index) {
   auto iter = glyphMap.find(index);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyph(renderer, index);
+    Glyph g = CreateGlyph(index);
     auto [i, success] = glyphMap.insert({index, g});
 
     iter = i;
@@ -179,10 +174,10 @@ Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
   return iter->second;
 }
 
-Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
+Glyph &Font::GetGlyphFromChar(const char16_t &ch) {
   auto iter = glyphMap.find(ch);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyphFromChar(renderer, ch);
+    Glyph g = CreateGlyphFromChar(ch);
     auto [i, success] = glyphMap.insert({ch, g});
 
     iter = i;
@@ -214,7 +209,7 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
 }
 
 void Font::RenderText(Context &ctx, const std::string &str,
-                      const SDL_Color &color, const hb_script_t &script) {
+                      const glm::vec4 &color, const hb_script_t &script) {
   if (!IsValid())
     return;
   textRenderer(ctx, *this, str, color, script);

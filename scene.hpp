@@ -12,8 +12,12 @@ public:
   virtual void Tick(Context &context) = 0;
   virtual void Cleanup(Context &context) = 0;
 
+  virtual void DoUI(Context& context) {};
+
   static void TickCurrent(Context &context);
   template <class T> static void ChangeScene(Context &context);
+
+  static std::unique_ptr<Scene>& Current() { return currentScene; }
 
 private:
   static std::unique_ptr<Scene> currentScene;

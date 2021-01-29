@@ -1,6 +1,7 @@
 #include "context.hpp"
 
 #include <fstream>
+#include "io_util.hpp"
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
@@ -30,10 +31,8 @@ void LoadContext(Context &ctx, const std::filesystem::path &path) {
 
   // If there's something wrong with reading file, just do nothing and return.
   try {
-      std::fstream input(path, std::ios::in);
-      std::string str = { std::istreambuf_iterator<char>(input),
-                         std::istreambuf_iterator<char>() };
-      input.close();
+      std::string str;
+      LoadFile(path.string(), str);
 
       js = json::parse(str);
   }

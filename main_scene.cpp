@@ -12,6 +12,8 @@
 #include "text_renderer.hpp"
 
 bool MainScene::Init(Context &context) {
+
+  InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
   dirChooser.SetPwd(context.fontPath);
@@ -20,6 +22,38 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(Context &context) {
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glClearColor(context.backgroundColor.r, context.backgroundColor.g,
+               context.backgroundColor.b, context.backgroundColor.a);
+  glClear(GL_COLOR_BUFFER_BIT);
+  auto textRender = TextRenderEnum::NoShape;
+  if (isShape) {
+    switch (directions[selectedDirection]) {
+    case HB_DIRECTION_LTR:
+      textRender = TextRenderEnum::LeftToRight;
+      break;
+    case HB_DIRECTION_TTB:
+      textRender = TextRenderEnum::TopToBottom;
+      break;
+    case HB_DIRECTION_RTL:
+      textRender = TextRenderEnum::RightToLeft;
+      break;
+    }
+  }
+  font.SetTextRenderer(textRender);
+
+  font.SetFontSize(fontSize);
+
+  font.RenderText(context, std::string(buffer.data()), color,
+                  scripts[selectedScript]);
+}
+
+void MainScene::Cleanup(Context &context) { CleanUpTextRenderers(); }
+
+void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
   ImGui::Begin("Menu");
   {
@@ -78,13 +112,13 @@ void MainScene::Tick(Context &context) {
         }
       }
 
-      float c[3]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
+      float c[3]{color.r, color.g, color.b};
 
       ImGui::ColorPicker3("color", c, ImGuiColorEditFlags_InputRGB);
-      color.r = c[0] * 255;
-      color.g = c[1] * 255;
-      color.b = c[2] * 255;
-      color.a = 255;
+      color.r = c[0];
+      color.g = c[1];
+      color.b = c[2];
+      color.a = 1.0f;
 
       ImGui::Checkbox("Debug", &context.debug);
     }
@@ -110,32 +144,10 @@ void MainScene::Tick(Context &context) {
       font = Font(fontPaths[selectedFontIndex].string());
     }
   }
-
-  auto textRender = TextRenderEnum::NoShape;
-  if (isShape) {
-    switch (directions[selectedDirection]) {
-    case HB_DIRECTION_LTR:
-      textRender = TextRenderEnum::LeftToRight;
-      break;
-    case HB_DIRECTION_TTB:
-      textRender = TextRenderEnum::TopToBottom;
-      break;
-    case HB_DIRECTION_RTL:
-      textRender = TextRenderEnum::RightToLeft;
-      break;
-    }
-  }
-  font.SetTextRenderer(textRender);
-
-  font.SetFontSize(fontSize);
-
-  font.RenderText(context, std::string(buffer.data()), color,
-                  scripts[selectedScript]);
 }
 
-void MainScene::Cleanup(Context &context) {}
-
-void MainScene::OnDirectorySelected(Context& ctx, const std::filesystem::path &path) {
+void MainScene::OnDirectorySelected(Context &ctx,
+                                    const std::filesystem::path &path) {
   std::filesystem::path newPath = path;
 
   if (!std::filesystem::exists(newPath)) {
