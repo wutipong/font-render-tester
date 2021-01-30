@@ -13,6 +13,7 @@
 
 bool MainScene::Init(Context &context) {
 
+    Font::Init();
   InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
@@ -51,7 +52,7 @@ void MainScene::Tick(Context &context) {
                   scripts[selectedScript]);
 }
 
-void MainScene::Cleanup(Context &context) { CleanUpTextRenderers(); }
+void MainScene::Cleanup(Context& context) { CleanUpTextRenderers(); Font::CleanUp(); }
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;

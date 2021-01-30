@@ -31,8 +31,8 @@ struct Glyph {
 
 class Font {
 public:
-  void Init();
-  void CleanUp();
+  static void Init();
+  static void CleanUp();
 
   Font();
   Font(const Font &f);
@@ -82,10 +82,6 @@ private:
   hb_font_t *hb_font{nullptr};
 
   std::map<unsigned int, Glyph> glyphMap;
-
-  int rawAscend{0};
-  int rawDescend{0};
-  int rawLineGap{0};
 
   float scale{0};
 

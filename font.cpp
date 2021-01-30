@@ -68,9 +68,6 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
 }
 
 bool Font::Initialize() {
-  if (!IsValid())
-    return true;
-
   family = "";
   subFamily = "";
   textRenderer = TextRenderNoShape;
@@ -86,10 +83,6 @@ bool Font::Initialize() {
   }
 
   hb_font = hb_ft_font_create_referenced(face);
-
-  rawAscend = face->ascender;
-  rawDescend = face->descender;
-  rawLineGap = face->height - (face->ascender - face->descender);
 
   Invalidate();
   fontSize = -1;
@@ -118,39 +111,42 @@ void Font::SetFontSize(const int &size) {
   fontSize = size;
   Invalidate();
 
-  auto error = FT_Set_Pixel_Sizes(face, 0, 16);
+  auto error = FT_Set_Pixel_Sizes(face, 0, size);
+  hb_ft_font_changed(hb_font);
 
-  // scale = stbtt_ScaleForPixelHeight(&face, fontSize);
-  // ascend = roundf(scale * rawAscend);
-  // descend = roundf(scale * rawDescend);
-  // linegap = roundf(scale * rawLineGap);
+  //FT_Metrics_FT is in 26.6 fixed decimal.
+  ascend = face->size->metrics.ascender / 64;
+  descend = face->size->metrics.descender / 64;
+  linegap = (face->size->metrics.height  / 64) + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(const int &index) {
-  int bearing;
+  int bearing = 0;
   int advance;
 
-  // stbtt_GetGlyphHMetrics(&face, index, &advance, &bearing);
+  FT_Load_Glyph(face, index, FT_LOAD_RENDER);
 
-  advance = static_cast<int>(roundf(advance * scale));
-  bearing = static_cast<int>(roundf(bearing * scale));
+  advance = static_cast<int>(roundf(face->glyph->advance.x / 64));
 
-  int x1, y1, x2, y2;
-  // stbtt_GetGlyphBitmapBox(&face, index, scale, scale, &x1, &y1, &x2, &y2);
+  auto width = face->glyph->bitmap.width;
+  auto height = face->glyph->bitmap.rows;
+  auto pitch = face->glyph->bitmap.pitch;
 
-  int width = x2 - x1;
-  int height = y2 - y1;
-
+  auto src = face->glyph->bitmap.buffer;
   auto bitmap = new unsigned char[width * height];
 
-  // stbtt_MakeGlyphBitmap(&face, bitmap, width, height, width, scale, scale,
-  //                      index);
+  for (int i = 0; i < height; i++) {
+    memcpy(bitmap + (i * width), src + (i * pitch), width);
+  }
 
   auto texture = LoadTextureFromBitmap(bitmap, width, height);
 
   delete[] bitmap;
 
-  SDL_Rect bound{x1, -y2, width, height};
+  auto x = face->glyph->bitmap_left;
+  auto y = face->glyph->bitmap_top - height;
+
+  SDL_Rect bound{x, y, width, height};
 
   return {texture, bound, advance, bearing};
 }
