@@ -31,7 +31,7 @@ void MainScene::Tick(Context &context) {
   glClear(GL_COLOR_BUFFER_BIT);
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
-    switch (directions[selectedDirection]) {
+    switch (directions[selectedDirection].second) {
     case HB_DIRECTION_LTR:
       textRender = TextRenderEnum::LeftToRight;
       break;
@@ -43,12 +43,13 @@ void MainScene::Tick(Context &context) {
       break;
     }
   }
+
   font.SetTextRenderer(textRender);
 
   font.SetFontSize(fontSize);
 
   font.RenderText(context, std::string(buffer.data()), color,
-                  languages[selectedLanguage], scripts[selectedScript]);
+                  languages[selectedLanguage].second, scripts[selectedScript].second);
 }
 
 void MainScene::Cleanup(Context &context) {
@@ -97,25 +98,25 @@ void MainScene::DoUI(Context &context) {
       ImGui::Checkbox("Shape Text", &isShape);
 
       if (isShape) {
-        if (ImGui::BeginCombo("Language", languageStr[selectedLanguage])) {
-          for (int i = 0; i < languageStr.size(); i++) {
-            if (ImGui::Selectable(languageStr[i], i == selectedLanguage)) {
+        if (ImGui::BeginCombo("Language", languages[selectedLanguage].first)) {
+          for (int i = 0; i < languages.size(); i++) {
+            if (ImGui::Selectable(languages[i].first, i == selectedLanguage)) {
               selectedLanguage = i;
             }
           }
           ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Script", scriptStrs[selectedScript])) {
-          for (int i = 0; i < scriptStrs.size(); i++) {
-            if (ImGui::Selectable(scriptStrs[i], i == selectedScript)) {
+        if (ImGui::BeginCombo("Script", scripts[selectedScript].first)) {
+          for (int i = 0; i < scripts.size(); i++) {
+            if (ImGui::Selectable(scripts[i].first, i == selectedScript)) {
               selectedScript = i;
             }
           }
           ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Direction", directionStrs[selectedDirection])) {
-          for (int i = 0; i < directionStrs.size(); i++) {
-            if (ImGui::Selectable(directionStrs[i], i == selectedDirection)) {
+        if (ImGui::BeginCombo("Direction", directions[selectedDirection].first)) {
+          for (int i = 0; i < directions.size(); i++) {
+            if (ImGui::Selectable(directions[i].first, i == selectedDirection)) {
               selectedDirection = i;
             }
           }
