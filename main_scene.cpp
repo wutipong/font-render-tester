@@ -61,8 +61,7 @@ void MainScene::DoUI(Context &context) {
   
   ImGui::Begin("Menu");
   {
-    if (ImGui::CollapsingHeader("Font Directory",
-                                ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("Font Directory")) {
       ImGui::Text(context.fontPath.c_str());
       if (ImGui::Button("Browse")) {
         dirChooser.Open();
