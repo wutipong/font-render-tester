@@ -152,12 +152,12 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     int x = ctx.windowBound.w;
     const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
-    for (int i = 0; i < glyph_count; i++) {
+    for (int i = glyph_count -1; i >= 0 ; i--) {
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(index);
-      DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x -= glyph_positions[i].x_advance / 64.0f;
+      DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
     }
     hb_buffer_destroy(buffer);
 
