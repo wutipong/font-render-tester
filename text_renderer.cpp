@@ -110,7 +110,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
-  int y = ctx.windowBound.h - roundf(extents.ascender * font.Scale());
+  int y = ctx.windowBound.h - roundf(extents.ascender/64.0f);
 
   while (true) {
     if (ctx.debug) {
@@ -144,7 +144,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 
       auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
-      x -= glyph_positions[i].x_advance * font.Scale();
+      x -= glyph_positions[i].x_advance/64.0f;
     }
     hb_buffer_destroy(buffer);
 
@@ -164,9 +164,11 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);
 
-  float ascend = roundf(extents.ascender * font.Scale());
-  float descend = roundf(extents.descender * font.Scale());
-  float linegap = roundf(extents.descender * font.Scale());
+  // when using with hb-ft, the position metrics will be 26.6 format as well as
+  // the face->metrics.
+  float ascend = roundf(extents.ascender / 64.0f);
+  float descend = roundf(extents.descender /64.0f);
+  float linegap = roundf(extents.line_gap /64.0f);
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
@@ -202,7 +204,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
       auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
-      y += roundf(glyph_positions[i].y_advance * font.Scale());
+      y += roundf(glyph_positions[i].y_advance / 64.0f);
     }
     hb_buffer_destroy(buffer);
 
@@ -232,14 +234,16 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const glm::vec4 &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
-  DrawGlyph(g, x + (hb_glyph_pos.x_offset * font.Scale()),
-            y + (hb_glyph_pos.y_offset * font.Scale()), color,
-            ctx.windowBound.w, ctx.windowBound.h);
+
+  // when using with hb-ft, the position metrics will be 26.6 format as well as
+  // the face->metrics.
+  auto xPos = x + (hb_glyph_pos.x_offset / 64.0f);
+  auto yPos = y + (hb_glyph_pos.y_offset / 64.0f);
+
+  DrawGlyph(g, xPos, yPos, color, ctx.windowBound.w, ctx.windowBound.h);
 
   if (ctx.debug) {
-    DrawRect(x + (hb_glyph_pos.x_offset * font.Scale()) + g.bound.x,
-             y + (hb_glyph_pos.y_offset * font.Scale()) + g.bound.y, g.bound.w,
-             g.bound.h, ctx.debugGlyphBoundColor, ctx.windowBound.w,
-             ctx.windowBound.h);
+    DrawRect(xPos + g.bound.x, yPos + g.bound.y, g.bound.w, g.bound.h,
+             ctx.debugGlyphBoundColor, ctx.windowBound.w, ctx.windowBound.h);
   }
 }

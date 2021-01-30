@@ -13,6 +13,7 @@
 
 bool MainScene::Init(Context &context) {
 
+  Font::Init();
   InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
@@ -51,10 +52,14 @@ void MainScene::Tick(Context &context) {
                   scripts[selectedScript]);
 }
 
-void MainScene::Cleanup(Context &context) { CleanUpTextRenderers(); }
+void MainScene::Cleanup(Context &context) {
+  CleanUpTextRenderers();
+  Font::CleanUp();
+}
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
+  
   ImGui::Begin("Menu");
   {
     if (ImGui::CollapsingHeader("Font Directory",
@@ -137,12 +142,28 @@ void MainScene::DoUI(Context &context) {
   }
 
   if (newSelected != selectedFontIndex) {
-    selectedFontIndex = newSelected;
-    if (selectedFontIndex == -1) {
+    if (newSelected == -1) {
       font = Font();
+      selectedFontIndex = newSelected;
     } else {
-      font.LoadFile(fontPaths[selectedFontIndex].string());
+        Font newFont;
+        if (!newFont.LoadFile(fontPaths[newSelected].string())) {
+            ImGui::OpenPopup("InvalidFont");
+        }
+        else {
+            font = newFont;
+            selectedFontIndex = newSelected;
+        }
     }
+  }
+
+  if (ImGui::BeginPopup("InvalidFont")) {
+      ImGui::Text("Invalid Font File");
+      if (ImGui::Button("Close"))
+      {
+          ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
   }
 }
 

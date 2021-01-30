@@ -5,7 +5,7 @@
     "sdl2",
     "imgui",
     "harfbuzz",
-    "stb",
+    "freetype",
     "utfcpp",
     "nlohmann-json",
     "opengl",

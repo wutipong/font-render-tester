@@ -4,10 +4,22 @@
 #include "texture.hpp"
 #include <utf8/cpp11.h>
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include <stb_truetype.h>
-
 #include "io_util.hpp"
+
+#include FT_SFNT_NAMES_H
+
+#include "harfbuzz/hb-ft.h"
+
+FT_Library Font::library;
+
+void Font::Init() {
+  auto error = FT_Init_FreeType(&library);
+  if (error) {
+    // TODO:: Add error handling.
+  }
+}
+
+void Font::CleanUp() { FT_Done_FreeType(library); }
 
 Font::Font() : textRenderer(TextRenderNoShape){};
 
@@ -29,6 +41,7 @@ Font::~Font() {
   }
 
   data.clear();
+  FT_Done_Face(face);
 }
 
 bool Font::LoadFile(const std::string &path) {
@@ -54,54 +67,28 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
   return output;
 }
 
-static std::pair<std::string, std::string>
-GetFontName(const stbtt_fontinfo &font) {
-  int length;
-  auto family = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              1),
-      length);
-
-  auto sub = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              2),
-      length);
-
-  return {family, sub};
-}
-
 bool Font::Initialize() {
-  if (!IsValid())
-    return true;
-
   family = "";
   subFamily = "";
   textRenderer = TextRenderNoShape;
   textRendererEnum = TextRenderEnum::NoShape;
 
-  if (stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()),
-                     0) == 0) {
+  auto error = FT_New_Memory_Face(
+      library, reinterpret_cast<const FT_Byte *>(data.data()), data.size(), 0,
+      &face);
+
+  if (error) {
     data.clear();
     return false;
   }
 
-  hb_blob_t *blob =
-      hb_blob_create(reinterpret_cast<char *>(data.data()), data.size(),
-                     HB_MEMORY_MODE_READONLY, nullptr, nullptr);
-  hb_face_t *hb_face = hb_face_create(blob, 0);
-  hb_blob_destroy(blob);
+  hb_font = hb_ft_font_create_referenced(face);
 
-  hb_font = hb_font_create(hb_face);
-
-  stbtt_GetFontVMetrics(&font, &rawAscend, &rawDescend, &rawLineGap);
   Invalidate();
   fontSize = -1;
 
-  auto names = GetFontName(font);
-  family = names.first;
-  subFamily = names.second;
+  family = face->family_name;
+  subFamily = face->style_name;
 
   return true;
 }
@@ -124,43 +111,48 @@ void Font::SetFontSize(const int &size) {
   fontSize = size;
   Invalidate();
 
-  scale = stbtt_ScaleForPixelHeight(&font, fontSize);
-  ascend = roundf(scale * rawAscend);
-  descend = roundf(scale * rawDescend);
-  linegap = roundf(scale * rawLineGap);
+  auto error = FT_Set_Pixel_Sizes(face, 0, size);
+  hb_ft_font_changed(hb_font);
+
+  //FT_Metrics_FT is in 26.6 fixed decimal.
+  ascend = face->size->metrics.ascender / 64;
+  descend = face->size->metrics.descender / 64;
+  linegap = (face->size->metrics.height  / 64) + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(const int &index) {
-  int bearing;
+  int bearing = 0;
   int advance;
 
-  stbtt_GetGlyphHMetrics(&font, index, &advance, &bearing);
+  FT_Load_Glyph(face, index, FT_LOAD_RENDER);
 
-  advance = static_cast<int>(roundf(advance * scale));
-  bearing = static_cast<int>(roundf(bearing * scale));
+  advance = static_cast<int>(roundf(face->glyph->advance.x / 64));
 
-  int x1, y1, x2, y2;
-  stbtt_GetGlyphBitmapBox(&font, index, scale, scale, &x1, &y1, &x2, &y2);
+  auto width = face->glyph->bitmap.width;
+  auto height = face->glyph->bitmap.rows;
+  auto pitch = face->glyph->bitmap.pitch;
 
-  int width = x2 - x1;
-  int height = y2 - y1;
-
+  auto src = face->glyph->bitmap.buffer;
   auto bitmap = new unsigned char[width * height];
 
-  stbtt_MakeGlyphBitmap(&font, bitmap, width, height, width, scale, scale,
-                        index);
+  for (int i = 0; i < height; i++) {
+    memcpy(bitmap + (i * width), src + (i * pitch), width);
+  }
 
   auto texture = LoadTextureFromBitmap(bitmap, width, height);
 
   delete[] bitmap;
 
-  SDL_Rect bound{x1, -y2, width, height};
+  auto x = face->glyph->bitmap_left;
+  auto y = face->glyph->bitmap_top - height;
+
+  SDL_Rect bound{x, y, width, height};
 
   return {texture, bound, advance, bearing};
 }
 
 Glyph Font::CreateGlyphFromChar(const char16_t &ch) {
-  auto index = stbtt_FindGlyphIndex(&font, ch);
+  auto index = FT_Get_Char_Index(face, ch);
 
   return CreateGlyph(index);
 }

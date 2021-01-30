@@ -4,7 +4,6 @@
 #include <SDL2/SDL.h>
 #include <array>
 #include <filesystem>
-#include <stb_truetype.h>
 #include <string>
 
 #include "imgui.h"
