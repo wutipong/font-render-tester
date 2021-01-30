@@ -3,7 +3,9 @@
 #include <GL/gl3w.h>
 #include <SDL2/SDL.h>
 #include <harfbuzz/hb.h>
-#include <stb_truetype.h>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include "context.hpp"
 #include <functional>
@@ -29,6 +31,9 @@ struct Glyph {
 
 class Font {
 public:
+  void Init();
+  void CleanUp();
+
   Font();
   Font(const Font &f);
 
@@ -36,8 +41,8 @@ public:
 
   ~Font();
 
-  bool LoadFile(const std::string& path);
-  bool Load(const std::vector<char>& data);
+  bool LoadFile(const std::string &path);
+  bool Load(const std::vector<char> &data);
 
   void Invalidate();
 
@@ -45,7 +50,7 @@ public:
 
   std::string GetFamilyName() const { return family; }
   std::string GetSubFamilyName() const { return subFamily; }
-  bool IsValid() const { return !data.empty(); }
+  bool IsValid() const { return face != nullptr; }
 
   Glyph &GetGlyph(const int &index);
   Glyph &GetGlyphFromChar(const char16_t &index);
@@ -63,13 +68,15 @@ public:
                   const hb_script_t &script);
 
 private:
+  static FT_Library library;
+
   bool Initialize();
 
   Glyph CreateGlyph(const int &ch);
   Glyph CreateGlyphFromChar(const char16_t &ch);
 
   std::vector<char> data{};
-  stbtt_fontinfo font{};
+  FT_Face face{};
 
   int fontSize{-1};
   hb_font_t *hb_font{nullptr};

@@ -4,10 +4,22 @@
 #include "texture.hpp"
 #include <utf8/cpp11.h>
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include <stb_truetype.h>
-
 #include "io_util.hpp"
+
+#include FT_SFNT_NAMES_H
+
+#include "harfbuzz/hb-ft.h"
+
+FT_Library Font::library;
+
+void Font::Init() {
+  auto error = FT_Init_FreeType(&library);
+  if (error) {
+    // TODO:: Add error handling.
+  }
+}
+
+void Font::CleanUp() { FT_Done_FreeType(library); }
 
 Font::Font() : textRenderer(TextRenderNoShape){};
 
@@ -29,6 +41,7 @@ Font::~Font() {
   }
 
   data.clear();
+  FT_Done_Face(face);
 }
 
 bool Font::LoadFile(const std::string &path) {
@@ -54,22 +67,28 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
   return output;
 }
 
-static std::pair<std::string, std::string>
-GetFontName(const stbtt_fontinfo &font) {
-  int length;
-  auto family = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              1),
-      length);
+static std::pair<std::string, std::string> GetFontName(const FT_Face &face) {
+  FT_SfntName name;
+  FT_Get_Sfnt_Name(face, 0, &name);
 
-  auto sub = ConvertFromFontString(
-      stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                              STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                              2),
-      length);
+  return {std::string(reinterpret_cast<char *>(name.string), name.string_len),
+          ""};
 
-  return {family, sub};
+  /*
+
+int length;
+auto family = ConvertFromFontString(
+    stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                            1),
+    length);
+
+auto sub = ConvertFromFontString(
+    stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
+                            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
+                            2),
+    length);
+    */
 }
 
 bool Font::Initialize() {
@@ -81,25 +100,22 @@ bool Font::Initialize() {
   textRenderer = TextRenderNoShape;
   textRendererEnum = TextRenderEnum::NoShape;
 
-  if (stbtt_InitFont(&font, reinterpret_cast<unsigned char *>(data.data()),
-                     0) == 0) {
+  auto error = FT_New_Memory_Face(
+      library, reinterpret_cast<const FT_Byte *>(data.data()), data.size(), 0,
+      &face);
+
+  if (error) {
     data.clear();
     return false;
   }
 
-  hb_blob_t *blob =
-      hb_blob_create(reinterpret_cast<char *>(data.data()), data.size(),
-                     HB_MEMORY_MODE_READONLY, nullptr, nullptr);
-  hb_face_t *hb_face = hb_face_create(blob, 0);
-  hb_blob_destroy(blob);
+  hb_font = hb_ft_font_create_referenced(face);
 
-  hb_font = hb_font_create(hb_face);
-
-  stbtt_GetFontVMetrics(&font, &rawAscend, &rawDescend, &rawLineGap);
+  // stbtt_GetFontVMetrics(&face, &rawAscend, &rawDescend, &rawLineGap);
   Invalidate();
   fontSize = -1;
 
-  auto names = GetFontName(font);
+  auto names = GetFontName(face);
   family = names.first;
   subFamily = names.second;
 
@@ -124,31 +140,33 @@ void Font::SetFontSize(const int &size) {
   fontSize = size;
   Invalidate();
 
-  scale = stbtt_ScaleForPixelHeight(&font, fontSize);
-  ascend = roundf(scale * rawAscend);
-  descend = roundf(scale * rawDescend);
-  linegap = roundf(scale * rawLineGap);
+  auto error = FT_Set_Pixel_Sizes(face, 0, 16);
+
+  // scale = stbtt_ScaleForPixelHeight(&face, fontSize);
+  // ascend = roundf(scale * rawAscend);
+  // descend = roundf(scale * rawDescend);
+  // linegap = roundf(scale * rawLineGap);
 }
 
 Glyph Font::CreateGlyph(const int &index) {
   int bearing;
   int advance;
 
-  stbtt_GetGlyphHMetrics(&font, index, &advance, &bearing);
+  // stbtt_GetGlyphHMetrics(&face, index, &advance, &bearing);
 
   advance = static_cast<int>(roundf(advance * scale));
   bearing = static_cast<int>(roundf(bearing * scale));
 
   int x1, y1, x2, y2;
-  stbtt_GetGlyphBitmapBox(&font, index, scale, scale, &x1, &y1, &x2, &y2);
+  // stbtt_GetGlyphBitmapBox(&face, index, scale, scale, &x1, &y1, &x2, &y2);
 
   int width = x2 - x1;
   int height = y2 - y1;
 
   auto bitmap = new unsigned char[width * height];
 
-  stbtt_MakeGlyphBitmap(&font, bitmap, width, height, width, scale, scale,
-                        index);
+  // stbtt_MakeGlyphBitmap(&face, bitmap, width, height, width, scale, scale,
+  //                      index);
 
   auto texture = LoadTextureFromBitmap(bitmap, width, height);
 
@@ -160,7 +178,7 @@ Glyph Font::CreateGlyph(const int &index) {
 }
 
 Glyph Font::CreateGlyphFromChar(const char16_t &ch) {
-  auto index = stbtt_FindGlyphIndex(&font, ch);
+  auto index = FT_Get_Char_Index(face, ch);
 
   return CreateGlyph(index);
 }
