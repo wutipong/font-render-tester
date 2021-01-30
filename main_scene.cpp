@@ -3,11 +3,10 @@
 #include <filesystem>
 #include <fstream>
 #include <streambuf>
-
 #include <imgui.h>
-
 #include <utf8cpp/utf8.h>
 #include <utf8cpp/utf8/cpp11.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "text_renderer.hpp"
 
@@ -117,13 +116,7 @@ void MainScene::DoUI(Context &context) {
         }
       }
 
-      float c[3]{color.r, color.g, color.b};
-
-      ImGui::ColorPicker3("color", c, ImGuiColorEditFlags_InputRGB);
-      color.r = c[0];
-      color.g = c[1];
-      color.b = c[2];
-      color.a = 1.0f;
+      ImGui::ColorPicker3("color", glm::value_ptr(color), ImGuiColorEditFlags_InputRGB);
 
       ImGui::Checkbox("Debug", &context.debug);
     }
