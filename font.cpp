@@ -67,30 +67,6 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
   return output;
 }
 
-static std::pair<std::string, std::string> GetFontName(const FT_Face &face) {
-  FT_SfntName name;
-  FT_Get_Sfnt_Name(face, 0, &name);
-
-  return {std::string(reinterpret_cast<char *>(name.string), name.string_len),
-          ""};
-
-  /*
-
-int length;
-auto family = ConvertFromFontString(
-    stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                            1),
-    length);
-
-auto sub = ConvertFromFontString(
-    stbtt_GetFontNameString(&font, &length, STBTT_PLATFORM_ID_MICROSOFT,
-                            STBTT_MS_EID_UNICODE_BMP, STBTT_MS_LANG_ENGLISH,
-                            2),
-    length);
-    */
-}
-
 bool Font::Initialize() {
   if (!IsValid())
     return true;
@@ -111,13 +87,15 @@ bool Font::Initialize() {
 
   hb_font = hb_ft_font_create_referenced(face);
 
-  // stbtt_GetFontVMetrics(&face, &rawAscend, &rawDescend, &rawLineGap);
+  rawAscend = face->ascender;
+  rawDescend = face->descender;
+  rawLineGap = face->height - (face->ascender - face->descender);
+
   Invalidate();
   fontSize = -1;
 
-  auto names = GetFontName(face);
-  family = names.first;
-  subFamily = names.second;
+  family = face->family_name;
+  subFamily = face->style_name;
 
   return true;
 }
