@@ -114,10 +114,10 @@ void Font::SetFontSize(const int &size) {
   auto error = FT_Set_Pixel_Sizes(face, 0, size);
   hb_ft_font_changed(hb_font);
 
-  //FT_Metrics_FT is in 26.6 fixed decimal.
+  // FT_Metrics_FT is in 26.6 fixed decimal.
   ascend = face->size->metrics.ascender / 64;
   descend = face->size->metrics.descender / 64;
-  linegap = (face->size->metrics.height  / 64) + descend - ascend;
+  linegap = (face->size->metrics.height / 64) + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(const int &index) {
@@ -200,8 +200,10 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
 }
 
 void Font::RenderText(Context &ctx, const std::string &str,
-                      const glm::vec4 &color, const hb_script_t &script) {
+                      const glm::vec4 &color, const std::string &language,
+                      const hb_script_t &script) {
   if (!IsValid())
     return;
-  textRenderer(ctx, *this, str, color, script);
+
+  textRenderer(ctx, *this, str, color, language, script);
 }

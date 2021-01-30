@@ -17,12 +17,12 @@ public:
   virtual bool Init(Context &context) override;
   virtual void Tick(Context &context) override;
   virtual void Cleanup(Context &context) override;
-  virtual void DoUI(Context& context) override;
+  virtual void DoUI(Context &context) override;
 
-  void OnDirectorySelected(Context& context, const std::filesystem::path &path);
+  void OnDirectorySelected(Context &context, const std::filesystem::path &path);
 
   static std::vector<std::filesystem::path>
-  ListFontFiles(const std::filesystem::path&path);
+  ListFontFiles(const std::filesystem::path &path);
 
 private:
   std::array<char, 4096> buffer = {0};
@@ -35,7 +35,9 @@ private:
 
   std::vector<unsigned char> fontData;
 
-  ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory, };
+  ImGui::FileBrowser dirChooser{
+      ImGuiFileBrowserFlags_SelectDirectory,
+  };
 
   Font font{};
 
@@ -53,6 +55,20 @@ private:
   static constexpr std::array<char *, 2> directionStrs = {
       "Left to Right" /*, "Right To Left"*/, "Top to Bottom"};
 
+  static constexpr std::array<char *, 7> languages = {
+      "", "en-US", "th-TH", "ja-JP", "ko-KR", "zh-CN", "zh-TW", /*"ar-SA"*/};
+
+  static constexpr std::array<char *, 7> languageStr = {
+      "None",
+      "English US",
+      "Thai Thailand",
+      "Japanese Japan",
+      "Korean Republic of Korea",
+      "Chinese China",
+      "Chinese Taiwan"/*,
+      "Arabic Saudi Arabia"*/};
+
   int selectedScript = 0;
   int selectedDirection = 0;
+  int selectedLanguage = 0;
 };

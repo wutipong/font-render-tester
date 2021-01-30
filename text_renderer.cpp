@@ -19,7 +19,8 @@ void CleanUpTextRenderers() {
 }
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
-                       const glm::vec4 &color, const hb_script_t &script) {
+                       const glm::vec4 &color, const std::string &language,
+                       const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -46,7 +47,8 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const hb_script_t &script) {
+                           const glm::vec4 &color, const std::string &language,
+                           const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -62,6 +64,11 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
     hb_buffer_t *buffer = hb_buffer_create();
     hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+
+    if (!language.empty())
+      hb_buffer_set_language(
+          buffer, hb_language_from_string(language.c_str(), language.length()));
+
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
@@ -100,7 +107,8 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const hb_script_t &script) {
+                           const glm::vec4 &color, const std::string &language,
+                           const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -110,7 +118,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
-  int y = ctx.windowBound.h - roundf(extents.ascender/64.0f);
+  int y = ctx.windowBound.h - roundf(extents.ascender / 64.0f);
 
   while (true) {
     if (ctx.debug) {
@@ -122,7 +130,12 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     std::u16string line(lineStart, lineEnd);
 
     hb_buffer_t *buffer = hb_buffer_create();
-    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+    hb_buffer_set_direction(buffer, HB_DIRECTION_RTL);
+
+    if (!language.empty())
+      hb_buffer_set_language(
+          buffer, hb_language_from_string(language.c_str(), language.length()));
+
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
@@ -144,7 +157,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 
       auto &g = font.GetGlyph(index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
-      x -= glyph_positions[i].x_advance/64.0f;
+      x -= glyph_positions[i].x_advance / 64.0f;
     }
     hb_buffer_destroy(buffer);
 
@@ -157,7 +170,8 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const hb_script_t &script) {
+                           const glm::vec4 &color, const std::string &language,
+                           const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -167,8 +181,8 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   // when using with hb-ft, the position metrics will be 26.6 format as well as
   // the face->metrics.
   float ascend = roundf(extents.ascender / 64.0f);
-  float descend = roundf(extents.descender /64.0f);
-  float linegap = roundf(extents.line_gap /64.0f);
+  float descend = roundf(extents.descender / 64.0f);
+  float linegap = roundf(extents.line_gap / 64.0f);
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
@@ -183,6 +197,11 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
 
     hb_buffer_t *buffer = hb_buffer_create();
     hb_buffer_set_direction(buffer, HB_DIRECTION_TTB);
+
+    if (!language.empty())
+      hb_buffer_set_language(
+          buffer, hb_language_from_string(language.c_str(), language.length()));
+
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,

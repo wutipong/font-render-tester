@@ -2,11 +2,11 @@
 
 #include <filesystem>
 #include <fstream>
-#include <streambuf>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <streambuf>
 #include <utf8cpp/utf8.h>
 #include <utf8cpp/utf8/cpp11.h>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "text_renderer.hpp"
 
@@ -48,7 +48,7 @@ void MainScene::Tick(Context &context) {
   font.SetFontSize(fontSize);
 
   font.RenderText(context, std::string(buffer.data()), color,
-                  scripts[selectedScript]);
+                  languages[selectedLanguage], scripts[selectedScript]);
 }
 
 void MainScene::Cleanup(Context &context) {
@@ -58,7 +58,7 @@ void MainScene::Cleanup(Context &context) {
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
-  
+
   ImGui::Begin("Menu");
   {
     if (ImGui::CollapsingHeader("Font Directory")) {
@@ -97,6 +97,14 @@ void MainScene::DoUI(Context &context) {
       ImGui::Checkbox("Shape Text", &isShape);
 
       if (isShape) {
+        if (ImGui::BeginCombo("Language", languageStr[selectedLanguage])) {
+          for (int i = 0; i < languageStr.size(); i++) {
+            if (ImGui::Selectable(languageStr[i], i == selectedLanguage)) {
+              selectedLanguage = i;
+            }
+          }
+          ImGui::EndCombo();
+        }
         if (ImGui::BeginCombo("Script", scriptStrs[selectedScript])) {
           for (int i = 0; i < scriptStrs.size(); i++) {
             if (ImGui::Selectable(scriptStrs[i], i == selectedScript)) {
@@ -115,7 +123,8 @@ void MainScene::DoUI(Context &context) {
         }
       }
 
-      ImGui::ColorPicker3("color", glm::value_ptr(color), ImGuiColorEditFlags_InputRGB);
+      ImGui::ColorPicker3("color", glm::value_ptr(color),
+                          ImGuiColorEditFlags_InputRGB);
 
       ImGui::Checkbox("Debug", &context.debug);
     }
@@ -138,24 +147,22 @@ void MainScene::DoUI(Context &context) {
       font = Font();
       selectedFontIndex = newSelected;
     } else {
-        Font newFont;
-        if (!newFont.LoadFile(fontPaths[newSelected].string())) {
-            ImGui::OpenPopup("InvalidFont");
-        }
-        else {
-            font = newFont;
-            selectedFontIndex = newSelected;
-        }
+      Font newFont;
+      if (!newFont.LoadFile(fontPaths[newSelected].string())) {
+        ImGui::OpenPopup("InvalidFont");
+      } else {
+        font = newFont;
+        selectedFontIndex = newSelected;
+      }
     }
   }
 
   if (ImGui::BeginPopup("InvalidFont")) {
-      ImGui::Text("Invalid Font File");
-      if (ImGui::Button("Close"))
-      {
-          ImGui::CloseCurrentPopup();
-      }
-      ImGui::EndPopup();
+    ImGui::Text("Invalid Font File");
+    if (ImGui::Button("Close")) {
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
   }
 }
 
