@@ -31,7 +31,7 @@ void MainScene::Tick(Context &context) {
   glClear(GL_COLOR_BUFFER_BIT);
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
-    switch (directions[selectedDirection].second) {
+    switch (directions[selectedDirection].direction) {
     case HB_DIRECTION_LTR:
       textRender = TextRenderEnum::LeftToRight;
       break;
@@ -49,7 +49,7 @@ void MainScene::Tick(Context &context) {
   font.SetFontSize(fontSize);
 
   font.RenderText(context, std::string(buffer.data()), color,
-                  languages[selectedLanguage].second, scripts[selectedScript].second);
+                  languages[selectedLanguage].code, scripts[selectedScript].script);
 }
 
 void MainScene::Cleanup(Context &context) {
@@ -98,25 +98,25 @@ void MainScene::DoUI(Context &context) {
       ImGui::Checkbox("Shape Text", &isShape);
 
       if (isShape) {
-        if (ImGui::BeginCombo("Language", languages[selectedLanguage].first)) {
+        if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
           for (int i = 0; i < languages.size(); i++) {
-            if (ImGui::Selectable(languages[i].first, i == selectedLanguage)) {
+            if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
               selectedLanguage = i;
             }
           }
           ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Script", scripts[selectedScript].first)) {
+        if (ImGui::BeginCombo("Script", scripts[selectedScript].name)) {
           for (int i = 0; i < scripts.size(); i++) {
-            if (ImGui::Selectable(scripts[i].first, i == selectedScript)) {
+            if (ImGui::Selectable(scripts[i].name, i == selectedScript)) {
               selectedScript = i;
             }
           }
           ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Direction", directions[selectedDirection].first)) {
+        if (ImGui::BeginCombo("Direction", directions[selectedDirection].name)) {
           for (int i = 0; i < directions.size(); i++) {
-            if (ImGui::Selectable(directions[i].first, i == selectedDirection)) {
+            if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
               selectedDirection = i;
             }
           }

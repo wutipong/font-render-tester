@@ -42,31 +42,43 @@ private:
   Font font{};
 
   // clang-format off
-  static constexpr std::array<std::pair<const char *, const hb_script_t>, 7> scripts = {
-    std::pair<const char *, const hb_script_t>{"Common", HB_SCRIPT_COMMON},
-    std::pair<const char *, const hb_script_t>{"Thai", HB_SCRIPT_THAI},
-    std::pair<const char *, const hb_script_t>{"Hiragana", HB_SCRIPT_HIRAGANA},
-    std::pair<const char *, const hb_script_t>{"Katakana", HB_SCRIPT_KATAKANA},
-    std::pair<const char *, const hb_script_t>{"Han", HB_SCRIPT_HAN},
-    std::pair<const char *, const hb_script_t>{"Hangul", HB_SCRIPT_HANGUL},
-    std::pair<const char*, const hb_script_t>{"Arabic", HB_SCRIPT_ARABIC},
+  struct ScriptPair {
+    const char* name;
+    const hb_script_t script;
+  };
+  static constexpr std::array<ScriptPair, 7> scripts = {
+    ScriptPair{"Common", HB_SCRIPT_COMMON},
+    ScriptPair{"Thai", HB_SCRIPT_THAI},
+    ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
+    ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
+    ScriptPair{"Han", HB_SCRIPT_HAN},
+    ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+    ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
   };
 
-  static constexpr std::array<std::pair<const char *, const hb_direction_t>, 3> directions = {
-    std::pair<const char *, const hb_direction_t>{"Left to Right", HB_DIRECTION_LTR,},
-    std::pair<const char*, const hb_direction_t>{ "Right To Left",HB_DIRECTION_RTL, },
-    std::pair<const char *, const hb_direction_t>{"Top to Bottom", HB_DIRECTION_TTB,},
+  struct DirectionPair {
+    const char* name;
+    const hb_direction_t direction;
+  };
+  static constexpr std::array<DirectionPair, 3> directions = {
+    DirectionPair{"Left to Right", HB_DIRECTION_LTR,},
+    DirectionPair{ "Right To Left",HB_DIRECTION_RTL, },
+    DirectionPair{"Top to Bottom", HB_DIRECTION_TTB,},
   };
 
-  static constexpr std::array< std::pair<const char *, const char*>, 8> languages = {
-    std::pair<const char*, const char*>{ "None",                    "",      },
-    std::pair<const char*, const char*>{ "English US",              "en-US", },
-    std::pair<const char*, const char*>{ "Thai Thailand",           "th-TH", },
-    std::pair<const char*, const char*>{ "Japanese Japan",          "ja-JP", },
-    std::pair<const char*, const char*>{ "Korean Republic of Korea","ko-KR", },
-    std::pair<const char*, const char*>{ "Chinese China",           "zh-CN", },
-    std::pair<const char*, const char*>{ "Chinese Taiwan",          "zh-TW", },
-    std::pair<const char *, const char*>{ "Arabic Saudi Arabia",   "ar-SA",  },
+  struct LanguagePair {
+    const char* name;
+    const char* code;
+  };
+  static constexpr std::array<LanguagePair, 8> languages = {
+    LanguagePair{ "None",                    "",      },
+    LanguagePair{ "English US",              "en-US", },
+    LanguagePair{ "Thai Thailand",           "th-TH", },
+    LanguagePair{ "Japanese Japan",          "ja-JP", },
+    LanguagePair{ "Korean Republic of Korea","ko-KR", },
+    LanguagePair{ "Chinese China",           "zh-CN", },
+    LanguagePair{ "Chinese Taiwan",          "zh-TW", },
+    LanguagePair{ "Arabic Saudi Arabia",   "ar-SA",  },
   };
   // clang-format on
 
