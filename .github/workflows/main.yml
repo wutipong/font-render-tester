@@ -37,10 +37,12 @@ jobs:
         run: |
           Get-ChildItem -Path out\Release | Compress-Archive -DestinationPath windows-latest.zip
           
-      - name: Update release
-        uses: johnwbyrd/update-release@v1
+      - uses: EndBug/latest-tag@latest
+        
+      - uses: meeDamian/github-release@2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: ./windows-latest.zip
-          release: latest
+          name: latest
           tag: latest
+          allow_override: true
