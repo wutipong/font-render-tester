@@ -38,15 +38,20 @@ jobs:
       - name: "Create latest release file"
         run: |
           Get-ChildItem -Path out\Release | Compress-Archive -DestinationPath windows-latest.zip
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body: |
-            This is the latest, the bleeding edge. Might not work properly and might harm your system. Use with care.
-          files: windows-latest.zip
-          name: Latest
-          prerelease: true
-          tag_name: latest
+          
+      - name: Get release
+        id: latest
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+         
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: ./windows-latest.zip
+          asset_name: windows-latest.zip
+          asset_content_type: application/zip
