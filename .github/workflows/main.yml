@@ -39,10 +39,14 @@ jobs:
           
       - uses: EndBug/latest-tag@latest
         
-      - uses: meeDamian/github-release@2.0
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./windows-latest.zip
-          name: latest
-          tag: latest
-          allow_override: true
+          body: |
+            This is the latest, the bleeding edge. Might not work properly and might harm your system. Use with care.
+          files: windows-latest.zip
+          name: Latest
+          prerelease: true
+          tag_name: latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
