@@ -1,14 +1,14 @@
 #include "font.hpp"
 
-#include "text_renderer.hpp"
-#include "texture.hpp"
-#include <utf8/cpp11.h>
+#include <utf8cpp/utf8.h>
 
 #include "io_util.hpp"
+#include "text_renderer.hpp"
+#include "texture.hpp"
 
 #include FT_SFNT_NAMES_H
 
-#include "harfbuzz/hb-ft.h"
+#include <harfbuzz/hb-ft.h>
 
 FT_Library Font::library;
 
@@ -146,7 +146,8 @@ Glyph Font::CreateGlyph(const int &index) {
   auto x = face->glyph->bitmap_left;
   auto y = face->glyph->bitmap_top - height;
 
-  SDL_Rect bound{x, y, width, height};
+  SDL_Rect bound{x, static_cast<int>(y), static_cast<int>(width),
+                 static_cast<int>(height)};
 
   return {texture, bound, advance, bearing};
 }

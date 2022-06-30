@@ -29,7 +29,7 @@ find_package(freetype CONFIG REQUIRED)
 target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 
 target_link_libraries(font-render-tester PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui harfbuzz::harfbuzz utf8cpp unofficial::gl3w::gl3w freetype)
-
+target_link_libraries(font-render-tester PRIVATE imgui::imgui)
 target_compile_features(font-render-tester PRIVATE cxx_std_17)
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSans-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")

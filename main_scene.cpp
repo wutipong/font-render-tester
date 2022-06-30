@@ -1,12 +1,9 @@
 #include "main_scene.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <streambuf>
-#include <utf8cpp/utf8.h>
-#include <utf8cpp/utf8/cpp11.h>
 
 #include "text_renderer.hpp"
 

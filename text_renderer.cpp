@@ -1,10 +1,8 @@
 #include "text_renderer.hpp"
 
-#include <utf8/cpp11.h>
+#include <utf8cpp/utf8.h>
 
 #include "font.hpp"
-#include <cstring>
-
 #include "draw_glyph.hpp"
 #include "draw_rect.hpp"
 

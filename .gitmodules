@@ -2,3 +2,6 @@
 [submodule "imgui-filebrowser"]
 	path = imgui-filebrowser
 	url = https://github.com/AirGuanZ/imgui-filebrowser
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/Microsoft/vcpkg.git
