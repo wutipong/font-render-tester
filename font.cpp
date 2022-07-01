@@ -115,9 +115,12 @@ void Font::SetFontSize(const int &size) {
   hb_ft_font_changed(hb_font);
 
   // FT_Metrics_FT is in 26.6 fixed decimal.
-  ascend = face->size->metrics.ascender / 64;
-  descend = face->size->metrics.descender / 64;
-  linegap = (face->size->metrics.height / 64) + descend - ascend;
+  ascend = static_cast<float>(face->size->metrics.ascender) / 64.0f;
+  descend = static_cast<float>(face->size->metrics.descender) / 64.0f;
+  height = static_cast<float>(face->size->metrics.height) / 64.0f;
+  maxAdvance = static_cast<float>(face->size->metrics.max_advance) / 64.0f;
+
+  lineGap = height + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(const int &index) {

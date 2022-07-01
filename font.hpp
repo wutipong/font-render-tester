@@ -56,10 +56,11 @@ public:
   Glyph &GetGlyph(const int &index);
   Glyph &GetGlyphFromChar(const char16_t &index);
 
-  float Scale() const { return scale; }
   float Ascend() const { return ascend; }
   float Descend() const { return descend; }
-  float LineGap() const { return linegap; }
+  float LineGap() const { return lineGap; }
+  float LineHeight() const { return height; }
+  float MaxAdvance() const { return maxAdvance; }
 
   hb_font_t *HbFont() const { return hb_font; }
 
@@ -84,11 +85,11 @@ private:
 
   std::map<unsigned int, Glyph> glyphMap;
 
-  float scale{0};
-
   float ascend{0};
   float descend{0};
-  float linegap{0};
+  float lineGap{0};
+  float height{0};
+  float maxAdvance{0};
 
   std::string family;
   std::string subFamily;

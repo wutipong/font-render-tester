@@ -46,7 +46,8 @@ void MainScene::Tick(Context &context) {
   font.SetFontSize(fontSize);
 
   font.RenderText(context, std::string(buffer.data()), color,
-                  languages[selectedLanguage].code, scripts[selectedScript].script);
+                  languages[selectedLanguage].code,
+                  scripts[selectedScript].script);
 }
 
 void MainScene::Cleanup(Context &context) {
@@ -84,6 +85,7 @@ void MainScene::DoUI(Context &context) {
 
       auto familyName = font.GetFamilyName();
       auto subFamily = font.GetSubFamilyName();
+
       ImGui::InputText("Family Name", const_cast<char *>(familyName.c_str()),
                        familyName.size(), ImGuiInputTextFlags_ReadOnly);
       ImGui::InputText("Sub Family Name", const_cast<char *>(subFamily.c_str()),
@@ -92,11 +94,23 @@ void MainScene::DoUI(Context &context) {
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
+      if (ImGui::CollapsingHeader("Font Metrics", ImGuiTreeNodeFlags_None)) {
+        auto ascend = font.Ascend();
+        auto descend = font.Descend();
+        auto lineGap = font.LineGap();
+        auto lineHeight = font.LineHeight();
+
+        ImGui::InputFloat("Ascend", &ascend, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Descend", &descend, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Line Gap", &lineGap, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Line Height", &lineHeight,
+                          ImGuiInputTextFlags_ReadOnly);
+      }
       ImGui::Checkbox("Shape Text", &isShape);
 
       if (isShape) {
         if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
-          for (int i = 0; i < languages.size(); i++) {
+          for (size_t i = 0; i < languages.size(); i++) {
             if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
               selectedLanguage = i;
             }
@@ -104,14 +118,15 @@ void MainScene::DoUI(Context &context) {
           ImGui::EndCombo();
         }
         if (ImGui::BeginCombo("Script", scripts[selectedScript].name)) {
-          for (int i = 0; i < scripts.size(); i++) {
+          for (size_t i = 0; i < scripts.size(); i++) {
             if (ImGui::Selectable(scripts[i].name, i == selectedScript)) {
               selectedScript = i;
             }
           }
           ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Direction", directions[selectedDirection].name)) {
+        if (ImGui::BeginCombo("Direction",
+                              directions[selectedDirection].name)) {
           for (int i = 0; i < directions.size(); i++) {
             if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
               selectedDirection = i;
@@ -124,7 +139,8 @@ void MainScene::DoUI(Context &context) {
       ImGui::ColorPicker3("color", glm::value_ptr(color),
                           ImGuiColorEditFlags_InputRGB);
 
-      ImGui::Checkbox("Debug", &context.debug);
+      /// TODO: Debug is currently broken. Need to revisit the draw_rect shader.
+      // ImGui::Checkbox("Debug", &context.debug);
     }
   }
   ImGui::End();
