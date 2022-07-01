@@ -7,8 +7,6 @@ project(font-render-tester)
 add_executable(font-render-tester 
 	"main.cpp" 
 	"scene.hpp" "scene.cpp" 
-	"imgui_impl_sdl.h" "imgui_impl_sdl.cpp"
-	"imgui_impl_opengl3.h" "imgui_impl_opengl3.cpp"
 	"imgui-filebrowser/imfilebrowser.h"
 	"texture.hpp" "texture.cpp" 
 	"main_scene.hpp" "main_scene.cpp" 

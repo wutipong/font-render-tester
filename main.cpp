@@ -1,10 +1,10 @@
 #include <GL/gl3w.h>
 #include <SDL2/SDL.h>
 #include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl.h>
 
 #include "context.hpp"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl.h"
 #include "main_scene.hpp"
 #include "test_scene.hpp"
 #include "scene.hpp"
