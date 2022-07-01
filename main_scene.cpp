@@ -130,7 +130,7 @@ void MainScene::DoUI(Context &context) {
   ImGui::End();
 
   ImGui::Begin("Input Text");
-  { ImGui::InputTextMultiline("", buffer.data(), buffer.size()); }
+  { ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size()); }
   ImGui::End();
 
   dirChooser.Display();
