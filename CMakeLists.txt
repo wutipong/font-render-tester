@@ -21,6 +21,7 @@ set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 17)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
+	set_property(TARGET font-render-tester PROPERTY WIN32_EXECUTABLE ON)
 	target_compile_options(font-render-tester PRIVATE /Zc:__cplusplus)
 endif()
 
