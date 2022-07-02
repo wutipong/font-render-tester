@@ -1,10 +1,11 @@
 #include "draw_glyph.hpp"
 
-#include "draw_rect.hpp"
-
 #include <GL/gl3w.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <spdlog/spdlog.h>
 
+#include "draw_rect.hpp"
+#include "gl_util.hpp"
 #include "io_util.hpp"
 
 static GLuint program;
@@ -34,7 +35,7 @@ void InitDrawGlyph() {
   glAttachShader(program, vertShader);
   glAttachShader(program, fragShader);
 
-  glLinkProgram(program);
+  LogGlOperation(warn, glLinkProgram(program));
 
   glCreateVertexArrays(1, &vao);
   glBindVertexArray(vao);
