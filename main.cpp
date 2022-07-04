@@ -10,7 +10,7 @@
 #include "context.hpp"
 #include "main_scene.hpp"
 #include "scene.hpp"
-#include "test_scene.hpp"
+#include "gl_util.hpp"
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char contextJson[] = "context.json";
@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
   auto logFilePath = preferencePath / logfile;
   auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
                                            max_size, max_files);
+  logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   Context ctx{};
@@ -60,6 +61,8 @@ int main(int argc, char **argv) {
   SDL_GL_SetSwapInterval(1); // Enable vsync
 
   gl3wInit();
+
+  SetupGLDebug();
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

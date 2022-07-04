@@ -1,9 +1,9 @@
 #include "draw_rect.hpp"
 
+#include "gl_util.hpp"
 #include "io_util.hpp"
 #include <GL/gl3w.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <string>
 
 static GLuint program;
 static GLuint vertShader;
@@ -13,25 +13,16 @@ static GLuint vao;
 static GLuint vbo;
 
 void InitDrawRect() {
-  std::string vertShaderSrc;
-  LoadFile("shaders/draw_rect.vert", vertShaderSrc);
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc.c_str();
-  glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(vertShader);
-
-  std::string fragShaderSrc;
-  LoadFile("shaders/draw_rect.frag", fragShaderSrc);
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc.c_str();
-  glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(fragShader);
+  vertShader = CompileShader("shaders/draw_rect.vert", "Draw Rect Vertex", GL_VERTEX_SHADER);
+  fragShader = CompileShader("shaders/draw_rect.frag", "Draw Rect Fragment", GL_FRAGMENT_SHADER);
 
   program = glCreateProgram();
   glAttachShader(program, vertShader);
   glAttachShader(program, fragShader);
 
   glLinkProgram(program);
+  const std::string programName = "Draw Rect Program";
+  glObjectLabel(GL_PROGRAM, program, programName.length(), programName.c_str());
 
   glCreateVertexArrays(1, &vao);
   glBindVertexArray(vao);

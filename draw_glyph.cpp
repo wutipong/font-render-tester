@@ -5,8 +5,8 @@
 #include <spdlog/spdlog.h>
 
 #include "draw_rect.hpp"
-#include "gl_util.hpp"
 #include "io_util.hpp"
+#include "gl_util.hpp"
 
 static GLuint program;
 static GLuint vertShader;
@@ -17,25 +17,14 @@ static GLuint vbo;
 static GLuint ibo;
 
 void InitDrawGlyph() {
-  std::string vertShaderSrc;
-  LoadFile("shaders/draw_glyph.vert", vertShaderSrc);
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc.c_str();
-  glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(vertShader);
-
-  std::string fragShaderSrc;
-  LoadFile("shaders/draw_glyph.frag", fragShaderSrc);
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc.c_str();
-  glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(fragShader);
+  auto vertShader = CompileShader("shaders/draw_glyph.vert", "Draw Glyph Vertex", GL_VERTEX_SHADER);
+  auto fragShader= CompileShader("shaders/draw_glyph.frag", "Draw Glyph Fragment", GL_FRAGMENT_SHADER);
 
   program = glCreateProgram();
   glAttachShader(program, vertShader);
   glAttachShader(program, fragShader);
 
-  LogGlOperation(warn, glLinkProgram(program));
+  glLinkProgram(program);
 
   glCreateVertexArrays(1, &vao);
   glBindVertexArray(vao);

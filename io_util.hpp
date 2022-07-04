@@ -2,10 +2,10 @@
 
 #include <fstream>
 #include <streambuf>
-#include <vector>
+#include <filesystem>
 
 template <class container_type>
-void LoadFile(const std::string &path, container_type &data,
+void LoadFile(const std::filesystem::path &path, container_type &data,
               std::ios_base::openmode mode = std::ios_base::in) {
 
   typedef typename container_type::value_type value_type;
