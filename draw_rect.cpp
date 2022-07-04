@@ -12,6 +12,8 @@ static GLuint fragShader;
 static GLuint vao;
 static GLuint vbo;
 
+
+
 void InitDrawRect() {
   vertShader = CompileShader("shaders/draw_rect.vert", "Draw Rect Vertex", GL_VERTEX_SHADER);
   fragShader = CompileShader("shaders/draw_rect.frag", "Draw Rect Fragment", GL_FRAGMENT_SHADER);
@@ -21,12 +23,16 @@ void InitDrawRect() {
   glAttachShader(program, fragShader);
 
   glLinkProgram(program);
-  const std::string programName = "Draw Rect Program";
-  glObjectLabel(GL_PROGRAM, program, programName.length(), programName.c_str());
+  SetGLObjectLabel(GL_PROGRAM, program, "Draw Rect Program");
 
   glCreateVertexArrays(1, &vao);
+  SetGLObjectLabel(GL_VERTEX_ARRAY, vao, "Draw Rect VAO");
   glBindVertexArray(vao);
+
+
   glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  SetGLObjectLabel(GL_BUFFER, vbo, "Draw Rect VBO");
 
   // clang-format off
   float vertices[] = {
@@ -36,8 +42,6 @@ void InitDrawRect() {
     1, 0,
   };
   // clang-format on
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), vertices, GL_DYNAMIC_DRAW);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
   glEnableVertexAttribArray(0);
