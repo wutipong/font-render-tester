@@ -1,24 +1,37 @@
 #include <GL/gl3w.h>
+
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/spdlog.h>
 
 #include "context.hpp"
 #include "main_scene.hpp"
-#include "test_scene.hpp"
 #include "scene.hpp"
+#include "gl_util.hpp"
 
-constexpr char imguiIni[] = "imgui.ini";
-constexpr char contextJson[] = "context.json";
+static constexpr char imguiIni[] = "imgui.ini";
+static constexpr char contextJson[] = "context.json";
+static constexpr char logfile[] = "log.txt";
 
 int main(int argc, char **argv) {
-  Context ctx{};
   auto preferencePath = std::filesystem::path(
       SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
   auto imguiIniPath = preferencePath / imguiIni;
   auto contextIniPath = preferencePath / contextJson;
 
+  auto max_size = 5 * 1024 * 1024;
+  auto max_files = 3;
+
+  auto logFilePath = preferencePath / logfile;
+  auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
+                                           max_size, max_files);
+  logger->flush_on(spdlog::level::info);
+  spdlog::set_default_logger(logger);
+
+  Context ctx{};
   LoadContext(ctx, contextIniPath);
 
   SDL_Init(SDL_INIT_EVERYTHING);
@@ -48,6 +61,8 @@ int main(int argc, char **argv) {
   SDL_GL_SetSwapInterval(1); // Enable vsync
 
   gl3wInit();
+
+  SetupGLDebug();
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
