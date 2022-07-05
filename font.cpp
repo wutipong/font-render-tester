@@ -117,7 +117,8 @@ void Font::SetFontSize(const int &size) {
   // FT_Metrics_FT is in 26.6 fixed decimal.
   ascend = face->size->metrics.ascender / 64;
   descend = face->size->metrics.descender / 64;
-  linegap = (face->size->metrics.height / 64) + descend - ascend;
+  height = face->size->metrics.height / 64;
+  linegap = height + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(const int &index) {

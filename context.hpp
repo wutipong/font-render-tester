@@ -16,8 +16,8 @@ struct Context {
 
   glm::vec4 debugGlyphBoundColor = {1.0f, 1.0f, 0.5f, 1.0f};
   glm::vec4 debugLineColor = {1.0f, 0.0f, 0.0f, 1.0f};
-  glm::vec4 debugAscendColor = {0.25f, 0.25f, 1.0f, 1.0f};
-  glm::vec4 debugDescendColor = {1.0f, 0.25f, 0.25f, 1.0f};
+  glm::vec4 debugAscendColor = {0.25f, 0.25f, 1.0f, 0.5f};
+  glm::vec4 debugDescendColor = {0.25f, 1.0f, 0.25f, 0.5f};
   glm::vec4 backgroundColor = {1 / 3.0f, 0.5f, 2 / 3.0f, 1.0f};
 };
 

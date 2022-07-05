@@ -16,16 +16,20 @@ void CleanUpTextRenderers() {
   CleanUpDrawRect();
 }
 
-void DrawLineDebug(Context &ctx, Font &font, int y) {
-  DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
-           ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
+void DrawLineDebug(Context &ctx, Font &font) {
+  float y = ctx.windowBound.h - font.Ascend();
+  do {
+    DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
+             ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
 
-  DrawRect(0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
-           ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
-           DrawRectMode::Fill);
+    DrawRect(0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
+             ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
+             DrawRectMode::Fill);
 
-  DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor, ctx.windowBound.w,
-           ctx.windowBound.h);
+    DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor, ctx.windowBound.w,
+             ctx.windowBound.h);
+    y -= font.LineHeight();
+  } while (y > 0);
 }
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
@@ -37,16 +41,16 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
   int x = 0, y = ctx.windowBound.h - font.Ascend();
   auto u16str = utf8::utf8to16(str);
 
-  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
+  if (ctx.debug) {
+    DrawLineDebug(ctx, font);
+  }
+  const auto lineHeight = font.LineHeight();
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
       y -= lineHeight;
 
       continue;
-    }
-    if (x == 0 && ctx.debug) {
-      DrawLineDebug(ctx, font, y);
     }
 
     auto &g = font.GetGlyphFromChar(u);
@@ -64,13 +68,13 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
   int y = ctx.windowBound.h - font.Ascend();
-  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
+  const auto lineHeight = font.LineHeight();
 
+  if (ctx.debug) {
+    DrawLineDebug(ctx, font);
+  }
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
-    if (ctx.debug) {
-      DrawLineDebug(ctx, font, y);
-    }
 
     std::u16string line(lineStart, lineEnd);
 

@@ -60,6 +60,7 @@ public:
   float Ascend() const { return ascend; }
   float Descend() const { return descend; }
   float LineGap() const { return linegap; }
+  float LineHeight() const { return height; }
 
   hb_font_t *HbFont() const { return hb_font; }
 
@@ -89,6 +90,7 @@ private:
   float ascend{0};
   float descend{0};
   float linegap{0};
+  float height{0};
 
   std::string family;
   std::string subFamily;
