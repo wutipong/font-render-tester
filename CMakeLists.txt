@@ -34,7 +34,6 @@ find_package(harfbuzz CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(utf8cpp CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
 
 target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 
@@ -42,8 +41,7 @@ target_link_libraries(font-render-tester PRIVATE
 		SDL2::SDL2 SDL2::SDL2main
 		imgui::imgui harfbuzz::harfbuzz
 		utf8cpp unofficial::gl3w::gl3w
-		freetype spdlog::spdlog spdlog::spdlog_header_only
-		magic_enum::magic_enum)
+		freetype spdlog::spdlog spdlog::spdlog_header_only)
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSans-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansThai-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")

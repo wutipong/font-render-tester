@@ -6,7 +6,6 @@
     "gl3w",
     "glm",
     "harfbuzz",
-    "magic-enum",
     "nlohmann-json",
     "opengl",
     "sdl2",
