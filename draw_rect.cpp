@@ -70,7 +70,7 @@ void DrawRect(const float &x, const float &y, const float &w, const float &h,
   GLenum drawMode = GL_LINE_LOOP;
   switch (mode) {
   case DrawRectMode::Fill:
-    drawMode = GL_TRIANGLE_STRIP;
+    drawMode = GL_TRIANGLE_FAN;
     break;
 
   case DrawRectMode::Outline:

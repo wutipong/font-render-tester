@@ -2,9 +2,9 @@
 
 #include <utf8cpp/utf8.h>
 
-#include "font.hpp"
 #include "draw_glyph.hpp"
 #include "draw_rect.hpp"
+#include "font.hpp"
 
 void InitTextRenderers() {
   InitDrawGlyph();
@@ -14,6 +14,18 @@ void InitTextRenderers() {
 void CleanUpTextRenderers() {
   CleanUpDrawGlyph();
   CleanUpDrawRect();
+}
+
+void DrawLineDebug(Context &ctx, Font &font, int y) {
+  DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
+           ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
+
+  DrawRect(0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
+           ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
+           DrawRectMode::Fill);
+
+  DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor, ctx.windowBound.w,
+           ctx.windowBound.h);
 }
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
@@ -34,8 +46,7 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
       continue;
     }
     if (x == 0 && ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
+      DrawLineDebug(ctx, font, y);
     }
 
     auto &g = font.GetGlyphFromChar(u);
@@ -57,6 +68,9 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
+    if (ctx.debug) {
+      DrawLineDebug(ctx, font, y);
+    }
 
     std::u16string line(lineStart, lineEnd);
 
@@ -90,11 +104,6 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       x += g.advance;
     }
     hb_buffer_destroy(buffer);
-
-    if (ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
-    }
 
     if (lineEnd == u16str.end())
       break;
@@ -150,7 +159,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     int x = ctx.windowBound.w;
     const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
-    for (int i = glyph_count -1; i >= 0 ; i--) {
+    for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(index);

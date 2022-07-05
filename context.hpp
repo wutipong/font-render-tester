@@ -15,11 +15,13 @@ struct Context {
   std::string fontPath = std::filesystem::absolute("fonts").string();
 
   const glm::vec4 debugGlyphBoundColor = {1.0f, 1.0f, 0.5f, 1.0f};
-  const glm::vec4 debugLineColor = {0.5f, 1.0f, 0.5f, 1.0f};
-  const glm::vec4 backgroundColor = {1/3.0f, 0.5f, 2/3.0f, 1.0f };
+  const glm::vec4 debugLineColor = {1.0f, 0.0f, 0.0f, 1.0f};
+  const glm::vec4 debugAscendColor = {0.25f, 0.25f, 1.0f, 1.0f};
+  const glm::vec4 debugDescendColor = {1.0f, 0.25f, 0.25f, 1.0f};
+  const glm::vec4 backgroundColor = {1 / 3.0f, 0.5f, 2 / 3.0f, 1.0f};
 };
 
-void SaveContext(const Context& ctx, const std::filesystem::path& path);
-void LoadContext(Context& ctx, const std::filesystem::path& path);
+void SaveContext(const Context &ctx, const std::filesystem::path &path);
+void LoadContext(Context &ctx, const std::filesystem::path &path);
 
 #endif
