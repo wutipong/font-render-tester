@@ -1,10 +1,11 @@
 #include "draw_glyph.hpp"
 
-#include "draw_rect.hpp"
-
 #include <GL/gl3w.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <spdlog/spdlog.h>
 
+#include "draw_rect.hpp"
+#include "gl_util.hpp"
 #include "io_util.hpp"
 
 static GLuint program;
@@ -16,28 +17,22 @@ static GLuint vbo;
 static GLuint ibo;
 
 void InitDrawGlyph() {
-  std::string vertShaderSrc;
-  LoadFile("shaders/draw_glyph.vert", vertShaderSrc);
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  auto src = vertShaderSrc.c_str();
-  glShaderSource(vertShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(vertShader);
-
-  std::string fragShaderSrc;
-  LoadFile("shaders/draw_glyph.frag", fragShaderSrc);
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  src = fragShaderSrc.c_str();
-  glShaderSource(fragShader, 1, (const GLchar **)&src, 0);
-  glCompileShader(fragShader);
+  auto vertShader = CompileShader("shaders/draw_glyph.vert",
+                                  "Draw Glyph Vertex", GL_VERTEX_SHADER);
+  auto fragShader = CompileShader("shaders/draw_glyph.frag",
+                                  "Draw Glyph Fragment", GL_FRAGMENT_SHADER);
 
   program = glCreateProgram();
   glAttachShader(program, vertShader);
   glAttachShader(program, fragShader);
 
   glLinkProgram(program);
+  SetGLObjectLabel(GL_PROGRAM, program, "Draw Glyph Program");
 
   glCreateVertexArrays(1, &vao);
+  SetGLObjectLabel(GL_VERTEX_ARRAY, vao, "Draw Glyph VAO");
   glBindVertexArray(vao);
+
   glGenBuffers(1, &vbo);
 
   // clang-format off
@@ -55,6 +50,7 @@ void InitDrawGlyph() {
   // clang-format on
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  SetGLObjectLabel(GL_BUFFER, vbo, "Draw Glyph VBO");
   glBufferData(GL_ARRAY_BUFFER, 20 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
@@ -65,6 +61,7 @@ void InitDrawGlyph() {
 
   glGenBuffers(1, &ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  SetGLObjectLabel(GL_BUFFER, ibo, "Draw Glyph IBO");
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 }
