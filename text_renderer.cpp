@@ -17,7 +17,7 @@ void CleanUpTextRenderers() {
 }
 
 void DrawLineDebug(Context &ctx, Font &font) {
-  float y = ctx.windowBound.h - font.Ascend();
+  float y = ctx.windowBound.h - font.LineHeight();
   do {
     DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
              ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
@@ -38,17 +38,17 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
   if (!font.IsValid())
     return;
 
-  int x = 0, y = ctx.windowBound.h - font.Ascend();
+  int x = 0, y = ctx.windowBound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
   if (ctx.debug) {
     DrawLineDebug(ctx, font);
   }
-  const auto lineHeight = font.LineHeight();
+
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
-      y -= lineHeight;
+      y -= font.LineHeight();
 
       continue;
     }
@@ -67,8 +67,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int y = ctx.windowBound.h - font.Ascend();
-  const auto lineHeight = font.LineHeight();
+  int y = ctx.windowBound.h - font.LineHeight();
 
   if (ctx.debug) {
     DrawLineDebug(ctx, font);
@@ -113,7 +112,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    y -= lineHeight;
+    y -= font.LineHeight();
   }
 }
 
