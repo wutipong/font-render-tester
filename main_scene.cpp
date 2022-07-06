@@ -1,11 +1,9 @@
 #include "main_scene.hpp"
 
+#include "text_renderer.hpp"
 #include <filesystem>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
-#include <streambuf>
-
-#include "text_renderer.hpp"
 
 bool MainScene::Init(Context &context) {
 
@@ -138,9 +136,6 @@ void MainScene::DoUI(Context &context) {
 
       ImGui::ColorPicker3("color", glm::value_ptr(color),
                           ImGuiColorEditFlags_InputRGB);
-
-      /// TODO: Debug is currently broken. Need to revisit the draw_rect shader.
-      // ImGui::Checkbox("Debug", &context.debug);
     }
   }
   ImGui::End();
@@ -149,6 +144,29 @@ void MainScene::DoUI(Context &context) {
   { ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size()); }
   ImGui::End();
 
+  ImGui::Begin("Debug");
+  {
+    ImGui::Checkbox("Enabled", &context.debug);
+    if (context.debug) {
+      ImGui::ColorEdit4(
+          "Glyph Bound", glm::value_ptr(context.debugGlyphBoundColor),
+          ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
+              ImGuiColorEditFlags_NoTooltip);
+      ImGui::ColorEdit4("Ascend", glm::value_ptr(context.debugAscendColor),
+                        ImGuiColorEditFlags_NoInputs |
+                            ImGuiColorEditFlags_NoPicker |
+                            ImGuiColorEditFlags_NoTooltip);
+      ImGui::ColorEdit4("Descend", glm::value_ptr(context.debugDescendColor),
+                        ImGuiColorEditFlags_NoInputs |
+                            ImGuiColorEditFlags_NoPicker |
+                            ImGuiColorEditFlags_NoTooltip);
+      ImGui::ColorEdit4("Baseline", glm::value_ptr(context.debugLineColor),
+                        ImGuiColorEditFlags_NoInputs |
+                            ImGuiColorEditFlags_NoPicker |
+                            ImGuiColorEditFlags_NoTooltip);
+    }
+  }
+  ImGui::End();
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
     OnDirectorySelected(context, dirChooser.GetSelected());

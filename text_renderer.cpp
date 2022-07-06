@@ -2,9 +2,9 @@
 
 #include <utf8cpp/utf8.h>
 
-#include "font.hpp"
 #include "draw_glyph.hpp"
 #include "draw_rect.hpp"
+#include "font.hpp"
 
 void InitTextRenderers() {
   InitDrawGlyph();
@@ -16,26 +16,41 @@ void CleanUpTextRenderers() {
   CleanUpDrawRect();
 }
 
+void DrawLineDebug(Context &ctx, Font &font) {
+  float y = ctx.windowBound.h - font.LineHeight();
+  do {
+    DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
+             ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
+
+    DrawRect(0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
+             ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
+             DrawRectMode::Fill);
+
+    DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor, ctx.windowBound.w,
+             ctx.windowBound.h);
+    y -= font.LineHeight();
+  } while (y > 0);
+}
+
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
                        const glm::vec4 &color, const std::string &language,
                        const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
-  int x = 0, y = ctx.windowBound.h - font.Ascend();
+  int x = 0, y = ctx.windowBound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
-  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
+  if (ctx.debug) {
+    DrawLineDebug(ctx, font);
+  }
+
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
-      y -= lineHeight;
+      y -= font.LineHeight();
 
       continue;
-    }
-    if (x == 0 && ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
     }
 
     auto &g = font.GetGlyphFromChar(u);
@@ -52,9 +67,11 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int y = ctx.windowBound.h - font.Ascend();
-  const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
+  int y = ctx.windowBound.h - font.LineHeight();
 
+  if (ctx.debug) {
+    DrawLineDebug(ctx, font);
+  }
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
@@ -91,16 +108,11 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     }
     hb_buffer_destroy(buffer);
 
-    if (ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
-    }
-
     if (lineEnd == u16str.end())
       break;
 
     lineStart = lineEnd + 1;
-    y -= lineHeight;
+    y -= font.LineHeight();
   }
 }
 
@@ -150,7 +162,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     int x = ctx.windowBound.w;
     const auto lineHeight = -font.Descend() + font.LineGap() + font.Ascend();
 
-    for (int i = glyph_count -1; i >= 0 ; i--) {
+    for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(index);
