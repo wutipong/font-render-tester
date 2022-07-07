@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GL/gl3w.h>
-#include <GL/GL.h>
 #include <string>
 #include <filesystem>
 
