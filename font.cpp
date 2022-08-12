@@ -10,14 +10,21 @@
 #include FT_BITMAP_H
 
 #include <harfbuzz/hb-ft.h>
+#include <spdlog/spdlog.h>
+
 
 FT_Library Font::library;
 
-void Font::Init() {
+bool Font::Init() {
   auto error = FT_Init_FreeType(&library);
   if (error) {
-    // TODO:: Add error handling.
+      std::string message(FT_Error_String(error));
+      spdlog::error("FreeType 2 fails to initialize: {}", error);
+
+      return false;
   }
+
+  return true;
 }
 
 void Font::CleanUp() { FT_Done_FreeType(library); }
