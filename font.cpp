@@ -7,6 +7,7 @@
 #include "texture.hpp"
 
 #include FT_SFNT_NAMES_H
+#include FT_BITMAP_H
 
 #include <harfbuzz/hb-ft.h>
 
@@ -36,11 +37,8 @@ Font::~Font() {
   hb_font_destroy(hb_font);
   hb_font = nullptr;
 
-  for (auto &g : glyphMap) {
-    glDeleteTextures(1, &g.second.texture);
-  }
+  Invalidate();
 
-  data.clear();
   FT_Done_Face(face);
 }
 
@@ -131,18 +129,14 @@ Glyph Font::CreateGlyph(const int &index) {
 
   auto width = face->glyph->bitmap.width;
   auto height = face->glyph->bitmap.rows;
-  auto pitch = face->glyph->bitmap.pitch;
 
-  auto src = face->glyph->bitmap.buffer;
-  auto bitmap = new unsigned char[width * height];
+  FT_Bitmap bitmap;
+  FT_Bitmap_Init(&bitmap);
+  FT_Bitmap_Convert(library, &face->glyph->bitmap, &bitmap, 1);
 
-  for (int i = 0; i < height; i++) {
-    memcpy(bitmap + (i * width), src + (i * pitch), width);
-  }
+  auto texture = LoadTextureFromBitmap(bitmap.buffer, width, height);
 
-  auto texture = LoadTextureFromBitmap(bitmap, width, height);
-
-  delete[] bitmap;
+  FT_Bitmap_Done(library, &bitmap);
 
   auto x = face->glyph->bitmap_left;
   auto y = face->glyph->bitmap_top - height;
