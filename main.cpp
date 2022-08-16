@@ -89,7 +89,12 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, glCtx);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  Scene::ChangeScene<MainScene>(ctx);
+  if (Scene::ChangeScene<MainScene>(ctx)) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", 
+                             "Unable to initialize the new scene", window);
+
+    return EXIT_FAILURE;
+  };
 
   while (true) {
     SDL_Event event;
@@ -130,5 +135,5 @@ int main(int argc, char **argv) {
   SDL_DestroyWindow(window);
   SDL_Quit();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

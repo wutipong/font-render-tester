@@ -12,7 +12,7 @@ add_executable(font-render-tester
 	"main_scene.hpp" "main_scene.cpp" 
 	"font.cpp" "font.hpp" 
 	"text_renderer.hpp" "text_renderer.cpp" 
-	"context.cpp" "test_scene.cpp" 
+	"context.cpp"  
 	"draw_rect.cpp" "draw_glyph.hpp" 
 	"draw_glyph.cpp" "io_util.hpp" 
 	"gl_util.hpp" "gl_util.cpp")

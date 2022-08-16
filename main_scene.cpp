@@ -6,8 +6,7 @@
 #include <imgui.h>
 
 bool MainScene::Init(Context &context) {
-
-  Font::Init();
+  if (!Font::Init()) return false;
   InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
@@ -17,7 +16,6 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(Context &context) {
-
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -15,7 +15,7 @@ public:
   virtual void DoUI(Context& context) {};
 
   static void TickCurrent(Context &context);
-  template <class T> static void ChangeScene(Context &context);
+  template <class T> static bool ChangeScene(Context &context);
 
   static std::unique_ptr<Scene>& Current() { return currentScene; }
 
@@ -23,16 +23,18 @@ private:
   static std::unique_ptr<Scene> currentScene;
 };
 
-template <class T> void Scene::ChangeScene(Context &context) {
+template <class T> bool Scene::ChangeScene(Context &context) {
   auto newScene = std::make_unique<T>();
 
   if (!newScene->Init(context))
-    return;
+    return false;
 
   if(currentScene)
     currentScene->Cleanup(context);
   
   currentScene = std::move(newScene);
+
+  return true;
 }
 
 #endif
