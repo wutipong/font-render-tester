@@ -2,11 +2,21 @@
 
 #include "text_renderer.hpp"
 #include <filesystem>
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 
+static std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
+  std::array<float, 4> output;
+  output[0] = (float)color.r / 255.0f;
+  output[1] = (float)color.g / 255.0f;
+  output[2] = (float)color.b / 255.0f;
+  output[3] = (float)color.a / 255.0f;
+
+  return output;
+}
+
 bool MainScene::Init(Context &context) {
-  if (!Font::Init()) return false;
+  if (!Font::Init())
+    return false;
   InitTextRenderers();
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
@@ -15,13 +25,13 @@ bool MainScene::Init(Context &context) {
   return true;
 }
 
-void MainScene::Tick(Context &context) {
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+void MainScene::Tick(Context &context, SDL_Renderer *renderer) {
 
-  glClearColor(context.backgroundColor.r, context.backgroundColor.g,
-               context.backgroundColor.b, context.backgroundColor.a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  SDL_SetRenderDrawColor(renderer, context.backgroundColor.r,
+                         context.backgroundColor.g, context.backgroundColor.b,
+                         context.backgroundColor.a);
+  SDL_RenderClear(renderer);
+
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
     switch (directions[selectedDirection].direction) {
@@ -41,7 +51,11 @@ void MainScene::Tick(Context &context) {
 
   font.SetFontSize(fontSize);
 
-  font.RenderText(context, std::string(buffer.data()), color,
+  SDL_Color sdlColor = {(uint8_t)(color[0] * 255.0f),
+                        (uint8_t)(color[1] * 255.0f),
+                        (uint8_t)(color[2] * 255.0f), 0xFF};
+
+  font.RenderText(renderer, context, std::string(buffer.data()), sdlColor,
                   languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }
@@ -132,8 +146,7 @@ void MainScene::DoUI(Context &context) {
         }
       }
 
-      ImGui::ColorPicker3("color", glm::value_ptr(color),
-                          ImGuiColorEditFlags_InputRGB);
+      ImGui::ColorPicker3("color", color, ImGuiColorEditFlags_InputRGB);
     }
   }
   ImGui::End();
@@ -146,19 +159,24 @@ void MainScene::DoUI(Context &context) {
   {
     ImGui::Checkbox("Enabled", &context.debug);
     if (context.debug) {
-      ImGui::ColorEdit4(
-          "Glyph Bound", glm::value_ptr(context.debugGlyphBoundColor),
-          ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
-              ImGuiColorEditFlags_NoTooltip);
-      ImGui::ColorEdit4("Ascend", glm::value_ptr(context.debugAscendColor),
+      auto debugGlyphBoundColor = SDLColorToF4(context.debugGlyphBoundColor);
+      auto debugAscendColor = SDLColorToF4(context.debugAscendColor);
+      auto debugDescendColor = SDLColorToF4(context.debugDescendColor);
+      auto debugLineColor = SDLColorToF4(context.debugLineColor);
+
+      ImGui::ColorEdit4("Glyph Bound", debugGlyphBoundColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);
-      ImGui::ColorEdit4("Descend", glm::value_ptr(context.debugDescendColor),
+      ImGui::ColorEdit4("Ascend", debugAscendColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);
-      ImGui::ColorEdit4("Baseline", glm::value_ptr(context.debugLineColor),
+      ImGui::ColorEdit4("Descend", debugDescendColor.data(),
+                        ImGuiColorEditFlags_NoInputs |
+                            ImGuiColorEditFlags_NoPicker |
+                            ImGuiColorEditFlags_NoTooltip);
+      ImGui::ColorEdit4("Baseline", debugLineColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);

@@ -1,9 +1,11 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include <GL/gl3w.h>
 #include <SDL2/SDL.h>
 
-GLuint LoadTextureFromBitmap(unsigned char* bitmap, const int& width, const int& height);
+#include <freetype/freetype.h>
+#include FT_BITMAP_H
+
+SDL_Texture* LoadTextureFromBitmap(SDL_Renderer* renderer, FT_Bitmap& bitmap);
 
 #endif

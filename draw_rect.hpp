@@ -1,14 +1,12 @@
 #pragma once
-#include <glm/glm.hpp>
+#include <SDL.h>
 
 void InitDrawRect();
 void CleanUpDrawRect();
 
-enum class DrawRectMode
-{
-	Outline, Fill
-};
+enum class DrawRectMode { Outline, Fill };
 
 void DrawRect(const float &x, const float &y, const float &w, const float &h,
-              const glm::vec4 &color, const int &screenWidth,
-              const int &screenHeight, const DrawRectMode& mode = DrawRectMode::Outline);
+              const SDL_Color &color, const int &screenWidth,
+              const int &screenHeight,
+              const DrawRectMode &mode = DrawRectMode::Outline);

@@ -32,9 +32,9 @@ void DrawLineDebug(Context &ctx, Font &font) {
   } while (y > 0);
 }
 
-void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
-                       const glm::vec4 &color, const std::string &language,
-                       const hb_script_t &script) {
+void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
+                       const std::string &str, const SDL_Color &color,
+                       const std::string &language, const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
@@ -53,14 +53,15 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
       continue;
     }
 
-    auto &g = font.GetGlyphFromChar(u);
+    auto &g = font.GetGlyphFromChar(u, renderer);
     DrawGlyph(ctx, font, g, color, x, y);
     x += g.advance;
   }
 }
 
-void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
+                           const std::string &str, const SDL_Color &color,
+                           const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -102,7 +103,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(index, renderer);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
@@ -116,8 +117,9 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
   }
 }
 
-void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
+                           const std::string &str, const SDL_Color &color,
+                           const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -165,7 +167,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(index, renderer);
       x -= glyph_positions[i].x_advance / 64.0f;
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
     }
@@ -179,8 +181,9 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
   }
 }
 
-void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
+                           const std::string &str, const SDL_Color &color,
+                           const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -230,7 +233,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(index, renderer);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
       y += roundf(glyph_positions[i].y_advance / 64.0f);
@@ -251,7 +254,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
 }
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const glm::vec4 &color, const int &x, const int &y) {
+               const SDL_Color &color, const int &x, const int &y) {
   DrawGlyph(g, x, y, color, ctx.windowBound.w, ctx.windowBound.h);
 
   if (ctx.debug) {
@@ -261,7 +264,7 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 }
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const glm::vec4 &color, const int &x, const int &y,
+               const SDL_Color &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
 
   // when using with hb-ft, the position metrics will be 26.6 format as well as
