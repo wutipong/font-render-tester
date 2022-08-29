@@ -23,6 +23,8 @@ SDL_Texture *LoadTextureFromBitmap(SDL_Renderer *renderer, FT_Bitmap &bitmap) {
   SDL_FreeSurface(surface);
   SDL_FreePalette(palette);
 
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
   return texture;
 }
 

@@ -6,26 +6,19 @@
 #include "draw_rect.hpp"
 #include "font.hpp"
 
-void InitTextRenderers() {
-  InitDrawGlyph();
-}
-
-void CleanUpTextRenderers() {
-  CleanUpDrawGlyph();
-}
-
-void DrawLineDebug(SDL_Renderer* renderer, Context &ctx, Font &font) {
+void DrawLineDebug(SDL_Renderer *renderer, Context &ctx, Font &font) {
   float y = ctx.windowBound.h - font.LineHeight();
   do {
-    DrawRect(renderer, 0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
-             ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
-
-    DrawRect(renderer, 0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
-             ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
+    DrawRect(renderer, 0, y, ctx.windowBound.w, font.Ascend(),
+             ctx.debugAscendColor, ctx.windowBound.w, ctx.windowBound.h,
              DrawRectMode::Fill);
 
-    DrawLine(renderer, 0, y, ctx.windowBound.w, y, ctx.debugLineColor, ctx.windowBound.w,
-             ctx.windowBound.h);
+    DrawRect(renderer, 0, y + font.Descend(), ctx.windowBound.w,
+             -font.Descend(), ctx.debugDescendColor, ctx.windowBound.w,
+             ctx.windowBound.h, DrawRectMode::Fill);
+
+    DrawLine(renderer, 0, y, ctx.windowBound.w, y, ctx.debugLineColor,
+             ctx.windowBound.w, ctx.windowBound.h);
     y -= font.LineHeight();
   } while (y > 0);
 }
@@ -251,9 +244,10 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
   }
 }
 
-void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y) {
-  DrawGlyph(g, x, y, color, ctx.windowBound.w, ctx.windowBound.h);
+void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+               const Glyph &g, const SDL_Color &color, const int &x,
+               const int &y) {
+  DrawGlyph(renderer, g, x, y, color, ctx.windowBound.w, ctx.windowBound.h);
 
   if (ctx.debug) {
     DrawRect(renderer, x + g.bound.x, y + g.bound.y, g.bound.w, g.bound.h,
@@ -261,16 +255,17 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font, const Gly
   }
 }
 
-void DrawGlyph(SDL_Renderer *renderer,Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y,
-               const hb_glyph_position_t &hb_glyph_pos) {
+void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+               const Glyph &g, const SDL_Color &color, const int &x,
+               const int &y, const hb_glyph_position_t &hb_glyph_pos) {
 
   // when using with hb-ft, the position metrics will be 26.6 format as well as
   // the face->metrics.
   auto xPos = x + (hb_glyph_pos.x_offset / 64.0f);
   auto yPos = y + (hb_glyph_pos.y_offset / 64.0f);
 
-  DrawGlyph(g, xPos, yPos, color, ctx.windowBound.w, ctx.windowBound.h);
+  DrawGlyph(renderer, g, xPos, yPos, color, ctx.windowBound.w,
+            ctx.windowBound.h);
 
   if (ctx.debug) {
     DrawRect(renderer, xPos + g.bound.x, yPos + g.bound.y, g.bound.w, g.bound.h,

@@ -6,9 +6,6 @@
 #include <SDL2/SDL.h>
 #include <harfbuzz/hb.h>
 
-void InitTextRenderers();
-void CleanUpTextRenderers();
-
 void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
                        const std::string &str, const SDL_Color &color,
                        const std::string &language, const hb_script_t &script);

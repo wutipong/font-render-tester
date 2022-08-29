@@ -17,7 +17,7 @@ static std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
 bool MainScene::Init(Context &context) {
   if (!Font::Init())
     return false;
-  InitTextRenderers();
+
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
   dirChooser.SetPwd(context.fontPath);
@@ -61,7 +61,6 @@ void MainScene::Tick(Context &context, SDL_Renderer *renderer) {
 }
 
 void MainScene::Cleanup(Context &context) {
-  CleanUpTextRenderers();
   Font::CleanUp();
 }
 
