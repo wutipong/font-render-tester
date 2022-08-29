@@ -15,6 +15,9 @@ void DrawRect(Context &ctx, const float &x, const float &y, const float &w,
               const float &h, const SDL_Color &color,
               const DrawRectMode &mode) {
 
+  if (w == 0 || h == 0)
+    return;
+
   SDL_FRect rect{x, y, w, h};
 
   /*
