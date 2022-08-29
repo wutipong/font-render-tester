@@ -16,9 +16,9 @@
 enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
 
-typedef std::function<void(
-    SDL_Renderer *renderer, Context &ctx, Font &font, const std::string &str,
-    const SDL_Color &color, const std::string &language, const hb_script_t &script)>
+typedef std::function<void(Context &ctx, Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
+                           const hb_script_t &script)>
     TextRenderFunction;
 
 struct Glyph {
@@ -52,8 +52,8 @@ public:
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return face != nullptr; }
 
-  Glyph &GetGlyph(const int &index, SDL_Renderer* renderer);
-  Glyph &GetGlyphFromChar(const char16_t &index, SDL_Renderer* renderer);
+  Glyph &GetGlyph(Context &ctx, const int &index);
+  Glyph &GetGlyphFromChar(Context &ctx, const char16_t &index);
 
   float Ascend() const { return ascend; }
   float Descend() const { return descend; }
@@ -64,17 +64,16 @@ public:
 
   void SetTextRenderer(const TextRenderEnum &t);
 
-  void RenderText(SDL_Renderer *renderer, Context &ctx, const std::string &str,
-                  const SDL_Color &color, const std::string &language,
-                  const hb_script_t &script);
+  void RenderText(Context &ctx, const std::string &str, const SDL_Color &color,
+                  const std::string &language, const hb_script_t &script);
 
 private:
   static FT_Library library;
 
   bool Initialize();
 
-  Glyph CreateGlyph(SDL_Renderer* renderer, const int &ch);
-  Glyph CreateGlyphFromChar(SDL_Renderer* renderer, const char16_t &ch);
+  Glyph CreateGlyph(Context &ctx, const int &ch);
+  Glyph CreateGlyphFromChar(Context &ctx, const char16_t &ch);
 
   std::vector<char> data{};
   FT_Face face{};

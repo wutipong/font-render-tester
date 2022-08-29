@@ -15,7 +15,7 @@
 class MainScene : public Scene {
 public:
   virtual bool Init(Context &context) override;
-  virtual void Tick(Context &context, SDL_Renderer *renderer) override;
+  virtual void Tick(Context &ctx) override;
   virtual void Cleanup(Context &context) override;
   virtual void DoUI(Context &context) override;
 

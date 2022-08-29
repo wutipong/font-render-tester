@@ -25,12 +25,12 @@ bool MainScene::Init(Context &context) {
   return true;
 }
 
-void MainScene::Tick(Context &context, SDL_Renderer *renderer) {
+void MainScene::Tick(Context &ctx) {
 
-  SDL_SetRenderDrawColor(renderer, context.backgroundColor.r,
-                         context.backgroundColor.g, context.backgroundColor.b,
-                         context.backgroundColor.a);
-  SDL_RenderClear(renderer);
+  SDL_SetRenderDrawColor(ctx.renderer, ctx.backgroundColor.r,
+                         ctx.backgroundColor.g, ctx.backgroundColor.b,
+                         ctx.backgroundColor.a);
+  SDL_RenderClear(ctx.renderer);
 
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
@@ -55,14 +55,12 @@ void MainScene::Tick(Context &context, SDL_Renderer *renderer) {
                         (uint8_t)(color[1] * 255.0f),
                         (uint8_t)(color[2] * 255.0f), 0xFF};
 
-  font.RenderText(renderer, context, std::string(buffer.data()), sdlColor,
+  font.RenderText(ctx, std::string(buffer.data()), sdlColor,
                   languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }
 
-void MainScene::Cleanup(Context &context) {
-  Font::CleanUp();
-}
+void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;

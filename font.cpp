@@ -12,16 +12,15 @@
 #include <harfbuzz/hb-ft.h>
 #include <spdlog/spdlog.h>
 
-
 FT_Library Font::library;
 
 bool Font::Init() {
   auto error = FT_Init_FreeType(&library);
   if (error) {
-      std::string message(FT_Error_String(error));
-      spdlog::error("FreeType 2 fails to initialize: {}", error);
+    std::string message(FT_Error_String(error));
+    spdlog::error("FreeType 2 fails to initialize: {}", error);
 
-      return false;
+    return false;
   }
 
   return true;
@@ -126,7 +125,7 @@ void Font::SetFontSize(const int &size) {
   linegap = height + descend - ascend;
 }
 
-Glyph Font::CreateGlyph(SDL_Renderer* renderer, const int &index) {
+Glyph Font::CreateGlyph(Context &ctx, const int &index) {
   int bearing = 0;
   int advance;
 
@@ -141,7 +140,7 @@ Glyph Font::CreateGlyph(SDL_Renderer* renderer, const int &index) {
   FT_Bitmap_Init(&bitmap);
   FT_Bitmap_Convert(library, &face->glyph->bitmap, &bitmap, 1);
 
-  auto texture = LoadTextureFromBitmap(renderer, bitmap);
+  auto texture = LoadTextureFromBitmap(ctx.renderer, bitmap);
 
   FT_Bitmap_Done(library, &bitmap);
 
@@ -154,16 +153,16 @@ Glyph Font::CreateGlyph(SDL_Renderer* renderer, const int &index) {
   return {texture, bound, advance, bearing};
 }
 
-Glyph Font::CreateGlyphFromChar(SDL_Renderer* renderer, const char16_t &ch) {
+Glyph Font::CreateGlyphFromChar(Context &ctx, const char16_t &ch) {
   auto index = FT_Get_Char_Index(face, ch);
 
-  return CreateGlyph(renderer, index);
+  return CreateGlyph(ctx, index);
 }
 
-Glyph &Font::GetGlyph(const int &index, SDL_Renderer* renderer) {
+Glyph &Font::GetGlyph(Context &ctx, const int &index) {
   auto iter = glyphMap.find(index);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyph(renderer, index);
+    Glyph g = CreateGlyph(ctx, index);
     auto [i, success] = glyphMap.insert({index, g});
 
     iter = i;
@@ -172,10 +171,10 @@ Glyph &Font::GetGlyph(const int &index, SDL_Renderer* renderer) {
   return iter->second;
 }
 
-Glyph &Font::GetGlyphFromChar(const char16_t &ch, SDL_Renderer* renderer) {
+Glyph &Font::GetGlyphFromChar(Context &ctx, const char16_t &ch) {
   auto iter = glyphMap.find(ch);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyphFromChar(renderer, ch);
+    Glyph g = CreateGlyphFromChar(ctx, ch);
     auto [i, success] = glyphMap.insert({ch, g});
 
     iter = i;
@@ -202,11 +201,11 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
   }
 }
 
-void Font::RenderText(SDL_Renderer* renderer, Context &ctx, const std::string &str,
+void Font::RenderText(Context &ctx, const std::string &str,
                       const SDL_Color &color, const std::string &language,
                       const hb_script_t &script) {
   if (!IsValid())
     return;
 
-  textRenderer(renderer,ctx, *this, str, color, language, script);
+  textRenderer(ctx, *this, str, color, language, script);
 }

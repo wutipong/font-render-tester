@@ -11,9 +11,8 @@
  * direction is to match the modern rendering apis such as OpenGL or DirectX.
  */
 
-void DrawRect(SDL_Renderer *renderer, const float &x, const float &y,
-              const float &w, const float &h, const SDL_Color &color,
-              const int &screenWidth, const int &screenHeight,
+void DrawRect(Context &ctx, const float &x, const float &y, const float &w,
+              const float &h, const SDL_Color &color,
               const DrawRectMode &mode) {
 
   SDL_FRect rect{x, y, w, h};
@@ -24,31 +23,30 @@ void DrawRect(SDL_Renderer *renderer, const float &x, const float &y,
    * The given rectangle value has its origin in the bottom-left corner while
    * SDL expects the origin in the top-left corner.
    */
-  rect.y = static_cast<float>(screenHeight) - rect.y - rect.h;
+  rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
 
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
 
   switch (mode) {
 
   case DrawRectMode::Fill:
-    SDL_RenderFillRectF(renderer, &rect);
+    SDL_RenderFillRectF(ctx.renderer, &rect);
     break;
 
   case DrawRectMode::Outline:
-    SDL_RenderDrawRectF(renderer, &rect);
+    SDL_RenderDrawRectF(ctx.renderer, &rect);
     break;
   }
 }
 
-void DrawLine(SDL_Renderer *renderer, const float &x1, const float &y1,
-              const float &x2, const float &y2, const SDL_Color &color,
-              const int &screenWidth, const int &screenHeight) {
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+void DrawLine(Context &ctx, const float &x1, const float &y1, const float &x2,
+              const float &y2, const SDL_Color &color) {
+  SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
 
-  float actualY1 = static_cast<float>(screenHeight) - y1;
-  float actualY2 = static_cast<float>(screenHeight) - y2;
+  float actualY1 = static_cast<float>(ctx.windowBound.h) - y1;
+  float actualY2 = static_cast<float>(ctx.windowBound.h) - y2;
 
-  SDL_RenderDrawLineF(renderer, x1, actualY1, x2, actualY2);
+  SDL_RenderDrawLineF(ctx.renderer, x1, actualY1, x2, actualY2);
 }

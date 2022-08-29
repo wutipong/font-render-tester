@@ -6,6 +6,6 @@
 #include <freetype/freetype.h>
 #include FT_BITMAP_H
 
-SDL_Texture* LoadTextureFromBitmap(SDL_Renderer* renderer, FT_Bitmap& bitmap);
+SDL_Texture *LoadTextureFromBitmap(SDL_Renderer *renderer, FT_Bitmap &bitmap);
 
 #endif

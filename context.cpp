@@ -1,7 +1,7 @@
 #include "context.hpp"
 
-#include <fstream>
 #include "io_util.hpp"
+#include <fstream>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
@@ -26,21 +26,21 @@ void LoadContext(Context &ctx, const std::filesystem::path &path) {
   if (!std::filesystem::exists(path)) {
     return;
   }
-  
+
   json js;
 
   // If there's something wrong with reading file, just do nothing and return.
   try {
-      std::string str;
-      LoadFile(path.string(), str);
+    std::string str;
+    LoadFile(path.string(), str);
 
-      js = json::parse(str);
-  }
-  catch (...) {
-      return;
+    js = json::parse(str);
+  } catch (...) {
+    return;
   }
 
-  // FIXME: using try/catch just to ignore exceptions is not really a good practice.
+  // FIXME: using try/catch just to ignore exceptions is not really a good
+  // practice.
   try {
     ctx.windowBound.w = js["window_bound"]["width"];
   } catch (...) {

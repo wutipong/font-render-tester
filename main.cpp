@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <imgui.h>
-#include <imgui_impl_sdlrenderer.h>
 #include <imgui_impl_sdl.h>
+#include <imgui_impl_sdlrenderer.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+  ctx.renderer = renderer;
 
   std::string imguiIniStr = imguiIniPath.string();
 
@@ -69,7 +70,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDLRenderer_Init(renderer);
 
   if (!Scene::ChangeScene<MainScene>(ctx)) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", 
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
     return EXIT_FAILURE;
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
     ImGui::EndFrame();
     ImGui::Render();
 
-    Scene::TickCurrent(ctx, renderer);
+    Scene::TickCurrent(ctx);
 
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);

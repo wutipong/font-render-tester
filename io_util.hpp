@@ -1,8 +1,8 @@
 #pragma once
 
+#include <filesystem>
 #include <fstream>
 #include <streambuf>
-#include <filesystem>
 
 template <class container_type>
 void LoadFile(const std::filesystem::path &path, container_type &data,
