@@ -1,27 +1,54 @@
 #include "draw_rect.hpp"
 
-#include "io_util.hpp"
+/*
+ * `SDL_Render` uses the coordinate system where the (0,0) is in the top left
+ * corner and the positive Y value is in down direction, whereas the
+ * TextRenderer uses the Y=0 at the bottom and positive Y value is in up
+ * direction. The Draw functions here will convert the direction and the
+ * position, so it's transparent to TextRendering function.
+ *
+ * The reason that Text Rendering function use positive Y value representing up
+ * direction is to match the modern rendering apis such as OpenGL or DirectX.
+ */
 
-void InitDrawRect() {
-  //DO NOTHING
-}
+void DrawRect(SDL_Renderer *renderer, const float &x, const float &y,
+              const float &w, const float &h, const SDL_Color &color,
+              const int &screenWidth, const int &screenHeight,
+              const DrawRectMode &mode) {
 
-void CleanUpDrawRect() {
+  SDL_FRect rect{x, y, w, h};
 
-}
+  /*
+   * Adjust the coordinate, and recalculate the new y origin of the rectangle.
+   *
+   * The given rectangle value has its origin in the bottom-left corner while
+   * SDL expects the origin in the top-left corner.
+   */
+  rect.y = static_cast<float>(screenHeight) - rect.y - rect.h;
 
-void DrawRect(const float &x, const float &y, const float &w, const float &h,
-              const SDL_Color &color, const int &screenWidth,
-              const int &screenHeight, const DrawRectMode &mode) {
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
   switch (mode) {
 
   case DrawRectMode::Fill:
-    //SDL_FillRect
+    SDL_RenderFillRectF(renderer, &rect);
     break;
 
   case DrawRectMode::Outline:
-    //SDL_DrawRect
+    SDL_RenderDrawRectF(renderer, &rect);
     break;
   }
+}
 
+void DrawLine(SDL_Renderer *renderer, const float &x1, const float &y1,
+              const float &x2, const float &y2, const SDL_Color &color,
+              const int &screenWidth, const int &screenHeight) {
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+  float actualY1 = static_cast<float>(screenHeight) - y1;
+  float actualY2 = static_cast<float>(screenHeight) - y2;
+
+  SDL_RenderDrawLineF(renderer, x1, actualY1, x2, actualY2);
 }
