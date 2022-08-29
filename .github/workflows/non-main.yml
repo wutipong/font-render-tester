@@ -10,12 +10,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - run: "Get-ChildItem Env:"
+
       - name: Create output dir
         run: mkdir out
         
       - name: Configure the project.
-        run: cmake -D CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake $env:GITHUB_WORKSPACE
+        run: cmake $env:GITHUB_WORKSPACE
         working-directory: out
 
       - name: Build the project.
@@ -23,9 +23,6 @@ jobs:
 
       - name: Copy font files.
         run: xcopy fonts out\Release\fonts\*
-
-      - name: Copy shader files.
-        run: xcopy shaders out\Release\shaders\*
       
       - uses: actions/upload-artifact@v2
         with:
