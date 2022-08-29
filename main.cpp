@@ -1,16 +1,13 @@
-#include <GL/gl3w.h>
-
 #include <SDL2/SDL.h>
 #include <imgui.h>
-#include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
+#include <imgui_impl_sdlrenderer.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
 #include "context.hpp"
 #include "main_scene.hpp"
 #include "scene.hpp"
-#include "gl_util.hpp"
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char contextJson[] = "context.json";
@@ -36,33 +33,16 @@ int main(int argc, char **argv) {
 
   SDL_Init(SDL_INIT_EVERYTHING);
 
-  const char *glsl_version = "#version 450";
-  SDL_GL_SetAttribute(
-      SDL_GL_CONTEXT_FLAGS,
-      SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
   SDL_Window *window = SDL_CreateWindow(
       "font-render-tester", ctx.windowBound.x, ctx.windowBound.y,
       ctx.windowBound.w, ctx.windowBound.h,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
   SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
 
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+  ctx.renderer = renderer;
+
   std::string imguiIniStr = imguiIniPath.string();
-
-  SDL_GLContext glCtx = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, glCtx);
-  SDL_GL_SetSwapInterval(1); // Enable vsync
-
-  gl3wInit();
-
-  SetupGLDebug();
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -86,11 +66,11 @@ int main(int argc, char **argv) {
 
   io.Fonts->Build();
 
-  ImGui_ImplSDL2_InitForOpenGL(window, glCtx);
-  ImGui_ImplOpenGL3_Init(glsl_version);
+  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+  ImGui_ImplSDLRenderer_Init(renderer);
 
-  if (Scene::ChangeScene<MainScene>(ctx)) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", 
+  if (!Scene::ChangeScene<MainScene>(ctx)) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
     return EXIT_FAILURE;
@@ -105,8 +85,9 @@ int main(int argc, char **argv) {
     }
     SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
-    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(window);
+    ImGui_ImplSDLRenderer_NewFrame();
+
     ImGui::NewFrame();
 
     Scene::Current()->DoUI(ctx);
@@ -114,24 +95,20 @@ int main(int argc, char **argv) {
     ImGui::EndFrame();
     ImGui::Render();
 
-    Scene::Current()->Tick(ctx);
+    Scene::TickCurrent(ctx);
 
-    glViewport(0, 0, ctx.windowBound.w, ctx.windowBound.h);
-    glDisable(GL_SCISSOR_TEST);
-
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    SDL_GL_SwapWindow(window);
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
   SaveContext(ctx, contextIniPath);
 
-  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDLRenderer_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_GL_DeleteContext(glCtx);
+  SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
 

@@ -6,34 +6,22 @@
 #include "draw_rect.hpp"
 #include "font.hpp"
 
-void InitTextRenderers() {
-  InitDrawGlyph();
-  InitDrawRect();
-}
-
-void CleanUpTextRenderers() {
-  CleanUpDrawGlyph();
-  CleanUpDrawRect();
-}
-
 void DrawLineDebug(Context &ctx, Font &font) {
   float y = ctx.windowBound.h - font.LineHeight();
   do {
-    DrawRect(0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
-             ctx.windowBound.w, ctx.windowBound.h, DrawRectMode::Fill);
-
-    DrawRect(0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
-             ctx.debugDescendColor, ctx.windowBound.w, ctx.windowBound.h,
+    DrawRect(ctx, 0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
              DrawRectMode::Fill);
 
-    DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor, ctx.windowBound.w,
-             ctx.windowBound.h);
+    DrawRect(ctx, 0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
+             ctx.debugDescendColor, DrawRectMode::Fill);
+
+    DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugLineColor);
     y -= font.LineHeight();
   } while (y > 0);
 }
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
-                       const glm::vec4 &color, const std::string &language,
+                       const SDL_Color &color, const std::string &language,
                        const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -53,14 +41,14 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
       continue;
     }
 
-    auto &g = font.GetGlyphFromChar(u);
+    auto &g = font.GetGlyphFromChar(ctx, u);
     DrawGlyph(ctx, font, g, color, x, y);
     x += g.advance;
   }
 }
 
 void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -102,7 +90,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(ctx, index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
@@ -117,7 +105,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -132,8 +120,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 
   while (true) {
     if (ctx.debug) {
-      DrawRect(0, y, ctx.windowBound.w, 0, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
+      DrawRect(ctx, 0, y, ctx.windowBound.w, 0, ctx.debugLineColor);
     }
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
@@ -165,7 +152,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(ctx, index);
       x -= glyph_positions[i].x_advance / 64.0f;
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
     }
@@ -180,7 +167,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 }
 
 void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
-                           const glm::vec4 &color, const std::string &language,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -230,7 +217,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
-      auto &g = font.GetGlyph(index);
+      auto &g = font.GetGlyph(ctx, index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
       y += roundf(glyph_positions[i].y_advance / 64.0f);
@@ -238,8 +225,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     hb_buffer_destroy(buffer);
 
     if (ctx.debug) {
-      DrawRect(x, 0, x, ctx.windowBound.h, ctx.debugLineColor,
-               ctx.windowBound.w, ctx.windowBound.h);
+      DrawRect(ctx, x, 0, x, ctx.windowBound.h, ctx.debugLineColor);
     }
 
     if (lineEnd == u16str.end())
@@ -247,32 +233,5 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
 
     lineStart = lineEnd + 1;
     x += lineWidth;
-  }
-}
-
-void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const glm::vec4 &color, const int &x, const int &y) {
-  DrawGlyph(g, x, y, color, ctx.windowBound.w, ctx.windowBound.h);
-
-  if (ctx.debug) {
-    DrawRect(x + g.bound.x, y + g.bound.y, g.bound.w, g.bound.h,
-             ctx.debugGlyphBoundColor, ctx.windowBound.w, ctx.windowBound.h);
-  }
-}
-
-void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const glm::vec4 &color, const int &x, const int &y,
-               const hb_glyph_position_t &hb_glyph_pos) {
-
-  // when using with hb-ft, the position metrics will be 26.6 format as well as
-  // the face->metrics.
-  auto xPos = x + (hb_glyph_pos.x_offset / 64.0f);
-  auto yPos = y + (hb_glyph_pos.y_offset / 64.0f);
-
-  DrawGlyph(g, xPos, yPos, color, ctx.windowBound.w, ctx.windowBound.h);
-
-  if (ctx.debug) {
-    DrawRect(xPos + g.bound.x, yPos + g.bound.y, g.bound.w, g.bound.h,
-             ctx.debugGlyphBoundColor, ctx.windowBound.w, ctx.windowBound.h);
   }
 }

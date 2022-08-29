@@ -12,12 +12,14 @@ public:
   virtual void Tick(Context &context) = 0;
   virtual void Cleanup(Context &context) = 0;
 
-  virtual void DoUI(Context& context) {};
+  virtual void DoUI(Context &context){};
+
+  virtual ~Scene()= default;
 
   static void TickCurrent(Context &context);
   template <class T> static bool ChangeScene(Context &context);
 
-  static std::unique_ptr<Scene>& Current() { return currentScene; }
+  static std::unique_ptr<Scene> &Current() { return currentScene; }
 
 private:
   static std::unique_ptr<Scene> currentScene;
@@ -29,9 +31,9 @@ template <class T> bool Scene::ChangeScene(Context &context) {
   if (!newScene->Init(context))
     return false;
 
-  if(currentScene)
+  if (currentScene)
     currentScene->Cleanup(context);
-  
+
   currentScene = std::move(newScene);
 
   return true;

@@ -15,7 +15,7 @@
 class MainScene : public Scene {
 public:
   virtual bool Init(Context &context) override;
-  virtual void Tick(Context &context) override;
+  virtual void Tick(Context &ctx) override;
   virtual void Cleanup(Context &context) override;
   virtual void DoUI(Context &context) override;
 
@@ -26,7 +26,7 @@ public:
 
 private:
   std::array<char, 4096> buffer = {0};
-  glm::vec4 color = {0, 0, 0, 1.0f};
+  float color[3];
   int fontSize = 64;
   bool isShape = false;
 

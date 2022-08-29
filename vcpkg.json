@@ -3,19 +3,16 @@
   "version-string": "0.1.0-dev",
   "dependencies": [
     "freetype",
-    "gl3w",
-    "glm",
     "harfbuzz",
     "nlohmann-json",
-    "opengl",
     "sdl2",
     "spdlog",
     "utfcpp",
     {
       "name": "imgui",
       "features": [
-        "opengl3-binding",
-        "sdl2-binding"
+        "sdl2-binding",
+        "sdl2-renderer-binding"
       ]
     }
   ]

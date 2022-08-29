@@ -3,7 +3,6 @@
 
 #include <SDL2/SDL.h>
 #include <filesystem>
-#include <glm/glm.hpp>
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
@@ -14,11 +13,13 @@ struct Context {
   bool debug = false;
   std::string fontPath = std::filesystem::absolute("fonts").string();
 
-  glm::vec4 debugGlyphBoundColor = {1.0f, 1.0f, 0.5f, 1.0f};
-  glm::vec4 debugLineColor = {1.0f, 0.0f, 0.0f, 1.0f};
-  glm::vec4 debugAscendColor = {0.25f, 0.25f, 1.0f, 0.5f};
-  glm::vec4 debugDescendColor = {0.25f, 1.0f, 0.25f, 0.5f};
-  glm::vec4 backgroundColor = {1 / 3.0f, 0.5f, 2 / 3.0f, 1.0f};
+  SDL_Renderer *renderer = nullptr;
+
+  SDL_Color debugGlyphBoundColor = {0xFF, 0xFF, 0x80, 0xFF};
+  SDL_Color debugLineColor = {0xFF, 0x00, 0x00, 0xFF};
+  SDL_Color debugAscendColor = {0x40, 0x40, 0xFF, 0x80};
+  SDL_Color debugDescendColor = {0x40, 0xFF, 0x40, 0x80};
+  SDL_Color backgroundColor = {0x55, 0x40, 0xAA, 0xFF};
 };
 
 void SaveContext(const Context &ctx, const std::filesystem::path &path);

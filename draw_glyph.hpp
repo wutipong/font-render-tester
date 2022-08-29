@@ -1,10 +1,9 @@
 #pragma once
 #include "font.hpp"
-#include <glm/glm.hpp>
 
-void InitDrawGlyph();
+void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
+               const SDL_Color &color, const int &x, const int &y);
 
-void DrawGlyph(const Glyph& glyph, const float& x, const float& y, const glm::vec4& color, const int& screenWidth,
-    const int& screenHeight);
-
-void CleanUpDrawGlyph();
+void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
+               const SDL_Color &color, const int &x, const int &y,
+               const hb_glyph_position_t &hb_glyph_pos);
