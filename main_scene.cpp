@@ -72,6 +72,9 @@ void MainScene::DoUI(Context &context) {
       if (ImGui::Button("Browse")) {
         dirChooser.Open();
       }
+      if (ImGui::Button("Re-scan")){
+        fontPaths = ListFontFiles(context.fontPath);
+      }
     }
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
