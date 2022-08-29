@@ -15,8 +15,6 @@
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y) {
-  // DrawGlyph(renderer, g, x, y, color, ctx.windowBound.w, ctx.windowBound.h);
-
   SDL_FRect rect{static_cast<float>(x + g.bound.x),
                  static_cast<float>(y + g.bound.y),
                  static_cast<float>(g.bound.w), static_cast<float>(g.bound.h)};
@@ -36,8 +34,7 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
   SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
 
   if (ctx.debug) {
-    DrawRect(ctx, x + g.bound.x, y + g.bound.y, g.bound.w, g.bound.h,
-             ctx.debugGlyphBoundColor);
+    DrawRect(ctx, rect.x, rect.y, rect.w, rect.h, ctx.debugGlyphBoundColor);
   }
 }
 
