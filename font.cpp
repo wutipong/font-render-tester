@@ -172,15 +172,9 @@ Glyph &Font::GetGlyph(Context &ctx, const int &index) {
 }
 
 Glyph &Font::GetGlyphFromChar(Context &ctx, const char16_t &ch) {
-  auto iter = glyphMap.find(ch);
-  if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyphFromChar(ctx, ch);
-    auto [i, success] = glyphMap.insert({ch, g});
+  const auto index = FT_Get_Char_Index(face, ch);
 
-    iter = i;
-  }
-
-  return iter->second;
+  return Font::GetGlyph(ctx, index);
 }
 
 void Font::SetTextRenderer(const TextRenderEnum &t) {
