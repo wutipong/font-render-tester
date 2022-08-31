@@ -25,13 +25,15 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
    * The given rectangle value has its origin in the bottom-left corner while
    * SDL expects the origin in the top-left corner.
    */
-  rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+  SDL_FRect adjusted{rect.x,
+                     static_cast<float>(ctx.windowBound.h) - rect.y - rect.h,
+                     rect.w, rect.h};
 
   SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
   SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
-  SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
+  SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &adjusted);
 
   if (ctx.debug) {
     DrawRect(ctx, rect.x, rect.y, rect.w, rect.h, ctx.debugGlyphBoundColor);
