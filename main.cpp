@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_sdlrenderer.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   io.Fonts->Build();
 
   ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-  ImGui_ImplSDLRenderer_Init(renderer);
+  ImGui_ImplSDLRenderer2_Init(renderer);
 
   if (!Scene::ChangeScene<MainScene>(ctx)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
     ImGui_ImplSDL2_NewFrame(window);
-    ImGui_ImplSDLRenderer_NewFrame();
+    ImGui_ImplSDLRenderer2_NewFrame();
 
     ImGui::NewFrame();
 
@@ -97,14 +97,14 @@ int main(int argc, char **argv) {
 
     Scene::TickCurrent(ctx);
 
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
   SaveContext(ctx, contextIniPath);
 
-  ImGui_ImplSDLRenderer_Shutdown();
+  ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
