@@ -3,17 +3,49 @@
 #include <utf8cpp/utf8.h>
 
 #include "draw_glyph.hpp"
-#include "draw_rect.hpp"
 #include "font.hpp"
+
+namespace {
+void DrawRect(Context &ctx, const float &x, const float &y, const float &w,
+              const float &h, const SDL_Color &color) {
+
+  if (w == 0 || h == 0)
+    return;
+
+  SDL_FRect rect{x, y, w, h};
+
+  /*
+   * Adjust the coordinate, and recalculate the new y origin of the rectangle.
+   *
+   * The given rectangle value has its origin in the bottom-left corner while
+   * SDL expects the origin in the top-left corner.
+   */
+  rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+
+  SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
+
+  SDL_RenderFillRectF(ctx.renderer, &rect);
+}
+
+void DrawLine(Context &ctx, const float &x1, const float &y1, const float &x2,
+              const float &y2, const SDL_Color &color) {
+  SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
+
+  float actualY1 = static_cast<float>(ctx.windowBound.h) - y1;
+  float actualY2 = static_cast<float>(ctx.windowBound.h) - y2;
+
+  SDL_RenderDrawLineF(ctx.renderer, x1, actualY1, x2, actualY2);
+}
+} // namespace
 
 void DrawLineDebug(Context &ctx, Font &font) {
   float y = ctx.windowBound.h - font.LineHeight();
   do {
-    DrawRect(ctx, 0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor,
-             DrawRectMode::Fill);
-
+    DrawRect(ctx, 0, y, ctx.windowBound.w, font.Ascend(), ctx.debugAscendColor);
     DrawRect(ctx, 0, y + font.Descend(), ctx.windowBound.w, -font.Descend(),
-             ctx.debugDescendColor, DrawRectMode::Fill);
+             ctx.debugDescendColor);
 
     DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugLineColor);
     y -= font.LineHeight();

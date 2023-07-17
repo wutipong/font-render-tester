@@ -16,7 +16,6 @@ add_executable(font-render-tester
         "font.cpp" "font.hpp"
         "text_renderer.hpp" "text_renderer.cpp"
         "context.cpp"
-        "draw_rect.cpp" "draw_glyph.hpp"
         "draw_glyph.cpp" "io_util.hpp"
         )
 
