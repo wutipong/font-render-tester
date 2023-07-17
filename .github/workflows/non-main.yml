@@ -20,9 +20,6 @@ jobs:
 
       - name: Build the project.
         run: cmake --build out --config Release
-
-      - name: Copy font files.
-        run: xcopy fonts out\Release\fonts\*
       
       - uses: actions/upload-artifact@v2
         with:

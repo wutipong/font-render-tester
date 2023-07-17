@@ -16,7 +16,6 @@ add_executable(font-render-tester
         "font.cpp" "font.hpp"
         "text_renderer.hpp" "text_renderer.cpp"
         "context.cpp"
-        "draw_rect.cpp" "draw_glyph.hpp"
         "draw_glyph.cpp" "io_util.hpp"
         )
 
@@ -44,8 +43,25 @@ target_link_libraries(font-render-tester PRIVATE
         imgui::imgui harfbuzz::harfbuzz
         utf8cpp freetype spdlog::spdlog spdlog::spdlog_header_only)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSans-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansThai-Regular.ttf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKjp-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKkr-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts/NotoSansCJKsc-Regular.otf" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/fonts")
+function(copy_resources)
+    set(oneValueArgs TARGET TARGET)
+    set(multiValueArgs TARGET INPUT)
+    set(oneValueArgs DESTINATION)
+
+    cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}"
+            "${multiValueArgs}" ${ARGN}
+            )
+
+    file(GLOB COPY_RESOURCES_INPUT_FILES ${COPY_RESOURCES_INPUT})
+
+    add_custom_target(${COPY_RESOURCES_TARGET} ALL
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:font-render-tester>/${COPY_RESOURCES_DESTINATION}/"
+            COMMAND ${CMAKE_COMMAND} -E copy ${COPY_RESOURCES_INPUT_FILES} "$<TARGET_FILE_DIR:font-render-tester>/${COPY_RESOURCES_DESTINATION}/"
+    )
+endfunction()
+
+copy_resources(
+        TARGET CopyShaders
+        DESTINATION "fonts"
+        INPUT "fonts/NotoSans-Regular.ttf" "fonts/NotoSansThai-Regular.ttf" "fonts/NotoSansCJKjp-Regular.otf" "fonts/NotoSansCJKkr-Regular.otf" "fonts/NotoSansCJKsc-Regular.otf"
+)

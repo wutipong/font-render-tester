@@ -1,7 +1,4 @@
 #include "draw_glyph.hpp"
-
-#include "draw_rect.hpp"
-
 /*
  * `SDL_Render` uses the coordinate system where the (0,0) is in the top left
  * corner and the positive Y value is in down direction, whereas the
@@ -34,7 +31,9 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
   SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
 
   if (ctx.debug) {
-    DrawRect(ctx, rect.x, rect.y, rect.w, rect.h, ctx.debugGlyphBoundColor);
+    SDL_SetRenderDrawColor(ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g, ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+    SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderDrawRectF(ctx.renderer, &rect);
   }
 }
 

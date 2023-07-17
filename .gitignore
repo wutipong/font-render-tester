@@ -7,3 +7,5 @@
 /CMakeSettings.json
 /.vscode
 /out
+/build
+/.idea
