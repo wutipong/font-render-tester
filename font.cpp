@@ -14,6 +14,10 @@
 
 FT_Library Font::library;
 
+namespace {
+float FixedToFloat(const FT_Pos &value) { return roundf(value / 64.0f); }
+} // namespace
+
 bool Font::Init() {
   auto error = FT_Init_FreeType(&library);
   if (error) {
@@ -118,10 +122,9 @@ void Font::SetFontSize(const int &size) {
   auto error = FT_Set_Pixel_Sizes(face, 0, size);
   hb_ft_font_changed(hb_font);
 
-  // FT_Metrics_FT is in 26.6 fixed decimal.
-  ascend = face->size->metrics.ascender / 64;
-  descend = face->size->metrics.descender / 64;
-  height = face->size->metrics.height / 64;
+  ascend = FixedToFloat(face->size->metrics.ascender);
+  descend = FixedToFloat(face->size->metrics.descender);
+  height = FixedToFloat(face->size->metrics.height);
   linegap = height + descend - ascend;
 }
 
@@ -131,7 +134,7 @@ Glyph Font::CreateGlyph(Context &ctx, const int &index) {
 
   FT_Load_Glyph(face, index, FT_LOAD_RENDER);
 
-  advance = static_cast<int>(roundf(face->glyph->advance.x / 64));
+  advance = static_cast<int>(FixedToFloat(face->glyph->advance.x));
 
   auto width = face->glyph->bitmap.width;
   auto height = face->glyph->bitmap.rows;
