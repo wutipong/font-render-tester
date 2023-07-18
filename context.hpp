@@ -16,6 +16,11 @@ struct Context {
   };
 
   bool debug{false};
+  bool debugGlyphBound{true};
+  bool debugBaseLine{true};
+  bool debugAscend{true};
+  bool debugDescend{true};
+
   std::string fontPath{std::filesystem::absolute("fonts").string()};
 
   SDL_Renderer *renderer{nullptr};

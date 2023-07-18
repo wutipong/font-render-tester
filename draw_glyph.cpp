@@ -30,7 +30,7 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 
   SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
 
-  if (ctx.debug) {
+  if (ctx.debug && ctx.debugGlyphBound) {
     SDL_SetRenderDrawColor(ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g, ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
     SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderDrawRectF(ctx.renderer, &rect);
@@ -41,10 +41,8 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
 
-  // when using with hb-ft, the position metrics will be 26.6 format as well as
-  // the face->metrics.
-  auto xPos = x + (hb_glyph_pos.x_offset / 64.0f);
-  auto yPos = y + (hb_glyph_pos.y_offset / 64.0f);
+  auto xPos = x + HBPosToFloat(hb_glyph_pos.x_offset);
+  auto yPos = y + HBPosToFloat(hb_glyph_pos.y_offset);
 
   DrawGlyph(ctx, font, g, color, xPos, yPos);
 }

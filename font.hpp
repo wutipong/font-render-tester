@@ -29,6 +29,9 @@ struct Glyph {
   int bearing;
 };
 
+inline float FTPosToFloat(const FT_Pos &value) { return static_cast<float>(value) / 64.0f; }
+inline float HBPosToFloat(const hb_position_t &value) { return static_cast<float>(value) / 64.0f; }
+
 class Font {
 public:
   static bool Init();
