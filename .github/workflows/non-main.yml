@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: true
@@ -22,7 +22,7 @@ jobs:
       - name: Build the project.
         run: cmake --build out --config Release
       
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: windows
           path: out/Release
