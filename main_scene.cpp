@@ -175,11 +175,19 @@ void MainScene::DoUI(Context &context) {
         auto debugAscendColor = SDLColorToF4(context.debugAscendColor);
         auto debugDescendColor = SDLColorToF4(context.debugDescendColor);
         auto debugBaselineColor = SDLColorToF4(context.debugBaselineColor);
+        auto debugCaretColor = SDLColorToF4(context.debugCaretColor);
 
         ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
         ImGui::ColorEdit4(
             "Baseline", debugBaselineColor.data(),
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
+                ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
+
+        ImGui::Checkbox("Caret Positions", &context.debugCaret);
+        ImGui::SameLine();
+        ImGui::ColorEdit4(
+            "Caret Positions", debugCaretColor.data(),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 

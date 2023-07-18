@@ -12,9 +12,13 @@
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y) {
-  SDL_FRect rect{static_cast<float>(x + g.bound.x),
-                 static_cast<float>(y + g.bound.y),
-                 static_cast<float>(g.bound.w), static_cast<float>(g.bound.h)};
+
+  SDL_FRect rect{
+      static_cast<float>(x + g.bound.x),
+      static_cast<float>(y + g.bound.y),
+      static_cast<float>(g.bound.w),
+      static_cast<float>(g.bound.h),
+  };
 
   /*
    * Adjust the coordinate, and recalculate the new y origin of the rectangle.
@@ -31,7 +35,27 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
   SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
 
   if (ctx.debug && ctx.debugGlyphBound) {
-    SDL_SetRenderDrawColor(ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g, ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+    SDL_SetRenderDrawColor(
+        ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
+        ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+    SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderDrawRectF(ctx.renderer, &rect);
+  }
+
+  if (ctx.debug && ctx.debugCaret) {
+    SDL_FRect rect{
+        static_cast<float>(x),
+        static_cast<float>(y),
+        1,
+        1,
+    };
+
+    rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+
+    SDL_SetRenderDrawColor(ctx.renderer, ctx.debugCaretColor.r,
+                           ctx.debugCaretColor.g, ctx.debugCaretColor.b,
+                           ctx.debugCaretColor.a);
+                           
     SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderDrawRectF(ctx.renderer, &rect);
   }
