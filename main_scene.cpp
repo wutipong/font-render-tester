@@ -174,12 +174,12 @@ void MainScene::DoUI(Context &context) {
         auto debugGlyphBoundColor = SDLColorToF4(context.debugGlyphBoundColor);
         auto debugAscendColor = SDLColorToF4(context.debugAscendColor);
         auto debugDescendColor = SDLColorToF4(context.debugDescendColor);
-        auto debugLineColor = SDLColorToF4(context.debugLineColor);
+        auto debugBaselineColor = SDLColorToF4(context.debugBaselineColor);
 
-        ImGui::Checkbox("Baseline", &context.debugBaseLine);
+        ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
         ImGui::ColorEdit4(
-            "Baseline", debugLineColor.data(),
+            "Baseline", debugBaselineColor.data(),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 

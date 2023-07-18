@@ -17,7 +17,7 @@ struct Context {
 
   bool debug{false};
   bool debugGlyphBound{true};
-  bool debugBaseLine{true};
+  bool debugBaseline{true};
   bool debugAscend{true};
   bool debugDescend{true};
 
@@ -26,7 +26,7 @@ struct Context {
   SDL_Renderer *renderer{nullptr};
 
   const SDL_Color debugGlyphBoundColor{0xFF, 0xFF, 0x80, 0xFF};
-  const SDL_Color debugLineColor{0xFF, 0x00, 0x00, 0xFF};
+  const SDL_Color debugBaselineColor{0xFF, 0x00, 0x00, 0xFF};
   const SDL_Color debugAscendColor{0x40, 0x40, 0xFF, 0x80};
   const SDL_Color debugDescendColor{0x40, 0xFF, 0x40, 0x80};
   const SDL_Color backgroundColor{0x80, 0x80, 0x80, 0xFF};

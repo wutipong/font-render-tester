@@ -52,8 +52,8 @@ void DrawHorizontalLineDebug(Context &ctx, const float &lineHeight,
     if (ctx.debugDescend) {
       DrawRect(ctx, 0, y, ctx.windowBound.w, descend, ctx.debugDescendColor);
     }
-    if (ctx.debugBaseLine) {
-      DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugLineColor);
+    if (ctx.debugBaseline) {
+      DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugBaselineColor);
     }
     y -= lineHeight;
   } while (y > 0);
@@ -72,8 +72,8 @@ void DrawVerticalLineDebug(Context &ctx, const float &lineWidth,
     if (ctx.debugDescend) {
       DrawRect(ctx, x, 0, descend, ctx.windowBound.h, ctx.debugDescendColor);
     }
-    if (ctx.debugBaseLine) {
-      DrawLine(ctx, x, 0, x, ctx.windowBound.h, ctx.debugLineColor);
+    if (ctx.debugBaseline) {
+      DrawLine(ctx, x, 0, x, ctx.windowBound.h, ctx.debugBaselineColor);
     }
     x += lineWidth;
   } while (x > 0);
