@@ -4,15 +4,17 @@
 #include <filesystem>
 #include <imgui.h>
 
-static std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
+namespace {
+std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
   std::array<float, 4> output;
-  output[0] = (float)color.r / 255.0f;
-  output[1] = (float)color.g / 255.0f;
-  output[2] = (float)color.b / 255.0f;
-  output[3] = (float)color.a / 255.0f;
+  output[0] = static_cast<float>(color.r) / 255.0f;
+  output[1] = static_cast<float>(color.g) / 255.0f;
+  output[2] = static_cast<float>(color.b) / 255.0f;
+  output[3] = static_cast<float>(color.a) / 255.0f;
 
   return output;
 }
+} // namespace
 
 bool MainScene::Init(Context &context) {
   if (!Font::Init())
@@ -51,9 +53,12 @@ void MainScene::Tick(Context &ctx) {
 
   font.SetFontSize(fontSize);
 
-  SDL_Color sdlColor = {(uint8_t)(color[0] * 255.0f),
-                        (uint8_t)(color[1] * 255.0f),
-                        (uint8_t)(color[2] * 255.0f), 0xFF};
+  SDL_Color sdlColor = {
+      static_cast<uint8_t>(color[0] * 255.0f),
+      static_cast<uint8_t>(color[1] * 255.0f),
+      static_cast<uint8_t>(color[2] * 255.0f),
+      0xFF,
+  };
 
   font.RenderText(ctx, std::string(buffer.data()), sdlColor,
                   languages[selectedLanguage].code,
@@ -72,20 +77,25 @@ void MainScene::DoUI(Context &context) {
       if (ImGui::Button("Browse")) {
         dirChooser.Open();
       }
-      if (ImGui::Button("Re-scan")){
+      if (ImGui::Button("Re-scan")) {
         fontPaths = ListFontFiles(context.fontPath);
       }
     }
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
-      if (ImGui::BeginCombo(
-              "Font File",
-              (selectedFontIndex == -1)
-                  ? "<None>"
-                  : fontPaths[selectedFontIndex].filename().string().c_str())) {
+      auto currentFile = selectedFontIndex == -1
+                             ? "<None>"
+                             : fontPaths[selectedFontIndex].filename().string();
+
+      if (ImGui::BeginCombo("Font File", currentFile.c_str())) {
         for (int i = 0; i < fontPaths.size(); i++) {
+          auto isSelected = i == selectedFontIndex;
+          if (isSelected) {
+            ImGui::SetItemDefaultFocus();
+          }
+
           if (ImGui::Selectable(fontPaths[i].filename().string().c_str(),
-                                i == selectedFontIndex)) {
+                                isSelected)) {
             newSelected = i;
           }
         }
@@ -96,10 +106,11 @@ void MainScene::DoUI(Context &context) {
       auto familyName = font.GetFamilyName();
       auto subFamily = font.GetSubFamilyName();
 
-      ImGui::InputText("Family Name", const_cast<char *>(familyName.c_str()),
-                       familyName.size(), ImGuiInputTextFlags_ReadOnly);
-      ImGui::InputText("Sub Family Name", const_cast<char *>(subFamily.c_str()),
-                       subFamily.size(), ImGuiInputTextFlags_ReadOnly);
+      ImGui::InputText("Family Name", familyName.data(), familyName.size(),
+                       ImGuiInputTextFlags_ReadOnly);
+
+      ImGui::InputText("Sub Family Name", subFamily.data(), subFamily.size(),
+                       ImGuiInputTextFlags_ReadOnly);
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -168,14 +179,17 @@ void MainScene::DoUI(Context &context) {
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);
+
       ImGui::ColorEdit4("Ascend", debugAscendColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);
+
       ImGui::ColorEdit4("Descend", debugDescendColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
                             ImGuiColorEditFlags_NoTooltip);
+
       ImGui::ColorEdit4("Baseline", debugLineColor.data(),
                         ImGuiColorEditFlags_NoInputs |
                             ImGuiColorEditFlags_NoPicker |
@@ -183,6 +197,7 @@ void MainScene::DoUI(Context &context) {
     }
   }
   ImGui::End();
+  
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
     OnDirectorySelected(context, dirChooser.GetSelected());

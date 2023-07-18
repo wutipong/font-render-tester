@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
       "font-render-tester", ctx.windowBound.x, ctx.windowBound.y,
       ctx.windowBound.w, ctx.windowBound.h,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
-  SDL_SetWindowMinimumSize(window, WIDTH, HEIGHT);
+  SDL_SetWindowMinimumSize(window, MININUM_WIDTH, MINIMUM_HEIGHT);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
   ctx.renderer = renderer;
