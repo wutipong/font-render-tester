@@ -41,31 +41,43 @@ void DrawLine(Context &ctx, const float &x1, const float &y1, const float &x2,
 
 void DrawHorizontalLineDebug(Context &ctx, const float &lineHeight,
                              const float &ascend, const float &descend) {
+  if (!ctx.debug)
+    return;
+
   float y = ctx.windowBound.h - lineHeight;
   do {
-    DrawRect(ctx, 0, y, ctx.windowBound.w, ascend, ctx.debugAscendColor);
-    DrawRect(ctx, 0, y, ctx.windowBound.w, descend, ctx.debugDescendColor);
-
-    DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugLineColor);
+    if (ctx.debugAscend) {
+      DrawRect(ctx, 0, y, ctx.windowBound.w, ascend, ctx.debugAscendColor);
+    }
+    if (ctx.debugDescend) {
+      DrawRect(ctx, 0, y, ctx.windowBound.w, descend, ctx.debugDescendColor);
+    }
+    if (ctx.debugBaseline) {
+      DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugBaselineColor);
+    }
     y -= lineHeight;
   } while (y > 0);
 }
 
 void DrawVerticalLineDebug(Context &ctx, const float &lineWidth,
                            const float &ascend, const float &descend) {
+  if (!ctx.debug)
+    return;
+
   float x = ctx.windowBound.w - lineWidth;
   do {
-    DrawRect(ctx, x, 0, ascend, ctx.windowBound.h, ctx.debugAscendColor);
-    DrawRect(ctx, x, 0, descend, ctx.windowBound.h, ctx.debugDescendColor);
-
-    DrawLine(ctx, x, 0, x, ctx.windowBound.h, ctx.debugLineColor);
-
+    if (ctx.debugAscend) {
+      DrawRect(ctx, x, 0, ascend, ctx.windowBound.h, ctx.debugAscendColor);
+    }
+    if (ctx.debugDescend) {
+      DrawRect(ctx, x, 0, descend, ctx.windowBound.h, ctx.debugDescendColor);
+    }
+    if (ctx.debugBaseline) {
+      DrawLine(ctx, x, 0, x, ctx.windowBound.h, ctx.debugBaselineColor);
+    }
     x += lineWidth;
   } while (x > 0);
 }
-
-float FixedToFloat(const hb_position_t &value) { return roundf(value / 64.0f); }
-
 } // namespace
 
 void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
@@ -77,10 +89,8 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
   int x = 0, y = ctx.windowBound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
-  if (ctx.debug) {
-    DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                            font.Descend());
-  }
+  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
+                          font.Descend());
 
   for (auto &u : u16str) {
     if (u == '\n') {
@@ -106,10 +116,9 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
   auto lineStart = u16str.begin();
   int y = ctx.windowBound.h - font.LineHeight();
 
-  if (ctx.debug) {
-    DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                            font.Descend());
-  }
+  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
+                          font.Descend());
+
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
 
@@ -168,10 +177,8 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 
   int y = ctx.windowBound.h - font.LineHeight();
 
-  if (ctx.debug) {
-    DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                            font.Descend());
-  }
+  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
+                          font.Descend());
 
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
@@ -204,7 +211,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(ctx, index);
-      x -= glyph_positions[i].x_advance / 64.0f;
+      x -= HBPosToFloat(glyph_positions[i].x_advance);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
     }
     hb_buffer_destroy(buffer);
@@ -226,9 +233,9 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);
 
-  const float ascend = FixedToFloat(extents.ascender);
-  const float descend = FixedToFloat(extents.descender);
-  const float linegap = FixedToFloat(extents.line_gap);
+  const float ascend = HBPosToFloat(extents.ascender);
+  const float descend = HBPosToFloat(extents.descender);
+  const float linegap = HBPosToFloat(extents.line_gap);
 
   const auto lineWidth = -ascend + descend + linegap;
 
@@ -273,7 +280,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
       auto &g = font.GetGlyph(ctx, index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
-      y += FixedToFloat(glyph_positions[i].y_advance);
+      y += HBPosToFloat(glyph_positions[i].y_advance);
     }
     hb_buffer_destroy(buffer);
 
