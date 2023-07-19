@@ -1,6 +1,7 @@
 #include "main_scene.hpp"
 
 #include "text_renderer.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <imgui.h>
 
@@ -268,8 +269,15 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
 
     auto entryPath = p.path();
     auto extension = entryPath.extension().string();
-    if (extension != ".otf" && extension != ".ttf")
+
+    static auto compare = [](char c1, char c2) -> bool {
+      return std::tolower(c1) == std::tolower(c2);
+    };
+
+    if (!std::equal(extension.begin(), extension.end(), ".otf", compare) &&
+        !std::equal(extension.begin(), extension.end(), ".ttf", compare)) {
       continue;
+    }
 
     output.push_back(p);
   }
