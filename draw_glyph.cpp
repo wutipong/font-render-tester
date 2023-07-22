@@ -65,8 +65,8 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
                const SDL_Color &color, const int &x, const int &y,
                const hb_glyph_position_t &hb_glyph_pos) {
 
-  auto xPos = x + HBPosToFloat(hb_glyph_pos.x_offset);
-  auto yPos = y + HBPosToFloat(hb_glyph_pos.y_offset);
+  auto xPos = x + HBPosToNumber<int>(hb_glyph_pos.x_offset);
+  auto yPos = y + HBPosToNumber<int>(hb_glyph_pos.y_offset);
 
   DrawGlyph(ctx, font, g, color, xPos, yPos);
 }

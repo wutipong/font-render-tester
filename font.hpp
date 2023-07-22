@@ -22,15 +22,26 @@ typedef std::function<void(Context &ctx, Font &font, const std::string &str,
     TextRenderFunction;
 
 struct Glyph {
-
   SDL_Texture *texture;
   SDL_Rect bound;
   int advance;
   int bearing;
 };
 
-inline float FTPosToFloat(const FT_Pos &value) { return static_cast<float>(value) / 64.0f; }
-inline float HBPosToFloat(const hb_position_t &value) { return static_cast<float>(value) / 64.0f; }
+template <typename T>
+inline T FTPosToNumber(const FT_Pos &value) {
+  return static_cast<T>(value) / 64;
+}
+
+template <typename T>
+inline T FTFixedToNumber(const FT_Fixed &value) {
+  return static_cast<T>(value) / 16'384;
+}
+
+template <typename T>
+inline T HBPosToNumber(const hb_position_t &value) {
+  return static_cast<T>(value) / 64;
+}
 
 class Font {
 public:

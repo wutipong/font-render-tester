@@ -211,7 +211,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(ctx, index);
-      x -= HBPosToFloat(glyph_positions[i].x_advance);
+      x -= HBPosToNumber<int>(glyph_positions[i].x_advance);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
     }
     hb_buffer_destroy(buffer);
@@ -233,9 +233,9 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);
 
-  const float ascend = HBPosToFloat(extents.ascender);
-  const float descend = HBPosToFloat(extents.descender);
-  const float linegap = HBPosToFloat(extents.line_gap);
+  const float ascend = HBPosToNumber<float>(extents.ascender);
+  const float descend = HBPosToNumber<float>(extents.descender);
+  const float linegap = HBPosToNumber<float>(extents.line_gap);
 
   const auto lineWidth = -ascend + descend + linegap;
 
@@ -280,7 +280,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
       auto &g = font.GetGlyph(ctx, index);
       DrawGlyph(ctx, font, g, color, x, y, glyph_positions[i]);
 
-      y += HBPosToFloat(glyph_positions[i].y_advance);
+      y += HBPosToNumber<int>(glyph_positions[i].y_advance);
     }
     hb_buffer_destroy(buffer);
 

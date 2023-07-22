@@ -118,9 +118,9 @@ void Font::SetFontSize(const int &size) {
   auto error = FT_Set_Pixel_Sizes(face, 0, size);
   hb_ft_font_changed(hb_font);
 
-  ascend = FTPosToFloat(face->size->metrics.ascender);
-  descend = FTPosToFloat(face->size->metrics.descender);
-  height = FTPosToFloat(face->size->metrics.height);
+  ascend = FTPosToNumber<float>(face->size->metrics.ascender);
+  descend = FTPosToNumber<float>(face->size->metrics.descender);
+  height = FTPosToNumber<float>(face->size->metrics.height);
   linegap = height + descend - ascend;
 }
 
@@ -130,7 +130,7 @@ Glyph Font::CreateGlyph(Context &ctx, const int &index) {
 
   FT_Load_Glyph(face, index, FT_LOAD_RENDER);
 
-  advance = static_cast<int>(FTPosToFloat(face->glyph->advance.x));
+  advance = FTPosToNumber<int>(face->glyph->advance.x);
 
   auto width = face->glyph->bitmap.width;
   auto height = face->glyph->bitmap.rows;
