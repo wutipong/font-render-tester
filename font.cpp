@@ -59,7 +59,7 @@ bool Font::Load(const std::vector<char> &data) {
 }
 
 static std::string ConvertFromFontString(const char *str, const int &length) {
-  const char16_t *c16str = reinterpret_cast<const char16_t *>(str);
+  const char16_t *c16str = std::bit_cast<const char16_t *>(str);
   std::vector<char16_t> buffer;
   for (int i = 0; i < length / 2; i++) {
     buffer.push_back(SDL_SwapBE16(c16str[i]));
@@ -78,7 +78,7 @@ bool Font::Initialize() {
   textRendererEnum = TextRenderEnum::NoShape;
 
   auto error = FT_New_Memory_Face(
-      library, reinterpret_cast<const FT_Byte *>(data.data()), data.size(), 0,
+      library, std::bit_cast<const FT_Byte *>(data.data()), data.size(), 0,
       &face);
 
   if (error) {
@@ -94,6 +94,7 @@ bool Font::Initialize() {
   family = face->family_name;
   subFamily = face->style_name;
 
+  sizeMetrics = ToSizeMetrics(face->size->metrics);
   return true;
 }
 
@@ -201,4 +202,17 @@ void Font::RenderText(Context &ctx, const std::string &str,
     return;
 
   textRenderer(ctx, *this, str, color, language, script);
+}
+
+SizeMetrics ToSizeMetrics(FT_Size_Metrics &m) {
+  return SizeMetrics{
+      .xPixelPerEm = m.x_ppem,
+      .yPixelPerEm = m.y_ppem,
+      .xScale = FTFixedToNumber<float>(m.x_scale),
+      .yScale = FTFixedToNumber<float>(m.y_scale),
+      .ascender = FTPosToNumber<float>(m.ascender),
+      .descender = FTPosToNumber<float>(m.descender),
+      .height = FTPosToNumber<float>(m.height),
+      .max_advance = FTPosToNumber<float>(m.max_advance),
+  };
 }

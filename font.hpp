@@ -21,6 +21,19 @@ typedef std::function<void(Context &ctx, Font &font, const std::string &str,
                            const hb_script_t &script)>
     TextRenderFunction;
 
+struct SizeMetrics {
+  int xPixelPerEm;
+  int yPixelPerEm;
+
+  float xScale;
+  float yScale;
+
+  float ascender;
+  float descender;
+  float height;
+  float max_advance;
+};
+
 struct Glyph {
   SDL_Texture *texture;
   SDL_Rect bound;
@@ -28,18 +41,15 @@ struct Glyph {
   int bearing;
 };
 
-template <typename T>
-inline T FTPosToNumber(const FT_Pos &value) {
+template <typename T> inline T FTPosToNumber(const FT_Pos &value) {
   return static_cast<T>(value) / 64;
 }
 
-template <typename T>
-inline T FTFixedToNumber(const FT_Fixed &value) {
+template <typename T> inline T FTFixedToNumber(const FT_Fixed &value) {
   return static_cast<T>(value) / 16'384;
 }
 
-template <typename T>
-inline T HBPosToNumber(const hb_position_t &value) {
+template <typename T> inline T HBPosToNumber(const hb_position_t &value) {
   return static_cast<T>(value) / 64;
 }
 
@@ -97,6 +107,8 @@ private:
 
   std::map<unsigned int, Glyph> glyphMap;
 
+  SizeMetrics sizeMetrics;
+
   float ascend{0};
   float descend{0};
   float linegap{0};
@@ -108,3 +120,5 @@ private:
   TextRenderFunction textRenderer;
   TextRenderEnum textRendererEnum{TextRenderEnum::NoShape};
 };
+
+SizeMetrics ToSizeMetrics(FT_Size_Metrics &m);

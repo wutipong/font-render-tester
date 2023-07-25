@@ -19,8 +19,8 @@ add_executable(font-render-tester
         "draw_glyph.cpp" "io_util.hpp"
         )
 
-target_compile_features(font-render-tester PRIVATE cxx_std_17)
-set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 17)
+target_compile_features(font-render-tester PRIVATE cxx_std_20)
+set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 20)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)

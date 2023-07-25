@@ -134,7 +134,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
-                        reinterpret_cast<const uint16_t *>(line.c_str()),
+                        std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
@@ -195,7 +195,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
-                        reinterpret_cast<const uint16_t *>(line.c_str()),
+                        std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
@@ -262,7 +262,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
     hb_buffer_set_script(buffer, script);
 
     hb_buffer_add_utf16(buffer,
-                        reinterpret_cast<const uint16_t *>(line.c_str()),
+                        std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
