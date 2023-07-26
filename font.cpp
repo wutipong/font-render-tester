@@ -77,9 +77,9 @@ bool Font::Initialize() {
   textRenderer = TextRenderNoShape;
   textRendererEnum = TextRenderEnum::NoShape;
 
-  auto error = FT_New_Memory_Face(
-      library, std::bit_cast<const FT_Byte *>(data.data()), data.size(), 0,
-      &face);
+  auto error =
+      FT_New_Memory_Face(library, std::bit_cast<const FT_Byte *>(data.data()),
+                         data.size(), 0, &face);
 
   if (error) {
     data.clear();
@@ -89,7 +89,6 @@ bool Font::Initialize() {
   hb_font = hb_ft_font_create_referenced(face);
 
   Invalidate();
-  fontSize = -1;
 
   family = face->family_name;
   subFamily = face->style_name;
@@ -127,12 +126,9 @@ void Font::SetFontSize(const int &size) {
 }
 
 Glyph Font::CreateGlyph(Context &ctx, const int &index) {
-  int bearing = 0;
-  int advance;
-
   FT_Load_Glyph(face, index, FT_LOAD_RENDER);
 
-  advance = FTPosToNumber<int>(face->glyph->advance.x);
+  int advance = FTPosToNumber<int>(face->glyph->advance.x);
 
   auto width = face->glyph->bitmap.width;
   auto height = face->glyph->bitmap.rows;
@@ -148,10 +144,18 @@ Glyph Font::CreateGlyph(Context &ctx, const int &index) {
   auto x = face->glyph->bitmap_left;
   auto y = face->glyph->bitmap_top - height;
 
-  SDL_Rect bound{x, static_cast<int>(y), static_cast<int>(width),
-                 static_cast<int>(height)};
-
-  return {texture, bound, advance, bearing};
+  return Glyph{
+      .texture = texture,
+      .bound =
+          {
+              .x = x,
+              .y = static_cast<int>(y),
+              .w = static_cast<int>(width),
+              .h = static_cast<int>(height),
+          },
+      .advance = advance,
+      .bearing = 0,
+  };
 }
 
 Glyph Font::CreateGlyphFromChar(Context &ctx, const char16_t &ch) {

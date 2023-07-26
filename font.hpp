@@ -107,7 +107,7 @@ private:
 
   std::map<unsigned int, Glyph> glyphMap;
 
-  SizeMetrics sizeMetrics;
+  SizeMetrics sizeMetrics{};
 
   float ascend{0};
   float descend{0};
