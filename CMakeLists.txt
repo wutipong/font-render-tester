@@ -9,7 +9,6 @@ project(font-render-tester)
 # add the executable
 add_executable(font-render-tester
         "main.cpp"
-        "scene.hpp" "scene.cpp"
         "imgui-filebrowser/imfilebrowser.h"
         "texture.hpp" "texture.cpp"
         "main_scene.hpp" "main_scene.cpp"

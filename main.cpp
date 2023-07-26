@@ -7,7 +7,6 @@
 
 #include "context.hpp"
 #include "main_scene.hpp"
-#include "scene.hpp"
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char contextJson[] = "context.json";
@@ -69,12 +68,12 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer2_Init(renderer);
 
-  if (!Scene::ChangeScene<MainScene>(ctx)) {
+  if (!MainScene::Init(ctx)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
     return EXIT_FAILURE;
-  };
+  }
 
   while (true) {
     SDL_Event event;
@@ -90,12 +89,12 @@ int main(int argc, char **argv) {
 
     ImGui::NewFrame();
 
-    Scene::Current()->DoUI(ctx);
+    MainScene::DoUI(ctx);
 
     ImGui::EndFrame();
     ImGui::Render();
 
-    Scene::TickCurrent(ctx);
+    MainScene::Tick(ctx);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);

@@ -4,8 +4,107 @@
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
+#include "imgui.h"
 
-namespace {
+#include "imgui-filebrowser/imfilebrowser.h"
+
+namespace MainScene {
+
+std::array<char, 4096> buffer = {0};
+float color[3];
+int fontSize = 64;
+bool isShape = false;
+
+int selectedFontIndex = -1;
+std::vector<std::filesystem::path> fontPaths;
+
+std::vector<unsigned char> fontData;
+
+ImGui::FileBrowser dirChooser{
+    ImGuiFileBrowserFlags_SelectDirectory,
+};
+
+Font font{};
+
+struct ScriptPair {
+  const char *name;
+  const hb_script_t script;
+};
+static constexpr std::array<ScriptPair, 7> scripts = {
+    ScriptPair{"Common", HB_SCRIPT_COMMON},
+    ScriptPair{"Thai", HB_SCRIPT_THAI},
+    ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
+    ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
+    ScriptPair{"Han", HB_SCRIPT_HAN},
+    ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+    ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
+};
+
+struct DirectionPair {
+  const char *name;
+  const hb_direction_t direction;
+};
+static constexpr std::array<DirectionPair, 3> directions = {
+    DirectionPair{
+        "Left to Right",
+        HB_DIRECTION_LTR,
+    },
+    DirectionPair{
+        "Right To Left",
+        HB_DIRECTION_RTL,
+    },
+    DirectionPair{
+        "Top to Bottom",
+        HB_DIRECTION_TTB,
+    },
+};
+
+struct LanguagePair {
+  const char *name;
+  const char *code;
+};
+
+static constexpr std::array<LanguagePair, 8> languages = {
+    LanguagePair{
+        "None",
+        "",
+    },
+    LanguagePair{
+        "English US",
+        "en-US",
+    },
+    LanguagePair{
+        "Thai Thailand",
+        "th-TH",
+    },
+    LanguagePair{
+        "Japanese Japan",
+        "ja-JP",
+    },
+    LanguagePair{
+        "Korean Republic of Korea",
+        "ko-KR",
+    },
+    LanguagePair{
+        "Chinese China",
+        "zh-CN",
+    },
+    LanguagePair{
+        "Chinese Taiwan",
+        "zh-TW",
+    },
+    LanguagePair{
+        "Arabic Saudi Arabia",
+        "ar-SA",
+    },
+};
+
+int selectedScript = 0;
+int selectedDirection = 0;
+int selectedLanguage = 0;
+
+bool showDebug = false;
+
 std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
   return {
       static_cast<float>(color.r) / 255.0f,
@@ -14,7 +113,7 @@ std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
       static_cast<float>(color.a) / 255.0f,
   };
 }
-} // namespace
+} // namespace MainScene
 
 bool MainScene::Init(Context &context) {
   if (!Font::Init())
