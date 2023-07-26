@@ -1,15 +1,13 @@
 #include "main_scene.hpp"
 
-#include "text_renderer.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
-#include "imgui.h"
 
 #include "imgui-filebrowser/imfilebrowser.h"
+#include "text_renderer.hpp"
 
 namespace MainScene {
-
 std::array<char, 4096> buffer = {0};
 float color[3];
 int fontSize = 64;
@@ -17,7 +15,6 @@ bool isShape = false;
 
 int selectedFontIndex = -1;
 std::vector<std::filesystem::path> fontPaths;
-
 std::vector<unsigned char> fontData;
 
 ImGui::FileBrowser dirChooser{
@@ -30,7 +27,8 @@ struct ScriptPair {
   const char *name;
   const hb_script_t script;
 };
-static constexpr std::array<ScriptPair, 7> scripts = {
+
+constexpr std::array<ScriptPair, 7> scripts = {
     ScriptPair{"Common", HB_SCRIPT_COMMON},
     ScriptPair{"Thai", HB_SCRIPT_THAI},
     ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
@@ -44,19 +42,11 @@ struct DirectionPair {
   const char *name;
   const hb_direction_t direction;
 };
-static constexpr std::array<DirectionPair, 3> directions = {
-    DirectionPair{
-        "Left to Right",
-        HB_DIRECTION_LTR,
-    },
-    DirectionPair{
-        "Right To Left",
-        HB_DIRECTION_RTL,
-    },
-    DirectionPair{
-        "Top to Bottom",
-        HB_DIRECTION_TTB,
-    },
+
+constexpr std::array<DirectionPair, 3> directions = {
+    DirectionPair{"Left to Right", HB_DIRECTION_LTR},
+    DirectionPair{"Right To Left", HB_DIRECTION_RTL},
+    DirectionPair{"Top to Bottom", HB_DIRECTION_TTB},
 };
 
 struct LanguagePair {
@@ -64,39 +54,15 @@ struct LanguagePair {
   const char *code;
 };
 
-static constexpr std::array<LanguagePair, 8> languages = {
-    LanguagePair{
-        "None",
-        "",
-    },
-    LanguagePair{
-        "English US",
-        "en-US",
-    },
-    LanguagePair{
-        "Thai Thailand",
-        "th-TH",
-    },
-    LanguagePair{
-        "Japanese Japan",
-        "ja-JP",
-    },
-    LanguagePair{
-        "Korean Republic of Korea",
-        "ko-KR",
-    },
-    LanguagePair{
-        "Chinese China",
-        "zh-CN",
-    },
-    LanguagePair{
-        "Chinese Taiwan",
-        "zh-TW",
-    },
-    LanguagePair{
-        "Arabic Saudi Arabia",
-        "ar-SA",
-    },
+constexpr std::array<LanguagePair, 8> languages = {
+    LanguagePair{"None", ""},
+    LanguagePair{"English US", "en-US"},
+    LanguagePair{"Thai Thailand", "th-TH"},
+    LanguagePair{"Japanese Japan", "ja-JP"},
+    LanguagePair{"Korean Republic of Korea", "ko-KR"},
+    LanguagePair{"Chinese China", "zh-CN"},
+    LanguagePair{"Chinese Taiwan", "zh-TW"},
+    LanguagePair{"Arabic Saudi Arabia", "ar-SA"},
 };
 
 int selectedScript = 0;
@@ -105,7 +71,7 @@ int selectedLanguage = 0;
 
 bool showDebug = false;
 
-std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
+std::array<float, 4> inline SDLColorToF4(const SDL_Color &color) {
   return {
       static_cast<float>(color.r) / 255.0f,
       static_cast<float>(color.g) / 255.0f,
@@ -113,6 +79,9 @@ std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
       static_cast<float>(color.a) / 255.0f,
   };
 }
+
+std::vector<std::filesystem::path>
+ListFontFiles(const std::filesystem::path &path);
 } // namespace MainScene
 
 bool MainScene::Init(Context &context) {
@@ -365,7 +334,7 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
       continue;
     }
 
-    auto entryPath = p.path();
+    auto &entryPath = p.path();
     auto extension = entryPath.extension().string();
 
     static auto compare = [](char c1, char c2) -> bool {
