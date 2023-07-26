@@ -94,7 +94,6 @@ bool Font::Initialize() {
   family = face->family_name;
   subFamily = face->style_name;
 
-  sizeMetrics = ToSizeMetrics(face->size->metrics);
   return true;
 }
 
@@ -118,6 +117,8 @@ void Font::SetFontSize(const int &size) {
 
   auto error = FT_Set_Pixel_Sizes(face, 0, size);
   hb_ft_font_changed(hb_font);
+
+  sizeMetrics = ToSizeMetrics(face->size->metrics);
 
   ascend = FTPosToNumber<float>(face->size->metrics.ascender);
   descend = FTPosToNumber<float>(face->size->metrics.descender);
