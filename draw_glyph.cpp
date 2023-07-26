@@ -11,7 +11,7 @@
  */
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y) {
+               const SDL_Color &color, const float &x, const float &y) {
 
   SDL_FRect rect{
       static_cast<float>(x + g.bound.x),
@@ -44,8 +44,8 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 
   if (ctx.debug && ctx.debugCaret) {
     SDL_FRect rect{
-        static_cast<float>(x),
-        static_cast<float>(y),
+        x,
+        y,
         1,
         1,
     };
@@ -55,14 +55,14 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
     SDL_SetRenderDrawColor(ctx.renderer, ctx.debugCaretColor.r,
                            ctx.debugCaretColor.g, ctx.debugCaretColor.b,
                            ctx.debugCaretColor.a);
-                           
+
     SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderDrawRectF(ctx.renderer, &rect);
   }
 }
 
 void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y,
+               const SDL_Color &color, const float &x, const float &y,
                const hb_glyph_position_t &hb_glyph_pos) {
 
   auto xPos = x + HBPosToFloat(hb_glyph_pos.x_offset);

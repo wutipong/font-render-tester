@@ -86,7 +86,7 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
   if (!font.IsValid())
     return;
 
-  int x = 0, y = ctx.windowBound.h - font.LineHeight();
+  float x = 0, y = ctx.windowBound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
   DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
@@ -114,7 +114,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int y = ctx.windowBound.h - font.LineHeight();
+  float y = ctx.windowBound.h - font.LineHeight();
 
   DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
                           font.Descend());
@@ -144,7 +144,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
     hb_glyph_position_t *glyph_positions =
         hb_buffer_get_glyph_positions(buffer, NULL);
 
-    int x = 0;
+    float x = 0;
 
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
@@ -175,7 +175,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
-  int y = ctx.windowBound.h - font.LineHeight();
+  float y = ctx.windowBound.h - font.LineHeight();
 
   DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
                           font.Descend());
@@ -205,7 +205,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
     hb_glyph_position_t *glyph_positions =
         hb_buffer_get_glyph_positions(buffer, NULL);
 
-    int x = ctx.windowBound.w;
+    float x = ctx.windowBound.w;
 
     for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
