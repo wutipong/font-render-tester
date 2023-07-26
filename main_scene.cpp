@@ -227,6 +227,14 @@ void MainScene::DoUI(Context &context) {
 
       ImGui::ColorPicker3("color", color, ImGuiColorEditFlags_InputRGB);
     }
+  
+    if(ImGui::CollapsingHeader("Tools")){
+      ImGui::BeginDisabled(showDebug);
+      if(ImGui::Button("Debug")) {
+        showDebug = true;
+      }
+      ImGui::EndDisabled();
+    }
   }
   ImGui::End();
 
@@ -234,8 +242,9 @@ void MainScene::DoUI(Context &context) {
   { ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size()); }
   ImGui::End();
 
-  ImGui::Begin("Debug");
-  {
+  if (showDebug) {
+    ImGui::Begin("Debug", &showDebug);
+
     ImGui::Checkbox("Enabled", &context.debug);
     if (context.debug) {
       if (ImGui::CollapsingHeader("Features")) {
@@ -281,8 +290,8 @@ void MainScene::DoUI(Context &context) {
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
       }
     }
+    ImGui::End();
   }
-  ImGui::End();
 
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
