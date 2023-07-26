@@ -7,13 +7,12 @@
 
 namespace {
 std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
-  std::array<float, 4> output;
-  output[0] = static_cast<float>(color.r) / 255.0f;
-  output[1] = static_cast<float>(color.g) / 255.0f;
-  output[2] = static_cast<float>(color.b) / 255.0f;
-  output[3] = static_cast<float>(color.a) / 255.0f;
-
-  return output;
+  return {
+      static_cast<float>(color.r) / 255.0f,
+      static_cast<float>(color.g) / 255.0f,
+      static_cast<float>(color.b) / 255.0f,
+      static_cast<float>(color.a) / 255.0f,
+  };
 }
 } // namespace
 
