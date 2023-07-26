@@ -93,6 +93,8 @@ bool Font::Initialize() {
   family = face->family_name;
   subFamily = face->style_name;
 
+  fontAdjustments = {};
+
   return true;
 }
 

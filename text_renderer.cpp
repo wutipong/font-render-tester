@@ -86,16 +86,28 @@ void TextRenderNoShape(Context &ctx, Font &font, const std::string &str,
   if (!font.IsValid())
     return;
 
-  int x = 0, y = ctx.windowBound.h - font.LineHeight();
+  float ascend =
+      font.GetSizeMetrics().ascender +
+      (font.GetFontAdjustments().ascend * font.GetSizeMetrics().yScale);
+
+  float descend =
+      font.GetSizeMetrics().descender +
+      (font.GetFontAdjustments().descend * font.GetSizeMetrics().yScale);
+
+  float height =
+      font.GetSizeMetrics().height +
+      (font.GetFontAdjustments().ascend * font.GetSizeMetrics().yScale) -
+      (font.GetFontAdjustments().descend * font.GetSizeMetrics().yScale);
+
+  int x = 0, y = ctx.windowBound.h - height;
   auto u16str = utf8::utf8to16(str);
 
-  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                          font.Descend());
+  DrawHorizontalLineDebug(ctx, height, ascend, descend);
 
   for (auto &u : u16str) {
     if (u == '\n') {
       x = 0;
-      y -= font.LineHeight();
+      y -= height;
 
       continue;
     }
@@ -133,8 +145,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
     hb_buffer_set_script(buffer, script);
 
-    hb_buffer_add_utf16(buffer,
-                        std::bit_cast<const uint16_t *>(line.c_str()),
+    hb_buffer_add_utf16(buffer, std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
@@ -194,8 +205,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
 
     hb_buffer_set_script(buffer, script);
 
-    hb_buffer_add_utf16(buffer,
-                        std::bit_cast<const uint16_t *>(line.c_str()),
+    hb_buffer_add_utf16(buffer, std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
@@ -261,8 +271,7 @@ void TextRenderTopToBottom(Context &ctx, Font &font, const std::string &str,
 
     hb_buffer_set_script(buffer, script);
 
-    hb_buffer_add_utf16(buffer,
-                        std::bit_cast<const uint16_t *>(line.c_str()),
+    hb_buffer_add_utf16(buffer, std::bit_cast<const uint16_t *>(line.c_str()),
                         line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);

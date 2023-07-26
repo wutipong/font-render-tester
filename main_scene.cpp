@@ -70,6 +70,7 @@ int selectedDirection = 0;
 int selectedLanguage = 0;
 
 bool showDebug = false;
+bool showAdjustments = false;
 
 std::array<float, 4> inline SDLColorToF4(const SDL_Color &color) {
   return {
@@ -227,11 +228,17 @@ void MainScene::DoUI(Context &context) {
 
       ImGui::ColorPicker3("color", color, ImGuiColorEditFlags_InputRGB);
     }
-  
-    if(ImGui::CollapsingHeader("Tools")){
+
+    if (ImGui::CollapsingHeader("Tools")) {
       ImGui::BeginDisabled(showDebug);
-      if(ImGui::Button("Debug")) {
+      if (ImGui::Button("Debug")) {
         showDebug = true;
+      }
+      ImGui::EndDisabled();
+
+      ImGui::BeginDisabled(showAdjustments);
+      if (ImGui::Button("Adjustments")) {
+        showAdjustments = true;
       }
       ImGui::EndDisabled();
     }
@@ -290,6 +297,21 @@ void MainScene::DoUI(Context &context) {
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
       }
     }
+    ImGui::End();
+  }
+
+  if (showAdjustments) {
+    ImGui::Begin("Adjustments", &showAdjustments);
+    ImGui::Text("* Adjustments only work when shapping is off");
+    
+    ImGui::BeginDisabled(isShape);
+
+    if (ImGui::CollapsingHeader("Font")) {
+      ImGui::InputFloat("Ascend", &font.GetFontAdjustments().ascend);
+      ImGui::InputFloat("Descend", &font.GetFontAdjustments().descend);
+    }
+
+    ImGui::EndDisabled();
     ImGui::End();
   }
 
