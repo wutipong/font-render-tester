@@ -41,6 +41,11 @@ struct Glyph {
   int bearing;
 };
 
+struct FontAdjustments {
+  float ascend;
+  float descend;
+};
+
 template <typename T> inline T FTPosToNumber(const FT_Pos &value) {
   return static_cast<T>(value) / 64;
 }
@@ -91,6 +96,9 @@ public:
   void RenderText(Context &ctx, const std::string &str, const SDL_Color &color,
                   const std::string &language, const hb_script_t &script);
 
+  const SizeMetrics& GetSizeMetrics() const {return sizeMetrics;}
+  FontAdjustments& GetFontAdjustments() { return fontAdjustments;}
+
 private:
   static FT_Library library;
 
@@ -108,6 +116,7 @@ private:
   std::map<unsigned int, Glyph> glyphMap;
 
   SizeMetrics sizeMetrics{};
+  FontAdjustments fontAdjustments{};
 
   float ascend{0};
   float descend{0};
