@@ -144,6 +144,20 @@ void MainScene::DoUI(Context &context) {
 
   ImGui::Begin("Menu");
   {
+    ImGui::BeginDisabled(showDebug);
+    if (ImGui::Button("Debug")) {
+      showDebug = true;
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+
+    ImGui::BeginDisabled(showAdjustments);
+    if (ImGui::Button("Adjustments")) {
+      showAdjustments = true;
+    }
+    ImGui::EndDisabled();
+
     if (ImGui::CollapsingHeader("Font Directory")) {
       ImGui::Text(context.fontPath.c_str());
       if (ImGui::Button("Browse")) {
@@ -231,20 +245,6 @@ void MainScene::DoUI(Context &context) {
 
       ImGui::ColorPicker3("color", color, ImGuiColorEditFlags_InputRGB);
     }
-
-    if (ImGui::CollapsingHeader("Tools")) {
-      ImGui::BeginDisabled(showDebug);
-      if (ImGui::Button("Debug")) {
-        showDebug = true;
-      }
-      ImGui::EndDisabled();
-
-      ImGui::BeginDisabled(showAdjustments);
-      if (ImGui::Button("Adjustments")) {
-        showAdjustments = true;
-      }
-      ImGui::EndDisabled();
-    }
   }
   ImGui::End();
 
@@ -305,9 +305,15 @@ void MainScene::DoUI(Context &context) {
 
   if (showAdjustments) {
     ImGui::Begin("Adjustments", &showAdjustments);
-    ImGui::Text("* Adjustments only work when shapping is off");
-    
     ImGui::BeginDisabled(isShape);
+
+    ImGui::Button("Open");
+    ImGui::SameLine();
+    ImGui::Button("Save");
+    ImGui::SameLine();
+    ImGui::Button("Clear");
+
+    ImGui::Text("* Adjustments only work when shapping is off.");
 
     if (ImGui::CollapsingHeader("Font")) {
       ImGui::InputFloat("Ascend", &font.GetFontAdjustments().ascend);
