@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
+#include <ranges>
 
 #include "imgui-filebrowser/imfilebrowser.h"
 #include "text_renderer.hpp"
@@ -82,6 +83,8 @@ std::array<float, 4> inline SDLColorToF4(const SDL_Color &color) {
 
 std::vector<std::filesystem::path>
 ListFontFiles(const std::filesystem::path &path);
+
+void OnDirectorySelected(Context &ctx, const std::filesystem::path &path);
 } // namespace MainScene
 
 bool MainScene::Init(Context &context) {
@@ -329,25 +332,30 @@ void MainScene::OnDirectorySelected(Context &ctx,
 std::vector<std::filesystem::path>
 MainScene::ListFontFiles(const std::filesystem::path &path) {
   std::vector<std::filesystem::path> output;
-  for (auto &p : std::filesystem::directory_iterator(path)) {
-    if (!p.is_regular_file()) {
-      continue;
-    }
+  std::filesystem::directory_iterator iter(path);
 
-    auto &entryPath = p.path();
-    auto extension = entryPath.extension().string();
+  std::copy_if(
+      std::filesystem::begin(iter), std::filesystem::end(iter),
+      std::back_inserter(output),
+      [](const std::filesystem::directory_entry &p) {
+        if (!p.is_regular_file()) {
+          return false;
+        }
 
-    static auto compare = [](char c1, char c2) -> bool {
-      return std::tolower(c1) == std::tolower(c2);
-    };
+        auto &entryPath = p.path();
+        auto extension = entryPath.extension().string();
 
-    if (!std::equal(extension.begin(), extension.end(), ".otf", compare) &&
-        !std::equal(extension.begin(), extension.end(), ".ttf", compare)) {
-      continue;
-    }
+        static auto compare = [](char c1, char c2) -> bool {
+          return std::tolower(c1) == std::tolower(c2);
+        };
 
-    output.push_back(p);
-  }
+        if (!std::equal(extension.begin(), extension.end(), ".otf", compare) &&
+            !std::equal(extension.begin(), extension.end(), ".ttf", compare)) {
+          return false;
+        }
+
+        return true;
+      });
 
   return output;
 }

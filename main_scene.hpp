@@ -9,6 +9,4 @@ bool Init(Context &context);
 void Tick(Context &ctx);
 void Cleanup(Context &context);
 void DoUI(Context &context);
-
-void OnDirectorySelected(Context &context, const std::filesystem::path &path);
 }; // namespace MainScene
