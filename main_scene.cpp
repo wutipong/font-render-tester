@@ -335,8 +335,9 @@ void MainScene::DoUI(Context &context) {
       if (!newFont.LoadFile(fontPaths[newSelected].string())) {
         ImGui::OpenPopup("InvalidFont");
       } else {
-        font = newFont;
+        font = std::move(newFont);
         selectedFontIndex = newSelected;
+        font.SetFontSize(fontSize);
       }
     }
   }
