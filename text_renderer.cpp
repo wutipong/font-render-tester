@@ -126,10 +126,11 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int y = ctx.windowBound.h - font.LineHeight();
+  int y = ctx.windowBound.h - font.GetSizeMetrics().height;
 
-  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                          font.Descend());
+  DrawHorizontalLineDebug(ctx, font.GetSizeMetrics().height,
+                          font.GetSizeMetrics().ascender,
+                          font.GetSizeMetrics().descender);
 
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
@@ -170,7 +171,7 @@ void TextRenderLeftToRight(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    y -= font.LineHeight();
+    y -= font.GetSizeMetrics().height;
   }
 }
 
@@ -186,10 +187,11 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
-  int y = ctx.windowBound.h - font.LineHeight();
+  int y = ctx.windowBound.h - font.GetSizeMetrics().height;
 
-  DrawHorizontalLineDebug(ctx, font.LineHeight(), font.Ascend(),
-                          font.Descend());
+  DrawHorizontalLineDebug(ctx, font.GetSizeMetrics().height,
+                          font.GetSizeMetrics().ascender,
+                          font.GetSizeMetrics().descender);
 
   while (true) {
     auto lineEnd = std::find(lineStart, u16str.end(), '\n');
@@ -230,7 +232,7 @@ void TextRenderRightToLeft(Context &ctx, Font &font, const std::string &str,
       break;
 
     lineStart = lineEnd + 1;
-    y -= font.LineHeight();
+    y -= font.GetSizeMetrics().height;
   }
 }
 

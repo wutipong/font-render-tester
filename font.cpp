@@ -120,11 +120,6 @@ void Font::SetFontSize(const int &size) {
   hb_ft_font_changed(hb_font);
 
   sizeMetrics = ToSizeMetrics(face->size->metrics);
-
-  ascend = FTPosToNumber<float>(face->size->metrics.ascender);
-  descend = FTPosToNumber<float>(face->size->metrics.descender);
-  height = FTPosToNumber<float>(face->size->metrics.height);
-  linegap = height + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(Context &ctx, const int &index) {

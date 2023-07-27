@@ -202,16 +202,11 @@ void MainScene::DoUI(Context &context) {
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
       if (ImGui::CollapsingHeader("Font Metrics", ImGuiTreeNodeFlags_None)) {
-        auto ascend = font.Ascend();
-        auto descend = font.Descend();
-        auto lineGap = font.LineGap();
-        auto lineHeight = font.LineHeight();
+        auto metrics = font.GetSizeMetrics();
 
-        ImGui::InputFloat("Ascend", &ascend, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Descend", &descend, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Line Gap", &lineGap, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Line Height", &lineHeight,
-                          ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Ascend", &metrics.ascender, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Descend", &metrics.descender, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Line Height", &metrics.height, ImGuiInputTextFlags_ReadOnly);
       }
       ImGui::Checkbox("Shape Text", &isShape);
 
