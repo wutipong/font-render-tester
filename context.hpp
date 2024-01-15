@@ -23,8 +23,6 @@ struct Context {
   bool debugDescend{true};
 
   std::string fontPath{std::filesystem::absolute("fonts").string()};
-
-  SDL_Renderer *renderer{nullptr};
 };
 
 void SaveContext(const Context &ctx, const std::filesystem::path &path);

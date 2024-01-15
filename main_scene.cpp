@@ -1,10 +1,11 @@
 #include "main_scene.hpp"
 
+#include "colors.hpp"
 #include "text_renderer.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
-#include "colors.hpp"
+
 
 namespace {
 constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
@@ -37,11 +38,11 @@ bool MainScene::Init(Context &context) {
   return true;
 }
 
-void MainScene::Tick(Context &ctx) {
+void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
 
-  SDL_SetRenderDrawColor(ctx.renderer, backgroundColor.r, backgroundColor.g,
+  SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
-  SDL_RenderClear(ctx.renderer);
+  SDL_RenderClear(renderer);
 
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
@@ -69,7 +70,7 @@ void MainScene::Tick(Context &ctx) {
       0xFF,
   };
 
-  font.RenderText(ctx, std::string(buffer.data()), sdlColor,
+  font.RenderText(renderer, ctx, std::string(buffer.data()), sdlColor,
                   languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }

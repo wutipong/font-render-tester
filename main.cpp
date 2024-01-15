@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
   SDL_SetWindowMinimumSize(window, MININUM_WIDTH, MINIMUM_HEIGHT);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-  ctx.renderer = renderer;
 
   std::string imguiIniStr = imguiIniPath.string();
 
@@ -95,7 +94,7 @@ int main(int argc, char **argv) {
     ImGui::EndFrame();
     ImGui::Render();
 
-    Scene::TickCurrent(ctx);
+    Scene::TickCurrent(renderer, ctx);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);

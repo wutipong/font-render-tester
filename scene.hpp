@@ -9,14 +9,14 @@
 class Scene {
 public:
   virtual bool Init(Context &context) = 0;
-  virtual void Tick(Context &context) = 0;
+  virtual void Tick(SDL_Renderer *renderer, Context &context) = 0;
   virtual void Cleanup(Context &context) = 0;
 
   virtual void DoUI(Context &context){};
 
-  virtual ~Scene()= default;
+  virtual ~Scene() = default;
 
-  static void TickCurrent(Context &context);
+  static void TickCurrent(SDL_Renderer *renderer, Context &context);
   template <class T> static bool ChangeScene(Context &context);
 
   static std::unique_ptr<Scene> &Current() { return currentScene; }

@@ -12,8 +12,9 @@
  * direction is to match the modern rendering apis such as OpenGL or DirectX.
  */
 
-void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y) {
+void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+               const Glyph &g, const SDL_Color &color, const int &x,
+               const int &y) {
 
   SDL_FRect rect{
       static_cast<float>(x + g.bound.x),
@@ -30,18 +31,18 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
    */
   rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
 
-  SDL_SetRenderDrawColor(ctx.renderer, color.r, color.g, color.b, color.a);
-  SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
-  SDL_RenderCopyF(ctx.renderer, g.texture, nullptr, &rect);
+  SDL_RenderCopyF(renderer, g.texture, nullptr, &rect);
 
   if (ctx.debug && ctx.debugGlyphBound) {
-    SDL_SetRenderDrawColor(
-        ctx.renderer, debugGlyphBoundColor.r, debugGlyphBoundColor.g,
-        debugGlyphBoundColor.b, debugGlyphBoundColor.a);
-    SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderDrawRectF(ctx.renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, debugGlyphBoundColor.r,
+                           debugGlyphBoundColor.g, debugGlyphBoundColor.b,
+                           debugGlyphBoundColor.a);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderDrawRectF(renderer, &rect);
   }
 
   if (ctx.debug && ctx.debugCaret) {
@@ -54,21 +55,20 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 
     rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
 
-    SDL_SetRenderDrawColor(ctx.renderer, debugCaretColor.r,
-                           debugCaretColor.g, debugCaretColor.b,
-                           debugCaretColor.a);
-                           
-    SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderDrawRectF(ctx.renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, debugCaretColor.r, debugCaretColor.g,
+                           debugCaretColor.b, debugCaretColor.a);
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderDrawRectF(renderer, &rect);
   }
 }
 
-void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
-               const SDL_Color &color, const int &x, const int &y,
-               const hb_glyph_position_t &hb_glyph_pos) {
+void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+               const Glyph &g, const SDL_Color &color, const int &x,
+               const int &y, const hb_glyph_position_t &hb_glyph_pos) {
 
   auto xPos = x + HBPosToFloat(hb_glyph_pos.x_offset);
   auto yPos = y + HBPosToFloat(hb_glyph_pos.y_offset);
 
-  DrawGlyph(ctx, font, g, color, xPos, yPos);
+  DrawGlyph(renderer, ctx, font, g, color, xPos, yPos);
 }
