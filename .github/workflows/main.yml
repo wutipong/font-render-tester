@@ -13,20 +13,21 @@ jobs:
           submodules: true
           lfs: true
 
-      - name: Create output dir
-        run: mkdir out
-        
-      - name: Configure the project.
-        run: cmake $env:GITHUB_WORKSPACE
-        working-directory: out
+      - uses: lukka/get-cmake@latest
 
-      - name: Build the project.
-        run: cmake --build out --config Release
+      - name: Setup anew (or from cache) vcpkg (and does not build any package)
+        uses: lukka/run-vcpkg@v11 
+
+      - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'default'
+          buildPresetAdditionalArgs: "['--config Release']"
 
       - uses: actions/upload-artifact@v3
         with:
           name: windows
-          path: out/Release
+          path: build/Release
       
       - name: "Create latest release file"
         run: |
