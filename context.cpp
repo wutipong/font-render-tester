@@ -3,6 +3,7 @@
 #include "io_util.hpp"
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 using namespace nlohmann;
 
@@ -29,28 +30,26 @@ void LoadContext(Context &ctx, const std::filesystem::path &path) {
 
   json js;
 
-  // If there's something wrong with reading file, just do nothing and return.
+  // If there's something wrong with reading file, log an error and return. 
   try {
     std::string str;
     str = LoadFile<std::string>(path);
 
     js = json::parse(str);
-  } catch (...) {
+  } catch (const json::exception& e) {
+    spdlog::error("Error reading context file: {}", e.what());
     return;
   }
 
-  // FIXME: using try/catch just to ignore exceptions is not really a good
-  // practice.
+  Context c = ctx;
+
   try {
-    ctx.windowBound.w = js["window_bound"]["width"];
-  } catch (...) {
+    c.windowBound.w = js["window_bound"]["width"];
+    c.windowBound.h = js["window_bound"]["height"];
+    c.fontPath = js["font_path"];
+  } catch (const json::exception& e) {
+    spdlog::error("Error reading context file value: {}", e.what());
   }
-  try {
-    ctx.windowBound.h = js["window_bound"]["height"];
-  } catch (...) {
-  }
-  try {
-    ctx.fontPath = js["font_path"];
-  } catch (...) {
-  }
+
+  ctx = c;
 }

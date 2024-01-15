@@ -4,6 +4,7 @@
 
 #include "draw_glyph.hpp"
 #include "font.hpp"
+#include "colors.hpp"
 
 namespace {
 void DrawRect(Context &ctx, const float &x, const float &y, const float &w,
@@ -47,13 +48,13 @@ void DrawHorizontalLineDebug(Context &ctx, const float &lineHeight,
   float y = ctx.windowBound.h - lineHeight;
   do {
     if (ctx.debugAscend) {
-      DrawRect(ctx, 0, y, ctx.windowBound.w, ascend, ctx.debugAscendColor);
+      DrawRect(ctx, 0, y, ctx.windowBound.w, ascend, debugAscendColor);
     }
     if (ctx.debugDescend) {
-      DrawRect(ctx, 0, y, ctx.windowBound.w, descend, ctx.debugDescendColor);
+      DrawRect(ctx, 0, y, ctx.windowBound.w, descend, debugDescendColor);
     }
     if (ctx.debugBaseline) {
-      DrawLine(ctx, 0, y, ctx.windowBound.w, y, ctx.debugBaselineColor);
+      DrawLine(ctx, 0, y, ctx.windowBound.w, y, debugBaselineColor);
     }
     y -= lineHeight;
   } while (y > 0);
@@ -67,13 +68,13 @@ void DrawVerticalLineDebug(Context &ctx, const float &lineWidth,
   float x = ctx.windowBound.w - lineWidth;
   do {
     if (ctx.debugAscend) {
-      DrawRect(ctx, x, 0, ascend, ctx.windowBound.h, ctx.debugAscendColor);
+      DrawRect(ctx, x, 0, ascend, ctx.windowBound.h, debugAscendColor);
     }
     if (ctx.debugDescend) {
-      DrawRect(ctx, x, 0, descend, ctx.windowBound.h, ctx.debugDescendColor);
+      DrawRect(ctx, x, 0, descend, ctx.windowBound.h, debugDescendColor);
     }
     if (ctx.debugBaseline) {
-      DrawLine(ctx, x, 0, x, ctx.windowBound.h, ctx.debugBaselineColor);
+      DrawLine(ctx, x, 0, x, ctx.windowBound.h, debugBaselineColor);
     }
     x += lineWidth;
   } while (x > 0);

@@ -1,4 +1,6 @@
 #include "draw_glyph.hpp"
+
+#include "colors.hpp"
 /*
  * `SDL_Render` uses the coordinate system where the (0,0) is in the top left
  * corner and the positive Y value is in down direction, whereas the
@@ -36,8 +38,8 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 
   if (ctx.debug && ctx.debugGlyphBound) {
     SDL_SetRenderDrawColor(
-        ctx.renderer, ctx.debugGlyphBoundColor.r, ctx.debugGlyphBoundColor.g,
-        ctx.debugGlyphBoundColor.b, ctx.debugGlyphBoundColor.a);
+        ctx.renderer, debugGlyphBoundColor.r, debugGlyphBoundColor.g,
+        debugGlyphBoundColor.b, debugGlyphBoundColor.a);
     SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderDrawRectF(ctx.renderer, &rect);
   }
@@ -52,9 +54,9 @@ void DrawGlyph(Context &ctx, const Font &font, const Glyph &g,
 
     rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
 
-    SDL_SetRenderDrawColor(ctx.renderer, ctx.debugCaretColor.r,
-                           ctx.debugCaretColor.g, ctx.debugCaretColor.b,
-                           ctx.debugCaretColor.a);
+    SDL_SetRenderDrawColor(ctx.renderer, debugCaretColor.r,
+                           debugCaretColor.g, debugCaretColor.b,
+                           debugCaretColor.a);
                            
     SDL_SetRenderDrawBlendMode(ctx.renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderDrawRectF(ctx.renderer, &rect);

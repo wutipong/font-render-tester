@@ -14,6 +14,7 @@ add_executable(font-render-tester
         "text_renderer.hpp" "text_renderer.cpp"
         "context.cpp"
         "draw_glyph.cpp" "io_util.hpp"
+        "colors.hpp"
 )
 
 target_compile_features(font-render-tester PRIVATE cxx_std_17)

@@ -25,13 +25,6 @@ struct Context {
   std::string fontPath{std::filesystem::absolute("fonts").string()};
 
   SDL_Renderer *renderer{nullptr};
-
-  const SDL_Color debugGlyphBoundColor{0xFF, 0xFF, 0x80, 0xFF};
-  const SDL_Color debugBaselineColor{0xFF, 0x00, 0x00, 0xFF};
-  const SDL_Color debugCaretColor{0x00, 0xFF, 0xFF, 0xFF};
-  const SDL_Color debugAscendColor{0x40, 0x40, 0xFF, 0x80};
-  const SDL_Color debugDescendColor{0x40, 0xFF, 0x40, 0x80};
-  const SDL_Color backgroundColor{0x80, 0x80, 0x80, 0xFF};
 };
 
 void SaveContext(const Context &ctx, const std::filesystem::path &path);
