@@ -49,7 +49,7 @@ Font::~Font() {
 }
 
 bool Font::LoadFile(const std::string &path) {
-  ::LoadFile(path, data, std::ios::in | std::ios::binary);
+  data = ::LoadFile<std::vector<char>>(path, std::ios::in | std::ios::binary);
   return Initialize();
 }
 

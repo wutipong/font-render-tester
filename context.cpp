@@ -32,7 +32,7 @@ void LoadContext(Context &ctx, const std::filesystem::path &path) {
   // If there's something wrong with reading file, just do nothing and return.
   try {
     std::string str;
-    LoadFile(path.string(), str);
+    str = LoadFile<std::string>(path);
 
     js = json::parse(str);
   } catch (...) {
