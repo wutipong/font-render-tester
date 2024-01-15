@@ -17,6 +17,8 @@ jobs:
 
       - name: Setup anew (or from cache) vcpkg (and does not build any package)
         uses: lukka/run-vcpkg@v11 
+        with:
+          vcpkgGitCommitId: '88b81397bbf10f554d54246b50f188dac41470f1'
 
       - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
         uses: lukka/run-cmake@v10
