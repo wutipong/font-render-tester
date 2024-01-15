@@ -1,11 +1,7 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/out/build
-/.vs
+﻿/.vs
 /CMakeSettings.json
 /.vscode
 /out
 /build
+/builds
 /.idea

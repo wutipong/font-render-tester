@@ -23,17 +23,18 @@ jobs:
       - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
         uses: lukka/run-cmake@v10
         with:
-          configurePreset: 'default'
+          configurePreset: 'ninja-multi-vcpkg'
+          buildPreset: 'ninja-multi-vcpkg'
           buildPresetAdditionalArgs: "['--config Release']"
 
       - uses: actions/upload-artifact@v3
         with:
           name: windows
-          path: build/Release
+          path: builds/ninja-multi-vcpkg/Release
       
       - name: "Create latest release file"
         run: |
-          Get-ChildItem -Path out\Release | Compress-Archive -DestinationPath windows-latest.zip
+          Get-ChildItem -Path builds/ninja-multi-vcpkg/Release | Compress-Archive -DestinationPath windows-latest.zip
           
       - uses: EndBug/latest-tag@latest
         
