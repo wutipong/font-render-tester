@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
-
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-        CACHE STRING "Vcpkg toolchain file")
+cmake_minimum_required(VERSION 3.19)
 
 # set the project name
 project(font-render-tester)
@@ -41,7 +38,7 @@ target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 target_link_libraries(font-render-tester PRIVATE
         SDL2::SDL2 SDL2::SDL2main
         imgui::imgui harfbuzz::harfbuzz
-        utf8cpp freetype spdlog::spdlog spdlog::spdlog_header_only)
+        utf8::cpp utf8cpp::utf8cpp freetype spdlog::spdlog spdlog::spdlog_header_only)
 
 function(copy_resources)
     set(oneValueArgs TARGET TARGET)
