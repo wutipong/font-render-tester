@@ -71,8 +71,7 @@ void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
 
-  ImGui::Begin("Menu");
-  {
+  if (ImGui::Begin("Menu")) {
     if (ImGui::CollapsingHeader("Font Directory")) {
       ImGui::Text(context.fontPath.c_str());
       if (ImGui::Button("Browse")) {
@@ -163,12 +162,12 @@ void MainScene::DoUI(Context &context) {
   }
   ImGui::End();
 
-  ImGui::Begin("Input Text");
-  { ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size()); }
+  if (ImGui::Begin("Input Text")) {
+    ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size());
+  }
   ImGui::End();
 
-  ImGui::Begin("Debug");
-  {
+  if (ImGui::Begin("Debug")) {
     ImGui::Checkbox("Enabled", &context.debug);
     if (context.debug) {
       if (ImGui::CollapsingHeader("Features")) {
