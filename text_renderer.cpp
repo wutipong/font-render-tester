@@ -1,10 +1,12 @@
 #include "text_renderer.hpp"
 
-#include <utf8cpp/utf8.h>
-
 #include "colors.hpp"
 #include "draw_glyph.hpp"
 #include "font.hpp"
+#include <boost/algorithm/find_backward.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <fribidi/fribidi.h>
+#include <utf8cpp/utf8.h>
 
 namespace {
 void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
@@ -180,8 +182,21 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
   if (!font.IsValid())
     return;
 
-  auto u16str = utf8::utf8to16(str);
-  auto lineStart = u16str.begin();
+  auto u32str = utf8::utf8to32(str);
+
+  std::vector<FriBidiChar> src;
+  src.resize(u32str.size());
+  std::copy(u32str.begin(), u32str.end(), src.begin());
+
+  std::vector<FriBidiChar> visual;
+  visual.resize(u32str.size());
+
+  FriBidiParType dir = FRIBIDI_TYPE_ON;
+
+  fribidi_log2vis(src.data(), src.size(), &dir, visual.data(), nullptr, nullptr,
+                  nullptr);
+
+  auto lineStart = visual.begin();
 
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
@@ -191,10 +206,12 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
   DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
                           font.Descend());
 
-  while (true) {
-    auto lineEnd = std::find(lineStart, u16str.end(), '\n');
+  std::vector<std::vector<FriBidiChar>> lines;
+  boost::algorithm::split(lines, visual,
+                          [](const uint32_t &u) -> bool { return u == U'\n'; });
 
-    std::u16string line(lineStart, lineEnd);
+  for (int l = lines.size() - 1; l >= 0; l--) {
+    auto &line = lines[l];
 
     hb_buffer_t *buffer = hb_buffer_create();
     hb_buffer_set_direction(buffer, HB_DIRECTION_RTL);
@@ -205,9 +222,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
 
     hb_buffer_set_script(buffer, script);
 
-    hb_buffer_add_utf16(buffer,
-                        reinterpret_cast<const uint16_t *>(line.c_str()),
-                        line.size(), 0, line.size());
+    hb_buffer_add_utf32(buffer, line.data(), line.size(), 0, line.size());
 
     hb_shape(font.HbFont(), buffer, NULL, 0);
 
@@ -218,7 +233,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
 
     int x = ctx.windowBound.w;
 
-    for (int i = glyph_count - 1; i >= 0; i--) {
+    for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
@@ -227,10 +242,6 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
     }
     hb_buffer_destroy(buffer);
 
-    if (lineEnd == u16str.end())
-      break;
-
-    lineStart = lineEnd + 1;
     y -= font.LineHeight();
   }
 }

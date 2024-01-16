@@ -22,11 +22,12 @@ set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 17)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
-    set_property(TARGET font-render-tester PROPERTY WIN32_EXECUTABLE ON)
-    target_compile_options(font-render-tester PRIVATE /Zc:__cplusplus)
+        set_property(TARGET font-render-tester PROPERTY WIN32_EXECUTABLE ON)
+        target_compile_options(font-render-tester PRIVATE /Zc:__cplusplus)
 endif ()
 
-
+find_package(PkgConfig)
+find_package(Boost REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 find_package(harfbuzz CONFIG REQUIRED)
@@ -34,21 +35,32 @@ find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(utf8cpp CONFIG REQUIRED)
 
-target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
+pkg_check_modules(FRIBIDI REQUIRED fribidi)
+
+target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS} ${FRIBIDI_INCLUDE_DIRS})
+
+target_link_directories(font-render-tester PRIVATE ${FRIBIDI_LIBRARY_DIRS})
 
 target_link_libraries(font-render-tester PRIVATE
         SDL2::SDL2 SDL2::SDL2main
         imgui::imgui harfbuzz::harfbuzz
-        utf8::cpp utf8cpp::utf8cpp freetype spdlog::spdlog spdlog::spdlog_header_only)
+        utf8::cpp utf8cpp::utf8cpp 
+        freetype 
+        spdlog::spdlog spdlog::spdlog_header_only 
+        Boost::boost 
+        ${FRIBIDI_LIBRARIES})
 
 function(copy_resources)
-    set(oneValueArgs TARGET TARGET)
-    set(multiValueArgs TARGET INPUT)
-    set(oneValueArgs DESTINATION)
+        set(oneValueArgs TARGET TARGET)
+        set(multiValueArgs TARGET INPUT)
+        set(oneValueArgs DESTINATION)
 
-    cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}"
-            "${multiValueArgs}" ${ARGN}
-            )
+        cmake_parse_arguments(
+                COPY_RESOURCES 
+                "${options}" 
+                "${oneValueArgs}"
+                "${multiValueArgs}" ${ARGN}
+        )
 
     file(GLOB COPY_RESOURCES_INPUT_FILES ${COPY_RESOURCES_INPUT})
 
