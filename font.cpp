@@ -49,7 +49,7 @@ Font::~Font() {
 }
 
 bool Font::LoadFile(const std::string &path) {
-  ::LoadFile(path, data, std::ios::in | std::ios::binary);
+  data = ::LoadFile<std::vector<char>>(path, std::ios::in | std::ios::binary);
   return Initialize();
 }
 
@@ -124,7 +124,7 @@ void Font::SetFontSize(const int &size) {
   linegap = height + descend - ascend;
 }
 
-Glyph Font::CreateGlyph(Context &ctx, const int &index) {
+Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
   int bearing = 0;
   int advance;
 
@@ -139,7 +139,7 @@ Glyph Font::CreateGlyph(Context &ctx, const int &index) {
   FT_Bitmap_Init(&bitmap);
   FT_Bitmap_Convert(library, &face->glyph->bitmap, &bitmap, 1);
 
-  auto texture = LoadTextureFromBitmap(ctx.renderer, bitmap);
+  auto texture = LoadTextureFromBitmap(renderer, bitmap);
 
   FT_Bitmap_Done(library, &bitmap);
 
@@ -152,16 +152,16 @@ Glyph Font::CreateGlyph(Context &ctx, const int &index) {
   return {texture, bound, advance, bearing};
 }
 
-Glyph Font::CreateGlyphFromChar(Context &ctx, const char16_t &ch) {
+Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   auto index = FT_Get_Char_Index(face, ch);
 
-  return CreateGlyph(ctx, index);
+  return CreateGlyph(renderer, index);
 }
 
-Glyph &Font::GetGlyph(Context &ctx, const int &index) {
+Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
   auto iter = glyphMap.find(index);
   if (iter == glyphMap.end()) {
-    Glyph g = CreateGlyph(ctx, index);
+    Glyph g = CreateGlyph(renderer, index);
     auto [i, success] = glyphMap.insert({index, g});
 
     iter = i;
@@ -170,10 +170,10 @@ Glyph &Font::GetGlyph(Context &ctx, const int &index) {
   return iter->second;
 }
 
-Glyph &Font::GetGlyphFromChar(Context &ctx, const char16_t &ch) {
+Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   const auto index = FT_Get_Char_Index(face, ch);
 
-  return Font::GetGlyph(ctx, index);
+  return Font::GetGlyph(renderer, index);
 }
 
 void Font::SetTextRenderer(const TextRenderEnum &t) {
@@ -194,11 +194,11 @@ void Font::SetTextRenderer(const TextRenderEnum &t) {
   }
 }
 
-void Font::RenderText(Context &ctx, const std::string &str,
-                      const SDL_Color &color, const std::string &language,
-                      const hb_script_t &script) {
+void Font::RenderText(SDL_Renderer *renderer, Context &ctx,
+                      const std::string &str, const SDL_Color &color,
+                      const std::string &language, const hb_script_t &script) {
   if (!IsValid())
     return;
 
-  textRenderer(ctx, *this, str, color, language, script);
+  textRenderer(renderer, ctx, *this, str, color, language, script);
 }

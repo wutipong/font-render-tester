@@ -1,20 +1,30 @@
 #include "main_scene.hpp"
 
+#include "colors.hpp"
 #include "text_renderer.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
 
+
 namespace {
-std::array<float, 4> SDLColorToF4(const SDL_Color &color) {
-  std::array<float, 4> output;
-  output[0] = static_cast<float>(color.r) / 255.0f;
-  output[1] = static_cast<float>(color.g) / 255.0f;
-  output[2] = static_cast<float>(color.b) / 255.0f;
-  output[3] = static_cast<float>(color.a) / 255.0f;
+constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
+  ImVec4 output{
+      static_cast<float>(color.r) / 255.0f,
+      static_cast<float>(color.g) / 255.0f,
+      static_cast<float>(color.b) / 255.0f,
+      static_cast<float>(color.a) / 255.0f,
+  };
 
   return output;
 }
+
+constexpr auto f4DebugGlyphBoundColor = SDLColorToImVec4(debugGlyphBoundColor);
+constexpr auto f4DebugAscendColor = SDLColorToImVec4(debugAscendColor);
+constexpr auto f4DebugDescendColor = SDLColorToImVec4(debugDescendColor);
+constexpr auto f4DebugBaselineColor = SDLColorToImVec4(debugBaselineColor);
+constexpr auto f4DebugCaretColor = SDLColorToImVec4(debugCaretColor);
+
 } // namespace
 
 bool MainScene::Init(Context &context) {
@@ -28,12 +38,11 @@ bool MainScene::Init(Context &context) {
   return true;
 }
 
-void MainScene::Tick(Context &ctx) {
+void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
 
-  SDL_SetRenderDrawColor(ctx.renderer, ctx.backgroundColor.r,
-                         ctx.backgroundColor.g, ctx.backgroundColor.b,
-                         ctx.backgroundColor.a);
-  SDL_RenderClear(ctx.renderer);
+  SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
+                         backgroundColor.b, backgroundColor.a);
+  SDL_RenderClear(renderer);
 
   auto textRender = TextRenderEnum::NoShape;
   if (isShape) {
@@ -61,7 +70,7 @@ void MainScene::Tick(Context &ctx) {
       0xFF,
   };
 
-  font.RenderText(ctx, std::string(buffer.data()), sdlColor,
+  font.RenderText(renderer, ctx, std::string(buffer.data()), sdlColor,
                   languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }
@@ -71,8 +80,7 @@ void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
 
-  ImGui::Begin("Menu");
-  {
+  if (ImGui::Begin("Menu")) {
     if (ImGui::CollapsingHeader("Font Directory")) {
       ImGui::Text(context.fontPath.c_str());
       if (ImGui::Button("Browse")) {
@@ -163,53 +171,47 @@ void MainScene::DoUI(Context &context) {
   }
   ImGui::End();
 
-  ImGui::Begin("Input Text");
-  { ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size()); }
+  if (ImGui::Begin("Input Text")) {
+    ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size());
+  }
   ImGui::End();
 
-  ImGui::Begin("Debug");
-  {
+  if (ImGui::Begin("Debug")) {
     ImGui::Checkbox("Enabled", &context.debug);
     if (context.debug) {
       if (ImGui::CollapsingHeader("Features")) {
-        auto debugGlyphBoundColor = SDLColorToF4(context.debugGlyphBoundColor);
-        auto debugAscendColor = SDLColorToF4(context.debugAscendColor);
-        auto debugDescendColor = SDLColorToF4(context.debugDescendColor);
-        auto debugBaselineColor = SDLColorToF4(context.debugBaselineColor);
-        auto debugCaretColor = SDLColorToF4(context.debugCaretColor);
-
         ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
-        ImGui::ColorEdit4(
-            "Baseline", debugBaselineColor.data(),
+        ImGui::ColorButton(
+            "Baseline", f4DebugBaselineColor,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Caret Positions", &context.debugCaret);
         ImGui::SameLine();
-        ImGui::ColorEdit4(
-            "Caret Positions", debugCaretColor.data(),
+        ImGui::ColorButton(
+            "Caret Positions", f4DebugCaretColor,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Glyph Bound", &context.debugGlyphBound);
         ImGui::SameLine();
-        ImGui::ColorEdit4(
-            "Glyph Bound", debugGlyphBoundColor.data(),
+        ImGui::ColorButton(
+            "Glyph Bound", f4DebugGlyphBoundColor,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Ascend", &context.debugAscend);
         ImGui::SameLine();
-        ImGui::ColorEdit4(
-            "Ascend", debugAscendColor.data(),
+        ImGui::ColorButton(
+            "Ascend", f4DebugAscendColor,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Descend", &context.debugDescend);
         ImGui::SameLine();
-        ImGui::ColorEdit4(
-            "Descend", debugDescendColor.data(),
+        ImGui::ColorButton(
+            "Descend", f4DebugDescendColor,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
       }

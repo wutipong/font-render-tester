@@ -2,8 +2,8 @@
 
 std::unique_ptr<Scene> Scene::currentScene;
 
-void Scene::TickCurrent(Context &context) {
+void Scene::TickCurrent(SDL_Renderer *renderer, Context &context) {
   if (currentScene == nullptr)
     return;
-  currentScene->Tick(context);
+  currentScene->Tick(renderer, context);
 }

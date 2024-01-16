@@ -14,7 +14,8 @@ add_executable(font-render-tester
         "text_renderer.hpp" "text_renderer.cpp"
         "context.cpp"
         "draw_glyph.cpp" "io_util.hpp"
-        )
+        "colors.hpp"
+)
 
 target_compile_features(font-render-tester PRIVATE cxx_std_17)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 17)
@@ -58,7 +59,7 @@ function(copy_resources)
 endfunction()
 
 copy_resources(
-        TARGET CopyShaders
+        TARGET CopyFontFiles
         DESTINATION "fonts"
         INPUT "fonts/NotoSans-Regular.ttf" "fonts/NotoSansThai-Regular.ttf" "fonts/NotoSansCJKjp-Regular.otf" "fonts/NotoSansCJKkr-Regular.otf" "fonts/NotoSansCJKsc-Regular.otf"
 )
