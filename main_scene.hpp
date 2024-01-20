@@ -25,6 +25,15 @@ public:
   ListFontFiles(const std::filesystem::path &path);
 
 private:
+  static const inline std::string exampleText =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \n"
+      "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \n"
+      "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea \n"
+      "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate \n"
+      "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint \n"
+      "occaecat cupidatat non proident, sunt in culpa qui officia deserunt \n"
+      "mollit anim id est laborum.";
+
   std::array<char, 4096> buffer = {0};
   float color[3];
   int fontSize = 64;
@@ -46,6 +55,7 @@ private:
     const char* name;
     const hb_script_t script;
   };
+
   static constexpr std::array<ScriptPair, 7> scripts = {
     ScriptPair{"Common", HB_SCRIPT_COMMON},
     ScriptPair{"Thai", HB_SCRIPT_THAI},

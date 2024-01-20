@@ -3,9 +3,10 @@
 #include "colors.hpp"
 #include "text_renderer.hpp"
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <imgui.h>
-
+#include <imgui_internal.h>
 
 namespace {
 constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
@@ -34,6 +35,8 @@ bool MainScene::Init(Context &context) {
   dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(context, context.fontPath);
   dirChooser.SetPwd(context.fontPath);
+
+  std::copy(std::cbegin(exampleText), std::cend(exampleText), buffer.begin());
 
   return true;
 }
@@ -79,24 +82,60 @@ void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
+  if (ImGui::BeginMainMenuBar()) {
 
-  if (ImGui::Begin("Menu")) {
-    if (ImGui::CollapsingHeader("Font Directory")) {
-      ImGui::Text(context.fontPath.c_str());
-      if (ImGui::Button("Browse")) {
+    if (ImGui::BeginMenu("File##menu")) {
+      if (ImGui::MenuItem("Change font directory##file-menu")) {
         dirChooser.Open();
       }
-      if (ImGui::Button("Re-scan")) {
+
+      if (ImGui::MenuItem("Re-scan font directory##file-menu")) {
         fontPaths = ListFontFiles(context.fontPath);
       }
+
+      ImGui::Separator();
+
+      if(ImGui::MenuItem("Exit", "Alt+F4")) {
+        SDL_Event ev{};
+        ev.quit.type = SDL_QUIT;
+        ev.quit.timestamp = SDL_GetTicks();
+        
+        SDL_PushEvent(&ev);
+      }
+
+      ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("View##menu")) {
+      ImGui::MenuItem("Text editor##view-menu", "", &context.showTextEditor);
+      ImGui::MenuItem("Debug##view-menu", "", &context.debug);
+
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
+  }
+
+  if (ImGui::BeginViewportSideBar(
+          "status bar", nullptr, ImGuiDir_Down, ImGui::GetFrameHeight(),
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
+              ImGuiWindowFlags_MenuBar)) {
+    if (ImGui::BeginMenuBar()) {
+      ImGui::LabelText("Font Directory", context.fontPath.c_str());
+      ImGui::EndMenuBar();
+    }
+  }
+  ImGui::End();
+
+  if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right, 400.0f,
+                                  ImGuiWindowFlags_NoSavedSettings)) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
       auto currentFile = selectedFontIndex == -1
                              ? "<None>"
                              : fontPaths[selectedFontIndex].filename().string();
 
-      if (ImGui::BeginCombo("Font File", currentFile.c_str())) {
+      if (ImGui::BeginCombo("Font file", currentFile.c_str())) {
         for (int i = 0; i < fontPaths.size(); i++) {
           auto isSelected = i == selectedFontIndex;
           if (isSelected) {
@@ -112,73 +151,67 @@ void MainScene::DoUI(Context &context) {
         ImGui::EndCombo();
       }
 
-      auto familyName = font.GetFamilyName();
-      auto subFamily = font.GetSubFamilyName();
-
-      ImGui::InputText("Family Name", familyName.data(), familyName.size(),
-                       ImGuiInputTextFlags_ReadOnly);
-
-      ImGui::InputText("Sub Family Name", subFamily.data(), subFamily.size(),
-                       ImGuiInputTextFlags_ReadOnly);
+      ImGui::LabelText("Family name", font.GetFamilyName().c_str());
+      ImGui::LabelText("Sub-family name", font.GetSubFamilyName().c_str());
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
-      if (ImGui::CollapsingHeader("Font Metrics", ImGuiTreeNodeFlags_None)) {
-        auto ascend = font.Ascend();
-        auto descend = font.Descend();
-        auto lineGap = font.LineGap();
-        auto lineHeight = font.LineHeight();
 
-        ImGui::InputFloat("Ascend", &ascend, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Descend", &descend, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Line Gap", &lineGap, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Line Height", &lineHeight,
-                          ImGuiInputTextFlags_ReadOnly);
-      }
-      ImGui::Checkbox("Shape Text", &isShape);
+      ImGui::SeparatorText("Font metrics");
 
-      if (isShape) {
-        if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
-          for (size_t i = 0; i < languages.size(); i++) {
-            if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
-              selectedLanguage = i;
-            }
+      ImGui::LabelText("Ascend", "%.3f", font.Ascend());
+      ImGui::LabelText("Descend", "%.3f", font.Descend());
+      ImGui::LabelText("Line gap", "%.3f", font.LineGap());
+      ImGui::LabelText("Line height", "%.3f", font.LineHeight());
+
+      ImGui::SeparatorText("OpenType text shaping");
+      ImGui::Checkbox("Enable##Shape Text", &isShape);
+
+      ImGui::BeginDisabled(!isShape);
+      if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
+        for (size_t i = 0; i < languages.size(); i++) {
+          if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
+            selectedLanguage = i;
           }
-          ImGui::EndCombo();
         }
-        if (ImGui::BeginCombo("Script", scripts[selectedScript].name)) {
-          for (size_t i = 0; i < scripts.size(); i++) {
-            if (ImGui::Selectable(scripts[i].name, i == selectedScript)) {
-              selectedScript = i;
-            }
-          }
-          ImGui::EndCombo();
-        }
-        if (ImGui::BeginCombo("Direction",
-                              directions[selectedDirection].name)) {
-          for (int i = 0; i < directions.size(); i++) {
-            if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
-              selectedDirection = i;
-            }
-          }
-          ImGui::EndCombo();
-        }
+        ImGui::EndCombo();
       }
 
-      ImGui::ColorPicker3("color", color, ImGuiColorEditFlags_InputRGB);
+      if (ImGui::BeginCombo("Script", scripts[selectedScript].name)) {
+        for (size_t i = 0; i < scripts.size(); i++) {
+          if (ImGui::Selectable(scripts[i].name, i == selectedScript)) {
+            selectedScript = i;
+          }
+        }
+        ImGui::EndCombo();
+      }
+      if (ImGui::BeginCombo("Direction", directions[selectedDirection].name)) {
+        for (int i = 0; i < directions.size(); i++) {
+          if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
+            selectedDirection = i;
+          }
+        }
+        ImGui::EndCombo();
+      }
     }
+    ImGui::EndDisabled();
+
+    ImGui::SeparatorText("Draw color");
+
+    ImGui::ColorPicker3("Foreground##color", color, ImGuiColorEditFlags_InputRGB);
   }
   ImGui::End();
 
-  if (ImGui::Begin("Input Text")) {
-    ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size());
+  if (context.showTextEditor) {
+    if (ImGui::Begin("Input text", &context.showTextEditor)) {
+      ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size());
+    }
+    ImGui::End();
   }
-  ImGui::End();
 
-  if (ImGui::Begin("Debug")) {
-    ImGui::Checkbox("Enabled", &context.debug);
-    if (context.debug) {
+  if (context.debug) {
+    if (ImGui::Begin("Debug", &context.debug)) {
       if (ImGui::CollapsingHeader("Features")) {
         ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
@@ -216,8 +249,8 @@ void MainScene::DoUI(Context &context) {
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
       }
     }
+    ImGui::End();
   }
-  ImGui::End();
 
   dirChooser.Display();
   if (dirChooser.HasSelected()) {

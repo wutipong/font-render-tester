@@ -21,6 +21,7 @@ struct Context {
   bool debugCaret{true};
   bool debugAscend{true};
   bool debugDescend{true};
+  bool showTextEditor{true};
 
   std::string fontPath{std::filesystem::absolute("fonts").string()};
 };
