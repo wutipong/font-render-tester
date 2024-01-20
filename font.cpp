@@ -8,9 +8,11 @@
 
 #include FT_SFNT_NAMES_H
 #include FT_BITMAP_H
+#include FT_MULTIPLE_MASTERS_H
 
 #include <harfbuzz/hb-ft.h>
 #include <spdlog/spdlog.h>
+
 
 FT_Library Font::library;
 
@@ -42,6 +44,9 @@ Font::Font(const Font &f) : data(f.data) { Initialize(); }
 Font::~Font() {
   hb_font_destroy(hb_font);
   hb_font = nullptr;
+
+  hb_face_destroy(hb_face);
+  hb_face = nullptr;
 
   Invalidate();
 
@@ -87,6 +92,7 @@ bool Font::Initialize() {
   }
 
   hb_font = hb_ft_font_create_referenced(face);
+  hb_face = hb_ft_face_create_referenced(face);
 
   Invalidate();
   fontSize = -1;
@@ -94,6 +100,12 @@ bool Font::Initialize() {
   family = face->family_name;
   subFamily = face->style_name;
 
+  FT_MM_Var *mm;
+  FT_Get_MM_Var(face, &mm);
+
+  auto weight = HB_OT_TAG_VAR_AXIS_WEIGHT;
+
+  FT_Done_MM_Var(library, mm);
   return true;
 }
 
@@ -202,3 +214,5 @@ void Font::RenderText(SDL_Renderer *renderer, Context &ctx,
 
   textRenderer(renderer, ctx, *this, str, color, language, script);
 }
+
+bool Font::IsVariableFont() const { return hb_ot_var_has_data(hb_face); }

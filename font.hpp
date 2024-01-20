@@ -8,10 +8,12 @@
 
 #include "context.hpp"
 #include <functional>
+#include <hb-ot.h>
 #include <iterator>
 #include <map>
 #include <string>
 #include <vector>
+
 
 enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
@@ -37,6 +39,14 @@ inline float HBPosToFloat(const hb_position_t &value) {
   return static_cast<float>(value) / 64.0f;
 }
 
+enum class VariantAxis : hb_tag_t {
+  Italic = HB_OT_TAG_VAR_AXIS_ITALIC,
+  OpticalSize = HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE,
+  Slant = HB_OT_TAG_VAR_AXIS_SLANT,
+  Weight = HB_OT_TAG_VAR_AXIS_WEIGHT,
+  Width = HB_OT_TAG_VAR_AXIS_WIDTH,
+};
+
 class Font {
 public:
   static bool Init();
@@ -59,6 +69,8 @@ public:
   std::string GetFamilyName() const { return family; }
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return face != nullptr; }
+
+  bool IsVariableFont() const;
 
   Glyph &GetGlyph(SDL_Renderer *renderer, const int &index);
   Glyph &GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
@@ -89,6 +101,7 @@ private:
 
   int fontSize{-1};
   hb_font_t *hb_font{nullptr};
+  hb_face_t *hb_face{nullptr};
 
   std::map<unsigned int, Glyph> glyphMap;
 
