@@ -2,8 +2,10 @@
   "name": "font-render-tester",
   "version-string": "0.1.0-dev",
   "dependencies": [
+    "fmt",
     "freetype",
     "harfbuzz",
+    "magic-enum",
     "nlohmann-json",
     "sdl2",
     "spdlog",

@@ -5,8 +5,11 @@
 #include <algorithm>
 #include <array>
 #include <filesystem>
+#include <fmt/core.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <magic_enum_all.hpp>
+#include <magic_enum_containers.hpp>
 
 namespace {
 constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
@@ -95,11 +98,11 @@ void MainScene::DoUI(Context &context) {
 
       ImGui::Separator();
 
-      if(ImGui::MenuItem("Exit", "Alt+F4")) {
+      if (ImGui::MenuItem("Exit", "Alt+F4")) {
         SDL_Event ev{};
         ev.quit.type = SDL_QUIT;
         ev.quit.timestamp = SDL_GetTicks();
-        
+
         SDL_PushEvent(&ev);
       }
 
@@ -158,6 +161,37 @@ void MainScene::DoUI(Context &context) {
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
 
+      ImGui::SeparatorText("Variant");
+      ImGui::BeginDisabled(!font.IsVariableFont());
+
+      bool axisChanged = false;
+
+      static constexpr magic_enum::containers::array<VariantAxis, const char *>
+          axisLabel = {{{
+              "Italic##axis",
+              "Optical size##axis",
+              "Slant##axis",
+              "Weight##axis",
+              "Width##axis",
+          }}};
+
+      magic_enum::enum_for_each<VariantAxis>(
+          [this, &axisChanged](const VariantAxis &axis) {
+            if (axisLimits[axis].has_value()) {
+              auto [min, max, _] = *axisLimits[axis];
+              axisChanged |= ImGui::DragFloat(axisLabel[axis], &axisValue[axis],
+                                              1.0f, min, max);
+            } else {
+              ImGui::LabelText(axisLabel[axis], "N/A");
+            }
+          });
+
+      if (axisChanged) {
+        // Update variant axis.
+      }
+
+      ImGui::EndDisabled();
+
       ImGui::SeparatorText("Font metrics");
 
       ImGui::LabelText("Ascend", "%.3f", font.Ascend());
@@ -199,7 +233,8 @@ void MainScene::DoUI(Context &context) {
 
     ImGui::SeparatorText("Draw color");
 
-    ImGui::ColorPicker3("Foreground##color", color, ImGuiColorEditFlags_InputRGB);
+    ImGui::ColorPicker3("Foreground##color", color,
+                        ImGuiColorEditFlags_InputRGB);
   }
   ImGui::End();
 
@@ -269,6 +304,15 @@ void MainScene::DoUI(Context &context) {
         ImGui::OpenPopup("InvalidFont");
       } else {
         font = newFont;
+        axisLimits = font.GetVariantAxisLimits();
+
+        magic_enum::enum_for_each<VariantAxis>([this](const VariantAxis &axis) {
+          if (!axisLimits[axis].has_value())
+            return;
+
+          axisValue[axis] = axisLimits[axis]->defaultValue;
+        });
+
         selectedFontIndex = newSelected;
       }
     }

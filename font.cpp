@@ -13,6 +13,16 @@
 #include <harfbuzz/hb-ft.h>
 #include <spdlog/spdlog.h>
 
+namespace {
+
+constexpr magic_enum::containers::array<VariantAxis, hb_tag_t> AxisTags = {{{
+    HB_OT_TAG_VAR_AXIS_ITALIC,
+    HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE,
+    HB_OT_TAG_VAR_AXIS_SLANT,
+    HB_OT_TAG_VAR_AXIS_WEIGHT,
+    HB_OT_TAG_VAR_AXIS_WIDTH,
+}}};
+} // namespace
 
 FT_Library Font::library;
 
@@ -44,9 +54,6 @@ Font::Font(const Font &f) : data(f.data) { Initialize(); }
 Font::~Font() {
   hb_font_destroy(hb_font);
   hb_font = nullptr;
-
-  hb_face_destroy(hb_face);
-  hb_face = nullptr;
 
   Invalidate();
 
@@ -92,7 +99,6 @@ bool Font::Initialize() {
   }
 
   hb_font = hb_ft_font_create_referenced(face);
-  hb_face = hb_ft_face_create_referenced(face);
 
   Invalidate();
   fontSize = -1;
@@ -100,12 +106,6 @@ bool Font::Initialize() {
   family = face->family_name;
   subFamily = face->style_name;
 
-  FT_MM_Var *mm;
-  FT_Get_MM_Var(face, &mm);
-
-  auto weight = HB_OT_TAG_VAR_AXIS_WEIGHT;
-
-  FT_Done_MM_Var(library, mm);
   return true;
 }
 
@@ -215,4 +215,45 @@ void Font::RenderText(SDL_Renderer *renderer, Context &ctx,
   textRenderer(renderer, ctx, *this, str, color, language, script);
 }
 
-bool Font::IsVariableFont() const { return hb_ot_var_has_data(hb_face); }
+bool Font::IsVariableFont() const {
+  if (!hb_font)
+    return false;
+
+  auto hb_face = hb_font_get_face(hb_font);
+  return hb_ot_var_has_data(hb_face);
+}
+
+magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
+Font::GetVariantAxisLimits() const {
+  if (!IsVariableFont()) {
+    return {};
+  }
+
+  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
+      output{};
+
+  auto hb_face = hb_font_get_face(hb_font);
+  auto count = hb_ot_var_get_axis_count(hb_face);
+
+  std::vector<hb_ot_var_axis_info_t> hbAxisInfo;
+  hbAxisInfo.resize(count);
+
+  hb_ot_var_get_axis_infos(hb_face, 0, &count, hbAxisInfo.data());
+
+  for (auto &info : hbAxisInfo) {
+    auto it = std::ranges::find_if( AxisTags, [&info](const hb_tag_t& t) ->bool {
+      return info.tag == t;
+    });
+
+    if (it != AxisTags.end()) {
+      auto tag = magic_enum::enum_cast<VariantAxis>(std::distance(AxisTags.begin(), it));
+      output[*tag] = {
+          .min = info.min_value,
+          .max = info.max_value,
+          .defaultValue = info.default_value,
+      };
+    }
+  }
+
+  return output;
+}

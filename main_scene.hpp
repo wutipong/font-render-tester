@@ -26,13 +26,13 @@ public:
 
 private:
   static const inline std::string exampleText =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \n"
-      "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \n"
-      "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea \n"
-      "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate \n"
-      "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint \n"
-      "occaecat cupidatat non proident, sunt in culpa qui officia deserunt \n"
-      "mollit anim id est laborum.";
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non \n"
+      "turpis justo. Etiam luctus vulputate ante ac congue. Nunc vitae \n"
+      "ultricies turpis, eu mollis libero. Quisque eu faucibus neque. \n"
+      "Aliquam risus urna, ullamcorper sit amet arcu id, feugiat semper \n"
+      "dolor. Maecenas commodo turpis orci, vel laoreet felis placerat \n"
+      "in. In nec metus tincidunt sem sagittis dapibus ut eget magna. \n"
+      "Aenean efficitur felis sed metus mollis varius.";
 
   std::array<char, 4096> buffer = {0};
   float color[3];
@@ -70,6 +70,7 @@ private:
     const char* name;
     const hb_direction_t direction;
   };
+
   static constexpr std::array<DirectionPair, 3> directions = {
     DirectionPair{"Left to Right", HB_DIRECTION_LTR,},
     DirectionPair{ "Right To Left",HB_DIRECTION_RTL, },
@@ -88,11 +89,15 @@ private:
     LanguagePair{ "Korean Republic of Korea","ko-KR", },
     LanguagePair{ "Chinese China",           "zh-CN", },
     LanguagePair{ "Chinese Taiwan",          "zh-TW", },
-    LanguagePair{ "Arabic Saudi Arabia",   "ar-SA",  },
+    LanguagePair{ "Arabic Saudi Arabia",     "ar-SA", },
   };
   // clang-format on
 
   int selectedScript = 0;
   int selectedDirection = 0;
   int selectedLanguage = 0;
+
+  magic_enum::containers::array<VariantAxis, float> axisValue;
+  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
+      axisLimits;
 };

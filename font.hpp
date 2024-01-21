@@ -10,12 +10,18 @@
 #include <functional>
 #include <hb-ot.h>
 #include <iterator>
+#include <magic_enum_containers.hpp>
 #include <map>
 #include <string>
 #include <vector>
 
+enum class TextRenderEnum {
+  NoShape,
+  LeftToRight,
+  RightToLeft,
+  TopToBottom,
+};
 
-enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
 class Font;
 
 typedef std::function<void(SDL_Renderer *renderer, Context &ctx, Font &font,
@@ -25,7 +31,6 @@ typedef std::function<void(SDL_Renderer *renderer, Context &ctx, Font &font,
     TextRenderFunction;
 
 struct Glyph {
-
   SDL_Texture *texture;
   SDL_Rect bound;
   int advance;
@@ -39,12 +44,18 @@ inline float HBPosToFloat(const hb_position_t &value) {
   return static_cast<float>(value) / 64.0f;
 }
 
-enum class VariantAxis : hb_tag_t {
-  Italic = HB_OT_TAG_VAR_AXIS_ITALIC,
-  OpticalSize = HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE,
-  Slant = HB_OT_TAG_VAR_AXIS_SLANT,
-  Weight = HB_OT_TAG_VAR_AXIS_WEIGHT,
-  Width = HB_OT_TAG_VAR_AXIS_WIDTH,
+enum class VariantAxis {
+  Italic,
+  OpticalSize,
+  Slant,
+  Weight,
+  Width,
+};
+
+struct VariantAxisLimit {
+  float min;
+  float max;
+  float defaultValue;
 };
 
 class Font {
@@ -88,6 +99,9 @@ public:
                   const SDL_Color &color, const std::string &language,
                   const hb_script_t &script);
 
+  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
+  GetVariantAxisLimits() const;
+
 private:
   static FT_Library library;
 
@@ -101,7 +115,6 @@ private:
 
   int fontSize{-1};
   hb_font_t *hb_font{nullptr};
-  hb_face_t *hb_face{nullptr};
 
   std::map<unsigned int, Glyph> glyphMap;
 
