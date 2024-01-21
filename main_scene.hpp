@@ -36,50 +36,69 @@ private:
   std::array<char, 4096> buffer = {0};
   float color[3];
   int fontSize = 64;
-  bool isShape = false;
+  bool isShaping = false;
 
   int selectedFontIndex = -1;
   std::vector<std::filesystem::path> fontPaths;
 
-  std::vector<unsigned char> fontData;
-
-  ImGui::FileBrowser dirChooser{
-      ImGuiFileBrowserFlags_SelectDirectory,
-  };
+  ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
 
   Font font{};
 
-  // clang-format off
   struct ScriptPair {
-    const char* name;
+    const char *name;
     const hb_script_t script;
   };
 
-  static constexpr std::array<ScriptPair, 7> scripts = {
-    ScriptPair{"Common", HB_SCRIPT_COMMON},
-    ScriptPair{"Thai", HB_SCRIPT_THAI},
-    ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
-    ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
-    ScriptPair{"Han", HB_SCRIPT_HAN},
-    ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
-    ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
+  static constexpr std::array<ScriptPair, 7> scripts{
+      ScriptPair{"Common", HB_SCRIPT_COMMON},
+      ScriptPair{"Thai", HB_SCRIPT_THAI},
+      ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
+      ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
+      ScriptPair{"Han", HB_SCRIPT_HAN},
+      ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+      ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
   };
 
   struct LanguagePair {
-    const char* name;
-    const char* code;
+    const char *name;
+    const char *code;
   };
-  static constexpr std::array<LanguagePair, 8> languages = {
-    LanguagePair{ "None",                    "",      },
-    LanguagePair{ "English US",              "en-US", },
-    LanguagePair{ "Thai Thailand",           "th-TH", },
-    LanguagePair{ "Japanese Japan",          "ja-JP", },
-    LanguagePair{ "Korean Republic of Korea","ko-KR", },
-    LanguagePair{ "Chinese China",           "zh-CN", },
-    LanguagePair{ "Chinese Taiwan",          "zh-TW", },
-    LanguagePair{ "Arabic Saudi Arabia",     "ar-SA", },
+
+  static constexpr std::array<LanguagePair, 8> languages{
+      LanguagePair{
+          "None",
+          "",
+      },
+      LanguagePair{
+          "English US",
+          "en-US",
+      },
+      LanguagePair{
+          "Thai Thailand",
+          "th-TH",
+      },
+      LanguagePair{
+          "Japanese Japan",
+          "ja-JP",
+      },
+      LanguagePair{
+          "Korean Republic of Korea",
+          "ko-KR",
+      },
+      LanguagePair{
+          "Chinese China",
+          "zh-CN",
+      },
+      LanguagePair{
+          "Chinese Taiwan",
+          "zh-TW",
+      },
+      LanguagePair{
+          "Arabic Saudi Arabia",
+          "ar-SA",
+      },
   };
-  // clang-format on
 
   int selectedScript = 0;
   int selectedLanguage = 0;

@@ -58,7 +58,7 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
       0xFF,
   };
 
-  font.RenderText(renderer, ctx, std::string(buffer.data()), isShape,
+  font.RenderText(renderer, ctx, std::string(buffer.data()), isShaping,
                   selectedDirection, sdlColor, languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }
@@ -148,20 +148,16 @@ void MainScene::DoUI(Context &context) {
 
       bool axisChanged = false;
 
-      static constexpr magic_enum::containers::array<VariationAxis,
-                                                     const char *>
-          axisLabel = {{{
-              "Italic##axis",
-              "Optical size##axis",
-              "Slant##axis",
-              "Weight##axis",
-              "Width##axis",
-          }}};
+      constexpr magic_enum::containers::array<VariationAxis, const char *>
+          axisLabel = {
+              "Italic##axis", "Optical size##axis", "Slant##axis",
+              "Weight##axis", "Width##axis",
+          };
 
       magic_enum::enum_for_each<VariationAxis>(
-          [this, &axisChanged](const VariationAxis &axis) {
+          [this, &axisChanged, &axisLabel](const VariationAxis &axis) {
             if (axisLimits[axis].has_value()) {
-              auto [min, max, _] = *axisLimits[axis];
+              [[maybe_unused]] auto [min, max, _] = *axisLimits[axis];
               axisChanged |= ImGui::DragFloat(axisLabel[axis], &axisValue[axis],
                                               1.0f, min, max);
             } else {
@@ -183,9 +179,9 @@ void MainScene::DoUI(Context &context) {
       ImGui::LabelText("Line height", "%.3f", font.LineHeight());
 
       ImGui::SeparatorText("OpenType text shaping");
-      ImGui::Checkbox("Enable##Shape Text", &isShape);
+      ImGui::Checkbox("Enable##Shape Text", &isShaping);
 
-      ImGui::BeginDisabled(!isShape);
+      ImGui::BeginDisabled(!isShaping);
       if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
         for (size_t i = 0; i < languages.size(); i++) {
           if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
@@ -212,12 +208,13 @@ void MainScene::DoUI(Context &context) {
           };
 
       if (ImGui::BeginCombo("Direction", directionLabels[selectedDirection])) {
-        magic_enum::enum_for_each<TextDirection>([this, &directionLabels](
-                                                     const auto &dir) {
-          if (ImGui::Selectable(directionLabels[dir], dir == selectedDirection)) {
-            selectedDirection = dir;
-          }
-        });
+        magic_enum::enum_for_each<TextDirection>(
+            [this, &directionLabels](const auto &dir) {
+              if (ImGui::Selectable(directionLabels[dir],
+                                    dir == selectedDirection)) {
+                selectedDirection = dir;
+              }
+            });
 
         ImGui::EndCombo();
       }
