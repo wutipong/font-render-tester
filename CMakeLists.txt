@@ -66,5 +66,10 @@ endfunction()
 copy_resources(
         TARGET CopyFontFiles
         DESTINATION "fonts"
-        INPUT "fonts/NotoSans-Regular.ttf" "fonts/NotoSansThai-Regular.ttf" "fonts/NotoSansCJKjp-Regular.otf" "fonts/NotoSansCJKkr-Regular.otf" "fonts/NotoSansCJKsc-Regular.otf"
+        INPUT 
+                "fonts/NotoSans-Regular.ttf" 
+                "fonts/NotoSansThai-Regular.ttf" 
+                "fonts/NotoSansCJKjp-Regular.otf" 
+                "fonts/NotoSansCJKkr-Regular.otf" 
+                "fonts/NotoSansCJKsc-Regular.otf"
 )
