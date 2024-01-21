@@ -44,7 +44,7 @@ inline float HBPosToFloat(const hb_position_t &value) {
   return static_cast<float>(value) / 64.0f;
 }
 
-enum class VariantAxis {
+enum class VariationAxis {
   Italic,
   OpticalSize,
   Slant,
@@ -52,7 +52,7 @@ enum class VariantAxis {
   Width,
 };
 
-struct VariantAxisLimit {
+struct AxisInfo {
   float min;
   float max;
   float defaultValue;
@@ -99,10 +99,11 @@ public:
                   const SDL_Color &color, const std::string &language,
                   const hb_script_t &script);
 
-  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
-  GetVariantAxisLimits() const;
+  magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+  GetAxisInfos() const;
 
-  void SetVariant(const magic_enum::containers::array<VariantAxis, float>& variant);
+  void SetVariationValues(
+      const magic_enum::containers::array<VariationAxis, float> &values);
 
 private:
   static FT_Library library;
@@ -130,4 +131,7 @@ private:
 
   TextRenderFunction textRenderer;
   TextRenderEnum textRendererEnum{TextRenderEnum::NoShape};
+
+  magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+      axisInfo{};
 };

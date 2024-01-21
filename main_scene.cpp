@@ -161,12 +161,12 @@ void MainScene::DoUI(Context &context) {
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::SliderInt("Font Size", &fontSize, 0, 128);
 
-      ImGui::SeparatorText("Variant");
+      ImGui::SeparatorText("Variations");
       ImGui::BeginDisabled(!font.IsVariableFont());
 
       bool axisChanged = false;
 
-      static constexpr magic_enum::containers::array<VariantAxis, const char *>
+      static constexpr magic_enum::containers::array<VariationAxis, const char *>
           axisLabel = {{{
               "Italic##axis",
               "Optical size##axis",
@@ -175,8 +175,8 @@ void MainScene::DoUI(Context &context) {
               "Width##axis",
           }}};
 
-      magic_enum::enum_for_each<VariantAxis>(
-          [this, &axisChanged](const VariantAxis &axis) {
+      magic_enum::enum_for_each<VariationAxis>(
+          [this, &axisChanged](const VariationAxis &axis) {
             if (axisLimits[axis].has_value()) {
               auto [min, max, _] = *axisLimits[axis];
               axisChanged |= ImGui::DragFloat(axisLabel[axis], &axisValue[axis],
@@ -187,7 +187,7 @@ void MainScene::DoUI(Context &context) {
           });
 
       if (axisChanged) {
-        font.SetVariant(axisValue);
+        font.SetVariationValues(axisValue);
       }
 
       ImGui::EndDisabled();
@@ -304,9 +304,9 @@ void MainScene::DoUI(Context &context) {
         ImGui::OpenPopup("InvalidFont");
       } else {
         font = newFont;
-        axisLimits = font.GetVariantAxisLimits();
+        axisLimits = font.GetAxisInfos();
 
-        magic_enum::enum_for_each<VariantAxis>([this](const VariantAxis &axis) {
+        magic_enum::enum_for_each<VariationAxis>([this](const VariationAxis &axis) {
           if (!axisLimits[axis].has_value())
             return;
 

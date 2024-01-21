@@ -97,7 +97,7 @@ private:
   int selectedDirection = 0;
   int selectedLanguage = 0;
 
-  magic_enum::containers::array<VariantAxis, float> axisValue;
-  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
+  magic_enum::containers::array<VariationAxis, float> axisValue;
+  magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
       axisLimits;
 };

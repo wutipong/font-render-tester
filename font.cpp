@@ -16,12 +16,12 @@
 
 namespace {
 
-const std::map<VariantAxis, hb_tag_t> axisTagMap{
-    {VariantAxis::Italic, HB_OT_TAG_VAR_AXIS_ITALIC},
-    {VariantAxis::OpticalSize, HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE},
-    {VariantAxis::Slant, HB_OT_TAG_VAR_AXIS_SLANT},
-    {VariantAxis::Weight, HB_OT_TAG_VAR_AXIS_WEIGHT},
-    {VariantAxis::Width, HB_OT_TAG_VAR_AXIS_WIDTH},
+const std::map<VariationAxis, hb_tag_t> axisTagMap{
+    {VariationAxis::Italic, HB_OT_TAG_VAR_AXIS_ITALIC},
+    {VariationAxis::OpticalSize, HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE},
+    {VariationAxis::Slant, HB_OT_TAG_VAR_AXIS_SLANT},
+    {VariationAxis::Weight, HB_OT_TAG_VAR_AXIS_WEIGHT},
+    {VariationAxis::Width, HB_OT_TAG_VAR_AXIS_WIDTH},
 };
 } // namespace
 
@@ -106,6 +106,32 @@ bool Font::Initialize() {
 
   family = face->family_name;
   subFamily = face->style_name;
+
+  if (IsVariableFont()) {
+    auto hb_face = hb_font_get_face(hb_font);
+    auto count = hb_ot_var_get_axis_count(hb_face);
+
+    std::vector<hb_ot_var_axis_info_t> hbAxisInfo;
+    hbAxisInfo.resize(count);
+
+    hb_ot_var_get_axis_infos(hb_face, 0, &count, hbAxisInfo.data());
+
+    for (auto &info : hbAxisInfo) {
+      auto it = std::ranges::find_if(
+          axisTagMap,
+          [&info](const hb_tag_t &t) -> bool { return info.tag == t; },
+          [](const auto &e) -> auto { return e.second; });
+
+      if (it != axisTagMap.end()) {
+        auto tag = it->first;
+        axisInfo[tag] = {
+            .min = info.min_value,
+            .max = info.max_value,
+            .defaultValue = info.default_value,
+        };
+      }
+    }
+  }
 
   return true;
 }
@@ -224,65 +250,38 @@ bool Font::IsVariableFont() const {
   return hb_ot_var_has_data(hb_face);
 }
 
-magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
-Font::GetVariantAxisLimits() const {
+magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+Font::GetAxisInfos() const {
   if (!IsVariableFont()) {
     return {};
   }
 
-  magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
-      output{};
-
-  auto hb_face = hb_font_get_face(hb_font);
-  auto count = hb_ot_var_get_axis_count(hb_face);
-
-  std::vector<hb_ot_var_axis_info_t> hbAxisInfo;
-  hbAxisInfo.resize(count);
-
-  hb_ot_var_get_axis_infos(hb_face, 0, &count, hbAxisInfo.data());
-
-  for (auto &info : hbAxisInfo) {
-    auto it = std::ranges::find_if(
-        axisTagMap,
-        [&info](const hb_tag_t &t) -> bool { return info.tag == t; },
-        [](const auto &e) -> auto { return e.second; });
-
-    if (it != axisTagMap.end()) {
-      auto tag = it->first;
-      output[tag] = {
-          .min = info.min_value,
-          .max = info.max_value,
-          .defaultValue = info.default_value,
-      };
-    }
-  }
-
-  return output;
+  return axisInfo;
 }
 
-void Font::SetVariant(
-    const magic_enum::containers::array<VariantAxis, float> &variant) {
+void Font::SetVariationValues(
+    const magic_enum::containers::array<VariationAxis, float> &values) {
 
   if (!IsValid())
     return;
 
-  auto limits = GetVariantAxisLimits();
+  auto limits = GetAxisInfos();
   std::vector<hb_variation_t> variations;
 
   FT_MM_Var *amaster;
   FT_Get_MM_Var(face, &amaster);
 
-  magic_enum::enum_for_each<VariantAxis>(
-      [&limits, &variations, &variant](const VariantAxis &axis) {
+  magic_enum::enum_for_each<VariationAxis>(
+      [&limits, &variations, &values](const VariationAxis &axis) {
         if (limits[axis].has_value()) {
           variations.push_back({
               .tag = axisTagMap.at(axis),
-              .value = variant[axis],
+              .value = values[axis],
           });
         }
       });
 
-  // hb_font_set_variations(hb_font, variations.data(), variations.size());
+  hb_font_set_variations(hb_font, variations.data(), variations.size());
 
   std::vector<FT_Fixed> coords;
   for (int i = 0; i < amaster->num_axis; i++) {
@@ -296,7 +295,7 @@ void Font::SetVariant(
     if (it != axisTagMap.end()) {
       auto axis = it->first;
 
-      FT_Fixed value = static_cast<FT_Fixed>(variant[axis] * 65'536.0f);
+      FT_Fixed value = static_cast<FT_Fixed>(values[axis] * 65'536.0f);
       coords.push_back(value);
     } else {
       coords.push_back(amaster->axis[i].def);
