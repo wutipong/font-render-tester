@@ -8,12 +8,20 @@
 
 #include "context.hpp"
 #include <functional>
+#include <hb-ot.h>
 #include <iterator>
+#include <magic_enum_containers.hpp>
 #include <map>
 #include <string>
 #include <vector>
 
-enum class TextRenderEnum { NoShape, LeftToRight, RightToLeft, TopToBottom };
+enum class TextRenderEnum {
+  NoShape,
+  LeftToRight,
+  RightToLeft,
+  TopToBottom,
+};
+
 class Font;
 
 typedef std::function<void(SDL_Renderer *renderer, Context &ctx, Font &font,
@@ -23,7 +31,6 @@ typedef std::function<void(SDL_Renderer *renderer, Context &ctx, Font &font,
     TextRenderFunction;
 
 struct Glyph {
-
   SDL_Texture *texture;
   SDL_Rect bound;
   int advance;
@@ -36,6 +43,20 @@ inline float FTPosToFloat(const FT_Pos &value) {
 inline float HBPosToFloat(const hb_position_t &value) {
   return static_cast<float>(value) / 64.0f;
 }
+
+enum class VariationAxis {
+  Italic,
+  OpticalSize,
+  Slant,
+  Weight,
+  Width,
+};
+
+struct AxisInfo {
+  float min;
+  float max;
+  float defaultValue;
+};
 
 class Font {
 public:
@@ -60,6 +81,8 @@ public:
   std::string GetSubFamilyName() const { return subFamily; }
   bool IsValid() const { return face != nullptr; }
 
+  bool IsVariableFont() const;
+
   Glyph &GetGlyph(SDL_Renderer *renderer, const int &index);
   Glyph &GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &index);
 
@@ -75,6 +98,12 @@ public:
   void RenderText(SDL_Renderer *renderer, Context &ctx, const std::string &str,
                   const SDL_Color &color, const std::string &language,
                   const hb_script_t &script);
+
+  magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+  GetAxisInfos() const;
+
+  void SetVariationValues(
+      const magic_enum::containers::array<VariationAxis, float> &values);
 
 private:
   static FT_Library library;
@@ -102,4 +131,7 @@ private:
 
   TextRenderFunction textRenderer;
   TextRenderEnum textRendererEnum{TextRenderEnum::NoShape};
+
+  magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+      axisInfo{};
 };

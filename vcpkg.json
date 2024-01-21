@@ -4,6 +4,7 @@
   "dependencies": [
     "freetype",
     "harfbuzz",
+    "magic-enum",
     "nlohmann-json",
     "sdl2",
     "spdlog",
