@@ -187,7 +187,7 @@ void MainScene::DoUI(Context &context) {
           });
 
       if (axisChanged) {
-        // Update variant axis.
+        font.SetVariant(axisValue);
       }
 
       ImGui::EndDisabled();

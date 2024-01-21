@@ -102,6 +102,8 @@ public:
   magic_enum::containers::array<VariantAxis, std::optional<VariantAxisLimit>>
   GetVariantAxisLimits() const;
 
+  void SetVariant(const magic_enum::containers::array<VariantAxis, float>& variant);
+
 private:
   static FT_Library library;
 

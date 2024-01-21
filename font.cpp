@@ -11,17 +11,18 @@
 #include FT_MULTIPLE_MASTERS_H
 
 #include <harfbuzz/hb-ft.h>
+#include <magic_enum_all.hpp>
 #include <spdlog/spdlog.h>
 
 namespace {
 
-constexpr magic_enum::containers::array<VariantAxis, hb_tag_t> AxisTags = {{{
-    HB_OT_TAG_VAR_AXIS_ITALIC,
-    HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE,
-    HB_OT_TAG_VAR_AXIS_SLANT,
-    HB_OT_TAG_VAR_AXIS_WEIGHT,
-    HB_OT_TAG_VAR_AXIS_WIDTH,
-}}};
+const std::map<VariantAxis, hb_tag_t> axisTagMap{
+    {VariantAxis::Italic, HB_OT_TAG_VAR_AXIS_ITALIC},
+    {VariantAxis::OpticalSize, HB_OT_TAG_VAR_AXIS_OPTICAL_SIZE},
+    {VariantAxis::Slant, HB_OT_TAG_VAR_AXIS_SLANT},
+    {VariantAxis::Weight, HB_OT_TAG_VAR_AXIS_WEIGHT},
+    {VariantAxis::Width, HB_OT_TAG_VAR_AXIS_WIDTH},
+};
 } // namespace
 
 FT_Library Font::library;
@@ -241,13 +242,14 @@ Font::GetVariantAxisLimits() const {
   hb_ot_var_get_axis_infos(hb_face, 0, &count, hbAxisInfo.data());
 
   for (auto &info : hbAxisInfo) {
-    auto it = std::ranges::find_if( AxisTags, [&info](const hb_tag_t& t) ->bool {
-      return info.tag == t;
-    });
+    auto it = std::ranges::find_if(
+        axisTagMap,
+        [&info](const hb_tag_t &t) -> bool { return info.tag == t; },
+        [](const auto &e) -> auto { return e.second; });
 
-    if (it != AxisTags.end()) {
-      auto tag = magic_enum::enum_cast<VariantAxis>(std::distance(AxisTags.begin(), it));
-      output[*tag] = {
+    if (it != axisTagMap.end()) {
+      auto tag = it->first;
+      output[tag] = {
           .min = info.min_value,
           .max = info.max_value,
           .defaultValue = info.default_value,
@@ -256,4 +258,54 @@ Font::GetVariantAxisLimits() const {
   }
 
   return output;
+}
+
+void Font::SetVariant(
+    const magic_enum::containers::array<VariantAxis, float> &variant) {
+
+  if (!IsValid())
+    return;
+
+  auto limits = GetVariantAxisLimits();
+  std::vector<hb_variation_t> variations;
+
+  FT_MM_Var *amaster;
+  FT_Get_MM_Var(face, &amaster);
+
+  magic_enum::enum_for_each<VariantAxis>(
+      [&limits, &variations, &variant](const VariantAxis &axis) {
+        if (limits[axis].has_value()) {
+          variations.push_back({
+              .tag = axisTagMap.at(axis),
+              .value = variant[axis],
+          });
+        }
+      });
+
+  // hb_font_set_variations(hb_font, variations.data(), variations.size());
+
+  std::vector<FT_Fixed> coords;
+  for (int i = 0; i < amaster->num_axis; i++) {
+    auto it = std::ranges::find_if(
+        axisTagMap,
+        [&amaster, i](const hb_tag_t &t) -> bool {
+          return amaster->axis[i].tag == t;
+        },
+        [](const auto &e) -> auto { return e.second; });
+
+    if (it != axisTagMap.end()) {
+      auto axis = it->first;
+
+      FT_Fixed value = static_cast<FT_Fixed>(variant[axis] * 65'536.0f);
+      coords.push_back(value);
+    } else {
+      coords.push_back(amaster->axis[i].def);
+    }
+  }
+
+  FT_Set_Var_Design_Coordinates(face, coords.size(), coords.data());
+  FT_Done_MM_Var(library, amaster);
+  hb_ft_font_changed(hb_font);
+
+  Invalidate();
 }
