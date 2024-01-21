@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include <filesystem>
-#include <fmt/core.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <magic_enum_all.hpp>

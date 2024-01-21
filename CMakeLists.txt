@@ -26,7 +26,6 @@ if (MSVC)
         target_compile_options(font-render-tester PRIVATE /Zc:__cplusplus)
 endif ()
 
-find_package(fmt CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 find_package(harfbuzz CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
@@ -38,7 +37,6 @@ find_package(utf8cpp CONFIG REQUIRED)
 target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 
 target_link_libraries(font-render-tester PRIVATE
-        fmt::fmt
         freetype 
         harfbuzz::harfbuzz
         imgui::imgui 
@@ -55,7 +53,7 @@ function(copy_resources)
 
         cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}"
                 "${multiValueArgs}" ${ARGN}
-                )
+        )
 
         file(GLOB COPY_RESOURCES_INPUT_FILES ${COPY_RESOURCES_INPUT})
 
