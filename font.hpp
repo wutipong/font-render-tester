@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-enum class TextRenderEnum {
-  NoShape,
+enum class TextDirection {
   LeftToRight,
   RightToLeft,
   TopToBottom,
@@ -37,10 +36,10 @@ struct Glyph {
   int bearing;
 };
 
-inline float FTPosToFloat(const FT_Pos &value) {
+constexpr inline float FTPosToFloat(const FT_Pos &value) {
   return static_cast<float>(value) / 64.0f;
 }
-inline float HBPosToFloat(const hb_position_t &value) {
+constexpr inline float HBPosToFloat(const hb_position_t &value) {
   return static_cast<float>(value) / 64.0f;
 }
 
@@ -79,6 +78,7 @@ public:
 
   std::string GetFamilyName() const { return family; }
   std::string GetSubFamilyName() const { return subFamily; }
+
   bool IsValid() const { return face != nullptr; }
 
   bool IsVariableFont() const;
@@ -93,9 +93,8 @@ public:
 
   hb_font_t *HbFont() const { return hb_font; }
 
-  void SetTextRenderer(const TextRenderEnum &t);
-
   void RenderText(SDL_Renderer *renderer, Context &ctx, const std::string &str,
+                  const bool& isShaping, const TextDirection& direction,
                   const SDL_Color &color, const std::string &language,
                   const hb_script_t &script);
 
@@ -128,9 +127,6 @@ private:
 
   std::string family;
   std::string subFamily;
-
-  TextRenderFunction textRenderer;
-  TextRenderEnum textRendererEnum{TextRenderEnum::NoShape};
 
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
       axisInfo{};

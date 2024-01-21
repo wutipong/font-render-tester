@@ -49,23 +49,6 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
                          backgroundColor.b, backgroundColor.a);
   SDL_RenderClear(renderer);
 
-  auto textRender = TextRenderEnum::NoShape;
-  if (isShape) {
-    switch (directions[selectedDirection].direction) {
-    case HB_DIRECTION_LTR:
-      textRender = TextRenderEnum::LeftToRight;
-      break;
-    case HB_DIRECTION_TTB:
-      textRender = TextRenderEnum::TopToBottom;
-      break;
-    case HB_DIRECTION_RTL:
-      textRender = TextRenderEnum::RightToLeft;
-      break;
-    }
-  }
-
-  font.SetTextRenderer(textRender);
-
   font.SetFontSize(fontSize);
 
   SDL_Color sdlColor = {
@@ -75,8 +58,8 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
       0xFF,
   };
 
-  font.RenderText(renderer, ctx, std::string(buffer.data()), sdlColor,
-                  languages[selectedLanguage].code,
+  font.RenderText(renderer, ctx, std::string(buffer.data()), isShape,
+                  selectedDirection, sdlColor, languages[selectedLanguage].code,
                   scripts[selectedScript].script);
 }
 
@@ -165,7 +148,8 @@ void MainScene::DoUI(Context &context) {
 
       bool axisChanged = false;
 
-      static constexpr magic_enum::containers::array<VariationAxis, const char *>
+      static constexpr magic_enum::containers::array<VariationAxis,
+                                                     const char *>
           axisLabel = {{{
               "Italic##axis",
               "Optical size##axis",
@@ -219,12 +203,22 @@ void MainScene::DoUI(Context &context) {
         }
         ImGui::EndCombo();
       }
-      if (ImGui::BeginCombo("Direction", directions[selectedDirection].name)) {
-        for (int i = 0; i < directions.size(); i++) {
-          if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
-            selectedDirection = i;
+
+      constexpr magic_enum::containers::array<TextDirection, const char *>
+          directionLabels{
+              "Left to right",
+              "Right to left",
+              "Top to bottom",
+          };
+
+      if (ImGui::BeginCombo("Direction", directionLabels[selectedDirection])) {
+        magic_enum::enum_for_each<TextDirection>([this, &directionLabels](
+                                                     const auto &dir) {
+          if (ImGui::Selectable(directionLabels[dir], dir == selectedDirection)) {
+            selectedDirection = dir;
           }
-        }
+        });
+
         ImGui::EndCombo();
       }
     }
@@ -305,12 +299,13 @@ void MainScene::DoUI(Context &context) {
         font = newFont;
         axisLimits = font.GetAxisInfos();
 
-        magic_enum::enum_for_each<VariationAxis>([this](const VariationAxis &axis) {
-          if (!axisLimits[axis].has_value())
-            return;
+        magic_enum::enum_for_each<VariationAxis>(
+            [this](const VariationAxis &axis) {
+              if (!axisLimits[axis].has_value())
+                return;
 
-          axisValue[axis] = axisLimits[axis]->defaultValue;
-        });
+              axisValue[axis] = axisLimits[axis]->defaultValue;
+            });
 
         selectedFontIndex = newSelected;
       }

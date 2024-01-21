@@ -41,7 +41,7 @@ bool Font::Init() {
 
 void Font::CleanUp() { FT_Done_FreeType(library); }
 
-Font::Font() : textRenderer(TextRenderNoShape){};
+Font::Font(){};
 
 Font &Font::operator=(const Font &f) {
   data = f.data;
@@ -87,8 +87,6 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
 bool Font::Initialize() {
   family = "";
   subFamily = "";
-  textRenderer = TextRenderNoShape;
-  textRendererEnum = TextRenderEnum::NoShape;
 
   auto error = FT_New_Memory_Face(
       library, reinterpret_cast<const FT_Byte *>(data.data()), data.size(), 0,
@@ -215,31 +213,31 @@ Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   return Font::GetGlyph(renderer, index);
 }
 
-void Font::SetTextRenderer(const TextRenderEnum &t) {
-  textRendererEnum = t;
-  switch (textRendererEnum) {
-  case TextRenderEnum::NoShape:
-    textRenderer = TextRenderNoShape;
-    break;
-  case TextRenderEnum::LeftToRight:
-    textRenderer = TextRenderLeftToRight;
-    break;
-  case TextRenderEnum::RightToLeft:
-    textRenderer = TextRenderRightToLeft;
-    break;
-  case TextRenderEnum::TopToBottom:
-    textRenderer = TextRenderTopToBottom;
-    break;
-  }
-}
-
 void Font::RenderText(SDL_Renderer *renderer, Context &ctx,
-                      const std::string &str, const SDL_Color &color,
+                      const std::string &str, const bool &isShaping,
+                      const TextDirection &direction, const SDL_Color &color,
                       const std::string &language, const hb_script_t &script) {
   if (!IsValid())
     return;
 
-  textRenderer(renderer, ctx, *this, str, color, language, script);
+  if (!isShaping) {
+    TextRenderNoShape(renderer, ctx, *this, str, color, language, script);
+    return;
+  }
+
+  switch (direction) {
+  case TextDirection::LeftToRight:
+    TextRenderLeftToRight(renderer, ctx, *this, str, color, language, script);
+    return;
+
+  case TextDirection::RightToLeft:
+    TextRenderRightToLeft(renderer, ctx, *this, str, color, language, script);
+    return;
+
+  case TextDirection::TopToBottom:
+    TextRenderTopToBottom(renderer, ctx, *this, str, color, language, script);
+    return;
+  }
 }
 
 bool Font::IsVariableFont() const {

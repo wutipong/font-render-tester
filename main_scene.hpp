@@ -1,16 +1,15 @@
 #pragma once
 
+#include "font.hpp"
+#include "imgui.h"
 #include "scene.hpp"
 #include <SDL2/SDL.h>
 #include <array>
 #include <filesystem>
+#include <magic_enum_containers.hpp>
 #include <string>
 
-#include "imgui.h"
-
 #include "imgui-filebrowser/imfilebrowser.h"
-
-#include "font.hpp"
 
 class MainScene : public Scene {
 public:
@@ -66,17 +65,6 @@ private:
     ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
   };
 
-  struct DirectionPair {
-    const char* name;
-    const hb_direction_t direction;
-  };
-
-  static constexpr std::array<DirectionPair, 3> directions = {
-    DirectionPair{"Left to Right", HB_DIRECTION_LTR,},
-    DirectionPair{ "Right To Left",HB_DIRECTION_RTL, },
-    DirectionPair{"Top to Bottom", HB_DIRECTION_TTB,},
-  };
-
   struct LanguagePair {
     const char* name;
     const char* code;
@@ -94,8 +82,9 @@ private:
   // clang-format on
 
   int selectedScript = 0;
-  int selectedDirection = 0;
   int selectedLanguage = 0;
+
+  TextDirection selectedDirection;
 
   magic_enum::containers::array<VariationAxis, float> axisValue;
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
