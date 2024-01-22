@@ -1,10 +1,16 @@
 #pragma once
-#include <functional>
 
 #include "context.hpp"
 #include "font.hpp"
 #include <SDL2/SDL.h>
+#include <functional>
 #include <harfbuzz/hb.h>
+
+enum class TextDirection {
+  LeftToRight,
+  RightToLeft,
+  TopToBottom,
+};
 
 void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
                        const std::string &str, const SDL_Color &color);

@@ -15,25 +15,12 @@
 #include <string>
 #include <vector>
 
-enum class TextDirection {
-  LeftToRight,
-  RightToLeft,
-  TopToBottom,
-};
-
 class Font;
 
-typedef std::function<void(SDL_Renderer *renderer, Context &ctx, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
-                           const hb_script_t &script)>
-    TextRenderFunction;
-
 struct Glyph {
-  SDL_Texture *texture;
-  SDL_Rect bound;
-  int advance;
-  int bearing;
+  SDL_Texture *texture{nullptr};
+  SDL_Rect bound{};
+  int advance = 0;
 };
 
 constexpr inline float FTPosToFloat(const FT_Pos &value) {
@@ -79,7 +66,7 @@ public:
   std::string GetFamilyName() const { return family; }
   std::string GetSubFamilyName() const { return subFamily; }
 
-  bool IsValid() const { return face != nullptr; }
+  bool IsValid() const { return ftFace != nullptr; }
 
   bool IsVariableFont() const;
 
@@ -91,7 +78,7 @@ public:
   float LineGap() const { return linegap; }
   float LineHeight() const { return height; }
 
-  hb_font_t *HbFont() const { return hb_font; }
+  hb_font_t *HbFont() const { return hbFont; }
 
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
   GetAxisInfos() const;
@@ -108,10 +95,10 @@ private:
   Glyph CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch);
 
   std::vector<char> data{};
-  FT_Face face{};
+  FT_Face ftFace{};
+  hb_font_t *hbFont{nullptr};
 
   int fontSize{-1};
-  hb_font_t *hb_font{nullptr};
 
   std::map<unsigned int, Glyph> glyphMap;
 

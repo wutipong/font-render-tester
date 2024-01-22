@@ -1,11 +1,12 @@
 #pragma once
 
 #include "font.hpp"
-#include "imgui.h"
 #include "scene.hpp"
+#include "text_renderer.hpp"
 #include <SDL2/SDL.h>
 #include <array>
 #include <filesystem>
+#include <imgui.h>
 #include <magic_enum_containers.hpp>
 #include <string>
 

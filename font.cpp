@@ -1,18 +1,16 @@
 #include "font.hpp"
 
+#include <harfbuzz/hb-ft.h>
+#include <magic_enum_all.hpp>
+#include <spdlog/spdlog.h>
 #include <utf8cpp/utf8.h>
-
-#include "io_util.hpp"
-#include "text_renderer.hpp"
-#include "texture.hpp"
 
 #include FT_SFNT_NAMES_H
 #include FT_BITMAP_H
 #include FT_MULTIPLE_MASTERS_H
-
-#include <harfbuzz/hb-ft.h>
-#include <magic_enum_all.hpp>
-#include <spdlog/spdlog.h>
+#include "io_util.hpp"
+#include "text_renderer.hpp"
+#include "texture.hpp"
 
 namespace {
 
@@ -53,12 +51,12 @@ Font &Font::operator=(const Font &f) {
 Font::Font(const Font &f) : data(f.data) { Initialize(); }
 
 Font::~Font() {
-  hb_font_destroy(hb_font);
-  hb_font = nullptr;
+  hb_font_destroy(hbFont);
+  hbFont = nullptr;
 
   Invalidate();
 
-  FT_Done_Face(face);
+  FT_Done_Face(ftFace);
 }
 
 bool Font::LoadFile(const std::string &path) {
@@ -90,23 +88,23 @@ bool Font::Initialize() {
 
   auto error = FT_New_Memory_Face(
       library, reinterpret_cast<const FT_Byte *>(data.data()), data.size(), 0,
-      &face);
+      &ftFace);
 
   if (error) {
     data.clear();
     return false;
   }
 
-  hb_font = hb_ft_font_create_referenced(face);
+  hbFont = hb_ft_font_create_referenced(ftFace);
 
   Invalidate();
   fontSize = -1;
 
-  family = face->family_name;
-  subFamily = face->style_name;
+  family = ftFace->family_name;
+  subFamily = ftFace->style_name;
 
   if (IsVariableFont()) {
-    auto hb_face = hb_font_get_face(hb_font);
+    auto hb_face = hb_font_get_face(hbFont);
     auto count = hb_ot_var_get_axis_count(hb_face);
 
     std::vector<hb_ot_var_axis_info_t> hbAxisInfo;
@@ -152,45 +150,45 @@ void Font::SetFontSize(const int &size) {
   fontSize = size;
   Invalidate();
 
-  auto error = FT_Set_Pixel_Sizes(face, 0, size);
-  hb_ft_font_changed(hb_font);
+  auto error = FT_Set_Pixel_Sizes(ftFace, 0, size);
+  hb_ft_font_changed(hbFont);
 
-  ascend = FTPosToFloat(face->size->metrics.ascender);
-  descend = FTPosToFloat(face->size->metrics.descender);
-  height = FTPosToFloat(face->size->metrics.height);
+  ascend = FTPosToFloat(ftFace->size->metrics.ascender);
+  descend = FTPosToFloat(ftFace->size->metrics.descender);
+  height = FTPosToFloat(ftFace->size->metrics.height);
   linegap = height + descend - ascend;
 }
 
 Glyph Font::CreateGlyph(SDL_Renderer *renderer, const int &index) {
-  int bearing = 0;
-  int advance;
+  FT_Load_Glyph(ftFace, index, FT_LOAD_RENDER);
 
-  FT_Load_Glyph(face, index, FT_LOAD_RENDER);
-
-  advance = static_cast<int>(FTPosToFloat(face->glyph->advance.x));
-
-  auto width = face->glyph->bitmap.width;
-  auto height = face->glyph->bitmap.rows;
+  const auto advance = static_cast<int>(FTPosToFloat(ftFace->glyph->advance.x));
+  const auto width = ftFace->glyph->bitmap.width;
+  const auto height = ftFace->glyph->bitmap.rows;
 
   FT_Bitmap bitmap;
   FT_Bitmap_Init(&bitmap);
-  FT_Bitmap_Convert(library, &face->glyph->bitmap, &bitmap, 1);
+  FT_Bitmap_Convert(library, &ftFace->glyph->bitmap, &bitmap, 1);
 
   auto texture = LoadTextureFromBitmap(renderer, bitmap);
 
   FT_Bitmap_Done(library, &bitmap);
 
-  auto x = face->glyph->bitmap_left;
-  auto y = face->glyph->bitmap_top - height;
+  const auto x = static_cast<int>(ftFace->glyph->bitmap_left);
+  const auto y = static_cast<int>(ftFace->glyph->bitmap_top - height);
 
-  SDL_Rect bound{x, static_cast<int>(y), static_cast<int>(width),
-                 static_cast<int>(height)};
+  SDL_Rect bound{
+      x,
+      y,
+      static_cast<int>(width),
+      static_cast<int>(height),
+  };
 
-  return {texture, bound, advance, bearing};
+  return {texture, bound, advance};
 }
 
 Glyph Font::CreateGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
-  auto index = FT_Get_Char_Index(face, ch);
+  auto index = FT_Get_Char_Index(ftFace, ch);
 
   return CreateGlyph(renderer, index);
 }
@@ -208,16 +206,17 @@ Glyph &Font::GetGlyph(SDL_Renderer *renderer, const int &index) {
 }
 
 Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
-  const auto index = FT_Get_Char_Index(face, ch);
+  const auto index = FT_Get_Char_Index(ftFace, ch);
 
   return Font::GetGlyph(renderer, index);
 }
 
 bool Font::IsVariableFont() const {
-  if (!hb_font)
+  if (!IsValid())
     return false;
 
-  auto hb_face = hb_font_get_face(hb_font);
+  auto hb_face = hb_font_get_face(hbFont);
+
   return hb_ot_var_has_data(hb_face);
 }
 
@@ -240,7 +239,7 @@ void Font::SetVariationValues(
   std::vector<hb_variation_t> variations;
 
   FT_MM_Var *amaster;
-  FT_Get_MM_Var(face, &amaster);
+  FT_Get_MM_Var(ftFace, &amaster);
 
   magic_enum::enum_for_each<VariationAxis>(
       [&limits, &variations, &values](const VariationAxis &axis) {
@@ -252,7 +251,7 @@ void Font::SetVariationValues(
         }
       });
 
-  hb_font_set_variations(hb_font, variations.data(), variations.size());
+  hb_font_set_variations(hbFont, variations.data(), variations.size());
 
   std::vector<FT_Fixed> coords;
   for (int i = 0; i < amaster->num_axis; i++) {
@@ -273,9 +272,9 @@ void Font::SetVariationValues(
     }
   }
 
-  FT_Set_Var_Design_Coordinates(face, coords.size(), coords.data());
+  FT_Set_Var_Design_Coordinates(ftFace, coords.size(), coords.data());
   FT_Done_MM_Var(library, amaster);
-  hb_ft_font_changed(hb_font);
+  hb_ft_font_changed(hbFont);
 
   Invalidate();
 }
