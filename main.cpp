@@ -6,36 +6,31 @@
 #include <spdlog/spdlog.h>
 
 #include "context.hpp"
+#include "io_util.hpp"
 #include "main_scene.hpp"
 #include "scene.hpp"
 
 static constexpr char imguiIni[] = "imgui.ini";
-static constexpr char contextJson[] = "context.json";
 static constexpr char logfile[] = "log.txt";
 
+static constexpr int windowMinimumWidth = 1280;
+static constexpr int windowMinimumHeight = 720;
+
 int main(int argc, char **argv) {
-  std::filesystem::path preferencePath(
-      SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
+  const auto preferencePath = GetPreferencePath();
 
-  const auto imguiIniPath = preferencePath / imguiIni;
-  const auto contextIniPath = preferencePath / contextJson;
-
-  constexpr auto max_size = 5 * 1024 * 1024;
-  constexpr auto max_files = 3;
+  constexpr auto maxLogFileSize = 5 * 1024 * 1024;
+  constexpr auto maxLogFile = 3;
 
   const auto logFilePath = preferencePath / logfile;
   const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
-                                                 max_size, max_files);
+                                                 maxLogFileSize, maxLogFile);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   Context ctx{};
-  LoadContext(ctx, contextIniPath);
 
   SDL_Init(SDL_INIT_VIDEO);
-
-  constexpr int windowMinimumWidth = 1280;
-  constexpr int windowMinimumHeight = 720;
 
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
@@ -44,10 +39,11 @@ int main(int argc, char **argv) {
       windowMinimumWidth, windowMinimumHeight,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
-  SDL_SetWindowMinimumSize(window, MININUM_WIDTH, MINIMUM_HEIGHT);
+  SDL_SetWindowMinimumSize(window, windowMinimumWidth, windowMinimumHeight);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
+  const auto imguiIniPath = preferencePath / imguiIni;
   std::string imguiIniStr = imguiIniPath.string();
 
   IMGUI_CHECKVERSION();
@@ -109,7 +105,7 @@ int main(int argc, char **argv) {
     SDL_Delay(1);
   }
 
-  SaveContext(ctx, contextIniPath);
+  Scene::Current()->CleanUp(ctx);
 
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();

@@ -42,9 +42,10 @@ private:
   bool isShaping = false;
 
   int selectedFontIndex = -1;
-  std::vector<std::filesystem::path> fontPaths;
+  std::vector<std::filesystem::path> fontFilePaths;
 
   ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
+  std::string fontDirPath{std::filesystem::absolute("fonts").string()};
 
   Font font{};
 
@@ -53,14 +54,16 @@ private:
     const hb_script_t script;
   };
 
-  static constexpr std::array<ScriptPair, 7> scripts{
+  static inline std::vector<ScriptPair> scripts{
       ScriptPair{"Common", HB_SCRIPT_COMMON},
       ScriptPair{"Thai", HB_SCRIPT_THAI},
       ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
       ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
       ScriptPair{"Han", HB_SCRIPT_HAN},
       ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+#ifdef ENABLE_RTL
       ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
+#endif
   };
 
   struct LanguagePair {
@@ -68,7 +71,7 @@ private:
     const char *code;
   };
 
-  static constexpr std::array<LanguagePair, 8> languages{
+  static inline std::vector<LanguagePair> languages{
       LanguagePair{
           "None",
           "",
@@ -97,10 +100,12 @@ private:
           "Chinese Taiwan",
           "zh-TW",
       },
+#ifdef ENABLE_RTL
       LanguagePair{
           "Arabic Saudi Arabia",
           "ar-SA",
       },
+#endif
   };
 
   int selectedScript = 0;

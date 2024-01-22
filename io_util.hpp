@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <streambuf>
+#include <SDL2/SDL.h>
 
 template <class container_type>
 container_type LoadFile(const std::filesystem::path &path,
@@ -25,4 +26,9 @@ container_type LoadFile(const std::filesystem::path &path,
   file.close();
 
   return data;
+}
+
+static std::filesystem::path GetPreferencePath() {
+  return std::filesystem::path(
+      SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
 }

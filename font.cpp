@@ -235,15 +235,15 @@ void Font::SetVariationValues(
   if (!IsValid())
     return;
 
-  auto limits = GetAxisInfos();
+  auto axisInfos = GetAxisInfos();
   std::vector<hb_variation_t> variations;
 
   FT_MM_Var *amaster;
   FT_Get_MM_Var(ftFace, &amaster);
 
   magic_enum::enum_for_each<VariationAxis>(
-      [&limits, &variations, &values](const VariationAxis &axis) {
-        if (limits[axis].has_value()) {
+      [&axisInfos, &variations, &values](const VariationAxis &axis) {
+        if (axisInfos[axis].has_value()) {
           variations.push_back({
               .tag = axisTagMap.at(axis),
               .value = values[axis],

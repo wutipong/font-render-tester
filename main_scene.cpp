@@ -1,14 +1,18 @@
 #include "main_scene.hpp"
 
 #include "colors.hpp"
+#include "io_util.hpp"
+#include "settings.hpp"
 #include "text_renderer.hpp"
 #include <algorithm>
 #include <array>
 #include <filesystem>
+#include <fstream>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <magic_enum_all.hpp>
 #include <magic_enum_containers.hpp>
+#include <spdlog/spdlog.h>
 
 namespace {
 constexpr int toolbarWidth = 400;
@@ -19,9 +23,12 @@ bool MainScene::Init(Context &context) {
   if (!Font::Init())
     return false;
 
+  auto [fontPath] = LoadSettings();
+  fontDirPath = fontPath.string();
+
   dirChooser.SetTitle("Browse for font directory");
-  OnDirectorySelected(context, context.fontPath);
-  dirChooser.SetPwd(context.fontPath);
+  OnDirectorySelected(context, fontDirPath);
+  dirChooser.SetPwd(fontDirPath);
 
   std::copy(std::cbegin(exampleText), std::cend(exampleText), buffer.begin());
 
@@ -49,7 +56,10 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
   SDL_RenderGetViewport(renderer, nullptr);
 }
 
-void MainScene::CleanUp(Context &context) { Font::CleanUp(); }
+void MainScene::CleanUp(Context &context) {
+  Font::CleanUp();
+  SaveSettings({.fontPath = fontDirPath});
+}
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
@@ -61,7 +71,7 @@ void MainScene::DoUI(Context &context) {
       }
 
       if (ImGui::MenuItem("Re-scan font directory##file-menu")) {
-        fontPaths = ListFontFiles(context.fontPath);
+        fontFilePaths = ListFontFiles(fontDirPath);
       }
 
       ImGui::Separator();
@@ -95,7 +105,7 @@ void MainScene::DoUI(Context &context) {
           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
               ImGuiWindowFlags_MenuBar)) {
     if (ImGui::BeginMenuBar()) {
-      ImGui::LabelText("Font Directory", context.fontPath.c_str());
+      ImGui::LabelText("Font Directory", fontDirPath.c_str());
       ImGui::EndMenuBar();
     }
   }
@@ -107,18 +117,19 @@ void MainScene::DoUI(Context &context) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
       constexpr int noFontSelected = -1;
-      auto currentFile = selectedFontIndex == noFontSelected
-                             ? "<None>"
-                             : fontPaths[selectedFontIndex].filename().string();
+      auto currentFile =
+          selectedFontIndex == noFontSelected
+              ? "<None>"
+              : fontFilePaths[selectedFontIndex].filename().string();
 
       if (ImGui::BeginCombo("Font file", currentFile.c_str())) {
-        for (int i = 0; i < fontPaths.size(); i++) {
+        for (int i = 0; i < fontFilePaths.size(); i++) {
           auto isSelected = i == selectedFontIndex;
           if (isSelected) {
             ImGui::SetItemDefaultFocus();
           }
 
-          if (ImGui::Selectable(fontPaths[i].filename().string().c_str(),
+          if (ImGui::Selectable(fontFilePaths[i].filename().string().c_str(),
                                 isSelected)) {
             newSelected = i;
           }
@@ -194,8 +205,10 @@ void MainScene::DoUI(Context &context) {
       constexpr magic_enum::containers::array<TextDirection, const char *>
           directionLabels{
               "Left to right",
-              "Right to left",
               "Top to bottom",
+#ifdef ENABLE_RTL
+              "Right to left",
+#endif
           };
 
       if (ImGui::BeginCombo("Direction", directionLabels[selectedDirection])) {
@@ -281,7 +294,7 @@ void MainScene::DoUI(Context &context) {
       selectedFontIndex = newSelected;
     } else {
       Font newFont;
-      if (!newFont.LoadFile(fontPaths[newSelected].string())) {
+      if (!newFont.LoadFile(fontFilePaths[newSelected].string())) {
         ImGui::OpenPopup("InvalidFont");
       } else {
         font = newFont;
@@ -316,8 +329,8 @@ void MainScene::OnDirectorySelected(Context &ctx,
   if (!std::filesystem::exists(newPath)) {
     newPath = std::filesystem::absolute("fonts");
   }
-  ctx.fontPath = path.string();
-  fontPaths = ListFontFiles(ctx.fontPath);
+  fontDirPath = path.string();
+  fontFilePaths = ListFontFiles(fontDirPath);
 }
 
 std::vector<std::filesystem::path>
@@ -331,7 +344,7 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
     auto entryPath = p.path();
     auto extension = entryPath.extension().string();
 
-    static auto compare = [](const char& c1, const char& c2) -> bool {
+    static auto compare = [](const char &c1, const char &c2) -> bool {
       return std::tolower(c1) == std::tolower(c2);
     };
 
@@ -367,12 +380,14 @@ void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
     TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
     return;
 
-  case TextDirection::RightToLeft:
-    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
-    return;
-
   case TextDirection::TopToBottom:
     TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
     return;
+
+#ifdef ENABLE_RTL
+  case TextDirection::RightToLeft:
+    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+#endif
   }
 }

@@ -1,50 +1,57 @@
-#include "context.hpp"
-
+#include "settings.hpp"
 #include "io_util.hpp"
-#include <fstream>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace nlohmann;
 
-void SaveContext(const Context &ctx, const std::filesystem::path &path) {
-  json js;
+namespace {
+static constexpr char contextJson[] = "settings.json";
+}
 
-  js["font_path"] = ctx.fontPath;
+void SaveSettings(const Settings &settings) {
+  json js{};
+
+  js["font_path"] = settings.fontPath;
 
   std::string str = js.dump();
+
+  const auto preferencePath = GetPreferencePath();
+  const auto path = preferencePath / contextJson;
+
   std::fstream output(path, std::ios::out);
 
   output.write(str.c_str(), str.length());
-
   output.close();
 }
 
-void LoadContext(Context &ctx, const std::filesystem::path &path) {
+Settings LoadSettings() {
+  const auto preferencePath = GetPreferencePath();
+  const auto path = preferencePath / contextJson;
+
   if (!std::filesystem::exists(path)) {
-    return;
+    return Settings{};
   }
 
-  json js;
+  json js{};
 
   // If there's something wrong with reading file, log an error and return.
   try {
     std::string str;
     str = LoadFile<std::string>(path);
-
     js = json::parse(str);
   } catch (const json::exception &e) {
     spdlog::error("Error reading context file: {}", e.what());
-    return;
+    return Settings{};
   }
-
-  Context c = ctx;
 
   try {
-    c.fontPath = js["font_path"];
+    Settings output{};
+    output.fontPath = std::string(js["font_path"]);
+
+    return output;
   } catch (const json::exception &e) {
     spdlog::error("Error reading context file value: {}", e.what());
+    return Settings{};
   }
-
-  ctx = c;
 }
