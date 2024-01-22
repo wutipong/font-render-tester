@@ -28,6 +28,9 @@ constexpr auto f4DebugDescendColor = SDLColorToImVec4(debugDescendColor);
 constexpr auto f4DebugBaselineColor = SDLColorToImVec4(debugBaselineColor);
 constexpr auto f4DebugCaretColor = SDLColorToImVec4(debugCaretColor);
 
+constexpr int toolbarWidth = 400;
+constexpr int padding = 30;
+
 } // namespace
 
 bool MainScene::Init(Context &context) {
@@ -44,6 +47,14 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
+  SDL_Rect viewport = ctx.windowBound;
+
+  viewport.x += padding;
+  viewport.y += padding;
+  viewport.w -= (toolbarWidth + padding *2);
+  viewport.h -= 2 * padding;
+
+  SDL_RenderSetViewport(renderer, &viewport);
 
   SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
@@ -52,15 +63,17 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
   font.SetFontSize(fontSize);
 
   SDL_Color sdlColor = {
-      static_cast<uint8_t>(color[0] * 255.0f),
-      static_cast<uint8_t>(color[1] * 255.0f),
-      static_cast<uint8_t>(color[2] * 255.0f),
+      static_cast<uint8_t>(foregroundColor[0] * 255.0f),
+      static_cast<uint8_t>(foregroundColor[1] * 255.0f),
+      static_cast<uint8_t>(foregroundColor[2] * 255.0f),
       0xFF,
   };
 
   font.RenderText(renderer, ctx, std::string(buffer.data()), isShaping,
                   selectedDirection, sdlColor, languages[selectedLanguage].code,
                   scripts[selectedScript].script);
+
+  SDL_RenderGetViewport(renderer, nullptr);
 }
 
 void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
@@ -112,7 +125,8 @@ void MainScene::DoUI(Context &context) {
   }
   ImGui::End();
 
-  if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right, 400.0f,
+  if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right,
+                                  toolbarWidth,
                                   ImGuiWindowFlags_NoSavedSettings)) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -223,7 +237,7 @@ void MainScene::DoUI(Context &context) {
 
     ImGui::SeparatorText("Draw color");
 
-    ImGui::ColorPicker3("Foreground##color", color,
+    ImGui::ColorPicker3("Foreground##color", foregroundColor,
                         ImGuiColorEditFlags_InputRGB);
   }
   ImGui::End();

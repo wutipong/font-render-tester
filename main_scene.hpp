@@ -34,7 +34,7 @@ private:
       "Aenean efficitur felis sed metus mollis varius.";
 
   std::array<char, 4096> buffer = {0};
-  float color[3];
+  float foregroundColor[3];
   int fontSize = 64;
   bool isShaping = false;
 
@@ -103,7 +103,7 @@ private:
   int selectedScript = 0;
   int selectedLanguage = 0;
 
-  TextDirection selectedDirection;
+  TextDirection selectedDirection {TextDirection::LeftToRight};
 
   magic_enum::containers::array<VariationAxis, float> axisValue;
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
