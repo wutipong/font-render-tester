@@ -222,13 +222,13 @@ void MainScene::DoUI(Context &context) {
 
         ImGui::EndCombo();
       }
+      ImGui::EndDisabled();
     }
-    ImGui::EndDisabled();
 
-    ImGui::SeparatorText("Draw color");
-
-    ImGui::ColorPicker3("Foreground##color", foregroundColor,
-                        ImGuiColorEditFlags_InputRGB);
+    if (ImGui::CollapsingHeader("Draw colors")) {
+      ImGui::ColorPicker3("Foreground##color", foregroundColor,
+                          ImGuiColorEditFlags_InputRGB);
+    }
   }
   ImGui::End();
 
@@ -241,7 +241,7 @@ void MainScene::DoUI(Context &context) {
 
   if (context.debug) {
     if (ImGui::Begin("Debug", &context.debug)) {
-      if (ImGui::CollapsingHeader("Features")) {
+      if (ImGui::CollapsingHeader("Features", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
         ImGui::ColorButton(
