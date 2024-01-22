@@ -11,23 +11,6 @@
 #include <magic_enum_containers.hpp>
 
 namespace {
-constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
-  ImVec4 output{
-      static_cast<float>(color.r) / 255.0f,
-      static_cast<float>(color.g) / 255.0f,
-      static_cast<float>(color.b) / 255.0f,
-      static_cast<float>(color.a) / 255.0f,
-  };
-
-  return output;
-}
-
-constexpr auto f4DebugGlyphBoundColor = SDLColorToImVec4(debugGlyphBoundColor);
-constexpr auto f4DebugAscendColor = SDLColorToImVec4(debugAscendColor);
-constexpr auto f4DebugDescendColor = SDLColorToImVec4(debugDescendColor);
-constexpr auto f4DebugBaselineColor = SDLColorToImVec4(debugBaselineColor);
-constexpr auto f4DebugCaretColor = SDLColorToImVec4(debugCaretColor);
-
 constexpr int toolbarWidth = 400;
 constexpr int padding = 30;
 
@@ -51,7 +34,7 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
 
   viewport.x += padding;
   viewport.y += padding;
-  viewport.w -= (toolbarWidth + padding *2);
+  viewport.w -= (toolbarWidth + padding * 2);
   viewport.h -= 2 * padding;
 
   SDL_RenderSetViewport(renderer, &viewport);
@@ -62,16 +45,7 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
 
   font.SetFontSize(fontSize);
 
-  SDL_Color sdlColor = {
-      static_cast<uint8_t>(foregroundColor[0] * 255.0f),
-      static_cast<uint8_t>(foregroundColor[1] * 255.0f),
-      static_cast<uint8_t>(foregroundColor[2] * 255.0f),
-      0xFF,
-  };
-
-  font.RenderText(renderer, ctx, std::string(buffer.data()), isShaping,
-                  selectedDirection, sdlColor, languages[selectedLanguage].code,
-                  scripts[selectedScript].script);
+  RenderText(renderer, ctx);
 
   SDL_RenderGetViewport(renderer, nullptr);
 }
@@ -367,4 +341,34 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
   }
 
   return output;
+}
+
+void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
+  if (!font.IsValid())
+    return;
+
+  std::string str(buffer.data());
+  auto language = languages[selectedLanguage].code;
+  auto script = scripts[selectedScript].script;
+
+  SDL_Color sdlColor = Float4ToSDLColor(foregroundColor[0], foregroundColor[1], foregroundColor[2]);
+
+  if (!isShaping) {
+    TextRenderNoShape(renderer, ctx, font, str, sdlColor);
+    return;
+  }
+
+  switch (selectedDirection) {
+  case TextDirection::LeftToRight:
+    TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+  case TextDirection::RightToLeft:
+    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+  case TextDirection::TopToBottom:
+    TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+  }
 }

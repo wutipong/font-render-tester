@@ -18,12 +18,14 @@ public:
   virtual void Cleanup(Context &context) override;
   virtual void DoUI(Context &context) override;
 
+private:
   void OnDirectorySelected(Context &context, const std::filesystem::path &path);
 
   static std::vector<std::filesystem::path>
   ListFontFiles(const std::filesystem::path &path);
 
-private:
+  void RenderText(SDL_Renderer *renderer, Context &ctx);
+
   static const inline std::string exampleText =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non \n"
       "turpis justo. Etiam luctus vulputate ante ac congue. Nunc vitae \n"
@@ -103,7 +105,7 @@ private:
   int selectedScript = 0;
   int selectedLanguage = 0;
 
-  TextDirection selectedDirection {TextDirection::LeftToRight};
+  TextDirection selectedDirection{TextDirection::LeftToRight};
 
   magic_enum::containers::array<VariationAxis, float> axisValue;
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>

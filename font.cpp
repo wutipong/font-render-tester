@@ -213,33 +213,6 @@ Glyph &Font::GetGlyphFromChar(SDL_Renderer *renderer, const char16_t &ch) {
   return Font::GetGlyph(renderer, index);
 }
 
-void Font::RenderText(SDL_Renderer *renderer, Context &ctx,
-                      const std::string &str, const bool &isShaping,
-                      const TextDirection &direction, const SDL_Color &color,
-                      const std::string &language, const hb_script_t &script) {
-  if (!IsValid())
-    return;
-
-  if (!isShaping) {
-    TextRenderNoShape(renderer, ctx, *this, str, color, language, script);
-    return;
-  }
-
-  switch (direction) {
-  case TextDirection::LeftToRight:
-    TextRenderLeftToRight(renderer, ctx, *this, str, color, language, script);
-    return;
-
-  case TextDirection::RightToLeft:
-    TextRenderRightToLeft(renderer, ctx, *this, str, color, language, script);
-    return;
-
-  case TextDirection::TopToBottom:
-    TextRenderTopToBottom(renderer, ctx, *this, str, color, language, script);
-    return;
-  }
-}
-
 bool Font::IsVariableFont() const {
   if (!hb_font)
     return false;

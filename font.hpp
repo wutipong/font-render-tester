@@ -93,11 +93,6 @@ public:
 
   hb_font_t *HbFont() const { return hb_font; }
 
-  void RenderText(SDL_Renderer *renderer, Context &ctx, const std::string &str,
-                  const bool& isShaping, const TextDirection& direction,
-                  const SDL_Color &color, const std::string &language,
-                  const hb_script_t &script);
-
   magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
   GetAxisInfos() const;
 
