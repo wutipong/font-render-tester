@@ -82,6 +82,7 @@ int main(int argc, char **argv) {
       if (event.type == SDL_QUIT)
         break;
     }
+    ctx.windowBound = {0};
     SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
     ImGui_ImplSDL2_NewFrame(window);

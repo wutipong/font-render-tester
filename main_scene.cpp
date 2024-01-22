@@ -11,22 +11,8 @@
 #include <magic_enum_containers.hpp>
 
 namespace {
-constexpr ImVec4 SDLColorToImVec4(const SDL_Color &color) {
-  ImVec4 output{
-      static_cast<float>(color.r) / 255.0f,
-      static_cast<float>(color.g) / 255.0f,
-      static_cast<float>(color.b) / 255.0f,
-      static_cast<float>(color.a) / 255.0f,
-  };
-
-  return output;
-}
-
-constexpr auto f4DebugGlyphBoundColor = SDLColorToImVec4(debugGlyphBoundColor);
-constexpr auto f4DebugAscendColor = SDLColorToImVec4(debugAscendColor);
-constexpr auto f4DebugDescendColor = SDLColorToImVec4(debugDescendColor);
-constexpr auto f4DebugBaselineColor = SDLColorToImVec4(debugBaselineColor);
-constexpr auto f4DebugCaretColor = SDLColorToImVec4(debugCaretColor);
+constexpr int toolbarWidth = 400;
+constexpr int padding = 30;
 
 } // namespace
 
@@ -44,40 +30,24 @@ bool MainScene::Init(Context &context) {
 }
 
 void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
+  SDL_Rect viewport = ctx.windowBound;
+
+  viewport.x += padding;
+  viewport.y += padding;
+  viewport.w -= (toolbarWidth + padding * 2);
+  viewport.h -= 2 * padding;
+
+  SDL_RenderSetViewport(renderer, &viewport);
 
   SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
   SDL_RenderClear(renderer);
 
-  auto textRender = TextRenderEnum::NoShape;
-  if (isShape) {
-    switch (directions[selectedDirection].direction) {
-    case HB_DIRECTION_LTR:
-      textRender = TextRenderEnum::LeftToRight;
-      break;
-    case HB_DIRECTION_TTB:
-      textRender = TextRenderEnum::TopToBottom;
-      break;
-    case HB_DIRECTION_RTL:
-      textRender = TextRenderEnum::RightToLeft;
-      break;
-    }
-  }
-
-  font.SetTextRenderer(textRender);
-
   font.SetFontSize(fontSize);
 
-  SDL_Color sdlColor = {
-      static_cast<uint8_t>(color[0] * 255.0f),
-      static_cast<uint8_t>(color[1] * 255.0f),
-      static_cast<uint8_t>(color[2] * 255.0f),
-      0xFF,
-  };
+  RenderText(renderer, ctx);
 
-  font.RenderText(renderer, ctx, std::string(buffer.data()), sdlColor,
-                  languages[selectedLanguage].code,
-                  scripts[selectedScript].script);
+  SDL_RenderGetViewport(renderer, nullptr);
 }
 
 void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
@@ -129,7 +99,8 @@ void MainScene::DoUI(Context &context) {
   }
   ImGui::End();
 
-  if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right, 400.0f,
+  if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right,
+                                  toolbarWidth,
                                   ImGuiWindowFlags_NoSavedSettings)) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -165,19 +136,16 @@ void MainScene::DoUI(Context &context) {
 
       bool axisChanged = false;
 
-      static constexpr magic_enum::containers::array<VariationAxis, const char *>
-          axisLabel = {{{
-              "Italic##axis",
-              "Optical size##axis",
-              "Slant##axis",
-              "Weight##axis",
-              "Width##axis",
-          }}};
+      constexpr magic_enum::containers::array<VariationAxis, const char *>
+          axisLabel = {
+              "Italic##axis", "Optical size##axis", "Slant##axis",
+              "Weight##axis", "Width##axis",
+          };
 
       magic_enum::enum_for_each<VariationAxis>(
-          [this, &axisChanged](const VariationAxis &axis) {
+          [this, &axisChanged, &axisLabel](const VariationAxis &axis) {
             if (axisLimits[axis].has_value()) {
-              auto [min, max, _] = *axisLimits[axis];
+              [[maybe_unused]] auto [min, max, _] = *axisLimits[axis];
               axisChanged |= ImGui::DragFloat(axisLabel[axis], &axisValue[axis],
                                               1.0f, min, max);
             } else {
@@ -199,9 +167,9 @@ void MainScene::DoUI(Context &context) {
       ImGui::LabelText("Line height", "%.3f", font.LineHeight());
 
       ImGui::SeparatorText("OpenType text shaping");
-      ImGui::Checkbox("Enable##Shape Text", &isShape);
+      ImGui::Checkbox("Enable##Shape Text", &isShaping);
 
-      ImGui::BeginDisabled(!isShape);
+      ImGui::BeginDisabled(!isShaping);
       if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
         for (size_t i = 0; i < languages.size(); i++) {
           if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
@@ -219,12 +187,23 @@ void MainScene::DoUI(Context &context) {
         }
         ImGui::EndCombo();
       }
-      if (ImGui::BeginCombo("Direction", directions[selectedDirection].name)) {
-        for (int i = 0; i < directions.size(); i++) {
-          if (ImGui::Selectable(directions[i].name, i == selectedDirection)) {
-            selectedDirection = i;
-          }
-        }
+
+      constexpr magic_enum::containers::array<TextDirection, const char *>
+          directionLabels{
+              "Left to right",
+              "Right to left",
+              "Top to bottom",
+          };
+
+      if (ImGui::BeginCombo("Direction", directionLabels[selectedDirection])) {
+        magic_enum::enum_for_each<TextDirection>(
+            [this, &directionLabels](const auto &dir) {
+              if (ImGui::Selectable(directionLabels[dir],
+                                    dir == selectedDirection)) {
+                selectedDirection = dir;
+              }
+            });
+
         ImGui::EndCombo();
       }
     }
@@ -232,7 +211,7 @@ void MainScene::DoUI(Context &context) {
 
     ImGui::SeparatorText("Draw color");
 
-    ImGui::ColorPicker3("Foreground##color", color,
+    ImGui::ColorPicker3("Foreground##color", foregroundColor,
                         ImGuiColorEditFlags_InputRGB);
   }
   ImGui::End();
@@ -305,12 +284,13 @@ void MainScene::DoUI(Context &context) {
         font = newFont;
         axisLimits = font.GetAxisInfos();
 
-        magic_enum::enum_for_each<VariationAxis>([this](const VariationAxis &axis) {
-          if (!axisLimits[axis].has_value())
-            return;
+        magic_enum::enum_for_each<VariationAxis>(
+            [this](const VariationAxis &axis) {
+              if (!axisLimits[axis].has_value())
+                return;
 
-          axisValue[axis] = axisLimits[axis]->defaultValue;
-        });
+              axisValue[axis] = axisLimits[axis]->defaultValue;
+            });
 
         selectedFontIndex = newSelected;
       }
@@ -361,4 +341,34 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
   }
 
   return output;
+}
+
+void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
+  if (!font.IsValid())
+    return;
+
+  std::string str(buffer.data());
+  auto language = languages[selectedLanguage].code;
+  auto script = scripts[selectedScript].script;
+
+  SDL_Color sdlColor = Float4ToSDLColor(foregroundColor[0], foregroundColor[1], foregroundColor[2]);
+
+  if (!isShaping) {
+    TextRenderNoShape(renderer, ctx, font, str, sdlColor);
+    return;
+  }
+
+  switch (selectedDirection) {
+  case TextDirection::LeftToRight:
+    TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+  case TextDirection::RightToLeft:
+    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+  case TextDirection::TopToBottom:
+    TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+  }
 }
