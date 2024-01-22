@@ -14,29 +14,36 @@ static constexpr char contextJson[] = "context.json";
 static constexpr char logfile[] = "log.txt";
 
 int main(int argc, char **argv) {
-  auto preferencePath = std::filesystem::path(
+  std::filesystem::path preferencePath(
       SDL_GetPrefPath("sleepyheads.info", "font-render-tester"));
-  auto imguiIniPath = preferencePath / imguiIni;
-  auto contextIniPath = preferencePath / contextJson;
 
-  auto max_size = 5 * 1024 * 1024;
-  auto max_files = 3;
+  const auto imguiIniPath = preferencePath / imguiIni;
+  const auto contextIniPath = preferencePath / contextJson;
 
-  auto logFilePath = preferencePath / logfile;
-  auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
-                                           max_size, max_files);
+  constexpr auto max_size = 5 * 1024 * 1024;
+  constexpr auto max_files = 3;
+
+  const auto logFilePath = preferencePath / logfile;
+  const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
+                                                 max_size, max_files);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   Context ctx{};
   LoadContext(ctx, contextIniPath);
 
-  SDL_Init(SDL_INIT_EVERYTHING);
+  SDL_Init(SDL_INIT_VIDEO);
+
+  constexpr int windowMinimumWidth = 1280;
+  constexpr int windowMinimumHeight = 720;
+
+  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
   SDL_Window *window = SDL_CreateWindow(
-      "font-render-tester", ctx.windowBound.x, ctx.windowBound.y,
-      ctx.windowBound.w, ctx.windowBound.h,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+      "font-render-tester", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+      windowMinimumWidth, windowMinimumHeight,
+      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+
   SDL_SetWindowMinimumSize(window, MININUM_WIDTH, MINIMUM_HEIGHT);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);

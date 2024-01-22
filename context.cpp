@@ -10,9 +10,6 @@ using namespace nlohmann;
 void SaveContext(const Context &ctx, const std::filesystem::path &path) {
   json js;
 
-  js["window_bound"]["width"] = ctx.windowBound.w;
-  js["window_bound"]["height"] = ctx.windowBound.h;
-
   js["font_path"] = ctx.fontPath;
 
   std::string str = js.dump();
@@ -44,8 +41,6 @@ void LoadContext(Context &ctx, const std::filesystem::path &path) {
   Context c = ctx;
 
   try {
-    c.windowBound.w = js["window_bound"]["width"];
-    c.windowBound.h = js["window_bound"]["height"];
     c.fontPath = js["font_path"];
   } catch (const json::exception &e) {
     spdlog::error("Error reading context file value: {}", e.what());

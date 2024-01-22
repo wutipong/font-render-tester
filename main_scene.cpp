@@ -13,7 +13,6 @@
 namespace {
 constexpr int toolbarWidth = 400;
 constexpr int padding = 30;
-
 } // namespace
 
 bool MainScene::Init(Context &context) {
@@ -50,7 +49,7 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
   SDL_RenderGetViewport(renderer, nullptr);
 }
 
-void MainScene::Cleanup(Context &context) { Font::CleanUp(); }
+void MainScene::CleanUp(Context &context) { Font::CleanUp(); }
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
@@ -68,10 +67,13 @@ void MainScene::DoUI(Context &context) {
       ImGui::Separator();
 
       if (ImGui::MenuItem("Exit", "Alt+F4")) {
-        SDL_Event ev{};
-        ev.quit.type = SDL_QUIT;
-        ev.quit.timestamp = SDL_GetTicks();
-
+        SDL_Event ev{
+            .quit =
+                {
+                    .type = SDL_QUIT,
+                    .timestamp = SDL_GetTicks(),
+                },
+        };
         SDL_PushEvent(&ev);
       }
 
@@ -104,7 +106,8 @@ void MainScene::DoUI(Context &context) {
                                   ImGuiWindowFlags_NoSavedSettings)) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
-      auto currentFile = selectedFontIndex == -1
+      constexpr int noFontSelected = -1;
+      auto currentFile = selectedFontIndex == noFontSelected
                              ? "<None>"
                              : fontPaths[selectedFontIndex].filename().string();
 
@@ -328,7 +331,7 @@ MainScene::ListFontFiles(const std::filesystem::path &path) {
     auto entryPath = p.path();
     auto extension = entryPath.extension().string();
 
-    static auto compare = [](char c1, char c2) -> bool {
+    static auto compare = [](const char& c1, const char& c2) -> bool {
       return std::tolower(c1) == std::tolower(c2);
     };
 
@@ -351,7 +354,8 @@ void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
   auto language = languages[selectedLanguage].code;
   auto script = scripts[selectedScript].script;
 
-  SDL_Color sdlColor = Float4ToSDLColor(foregroundColor[0], foregroundColor[1], foregroundColor[2]);
+  SDL_Color sdlColor = Float4ToSDLColor(foregroundColor[0], foregroundColor[1],
+                                        foregroundColor[2]);
 
   if (!isShaping) {
     TextRenderNoShape(renderer, ctx, font, str, sdlColor);
