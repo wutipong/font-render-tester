@@ -10,7 +10,7 @@ class Scene {
 public:
   virtual bool Init(Context &context) = 0;
   virtual void Tick(SDL_Renderer *renderer, Context &context) = 0;
-  virtual void Cleanup(Context &context) = 0;
+  virtual void CleanUp(Context &context) = 0;
 
   virtual void DoUI(Context &context){};
 
@@ -32,7 +32,7 @@ template <class T> bool Scene::ChangeScene(Context &context) {
     return false;
 
   if (currentScene)
-    currentScene->Cleanup(context);
+    currentScene->CleanUp(context);
 
   currentScene = std::move(newScene);
 

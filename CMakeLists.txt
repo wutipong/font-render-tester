@@ -5,16 +5,17 @@ project(font-render-tester)
 
 # add the executable
 add_executable(font-render-tester
+        "colors.hpp"
+        "context.hpp"
+        "draw_glyph.cpp" "io_util.hpp"
+        "font.cpp" "font.hpp"
+        "imgui-filebrowser/imfilebrowser.h"
+        "main_scene.hpp" "main_scene.cpp"
         "main.cpp"
         "scene.hpp" "scene.cpp"
-        "imgui-filebrowser/imfilebrowser.h"
-        "texture.hpp" "texture.cpp"
-        "main_scene.hpp" "main_scene.cpp"
-        "font.cpp" "font.hpp"
+        "settings.hpp" "settings.cpp"
         "text_renderer.hpp" "text_renderer.cpp"
-        "context.cpp"
-        "draw_glyph.cpp" "io_util.hpp"
-        "colors.hpp"
+        "texture.hpp" "texture.cpp"
 )
 
 target_compile_features(font-render-tester PRIVATE cxx_std_23)

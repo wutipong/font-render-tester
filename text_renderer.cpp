@@ -15,6 +15,8 @@ void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
     return;
 
   SDL_FRect rect{x, y, w, h};
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
 
   /*
    * Adjust the coordinate, and recalculate the new y origin of the rectangle.
@@ -22,7 +24,7 @@ void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
    * The given rectangle value has its origin in the bottom-left corner while
    * SDL expects the origin in the top-left corner.
    */
-  rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+  rect.y = static_cast<float>(bound.h) - rect.y - rect.h;
 
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -33,11 +35,14 @@ void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
 void DrawLine(SDL_Renderer *renderer, Context &ctx, const float &x1,
               const float &y1, const float &x2, const float &y2,
               const SDL_Color &color) {
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-  float actualY1 = static_cast<float>(ctx.windowBound.h) - y1;
-  float actualY2 = static_cast<float>(ctx.windowBound.h) - y2;
+  float actualY1 = static_cast<float>(bound.h) - y1;
+  float actualY2 = static_cast<float>(bound.h) - y2;
 
   SDL_RenderDrawLineF(renderer, x1, actualY1, x2, actualY2);
 }
@@ -48,18 +53,19 @@ void DrawHorizontalLineDebug(SDL_Renderer *renderer, Context &ctx,
   if (!ctx.debug)
     return;
 
-  float y = ctx.windowBound.h - lineHeight;
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
+  float y = bound.h - lineHeight;
   do {
     if (ctx.debugAscend) {
-      DrawRect(renderer, ctx, 0, y, ctx.windowBound.w, ascend,
-               debugAscendColor);
+      DrawRect(renderer, ctx, 0, y, bound.w, ascend, debugAscendColor);
     }
     if (ctx.debugDescend) {
-      DrawRect(renderer, ctx, 0, y, ctx.windowBound.w, descend,
-               debugDescendColor);
+      DrawRect(renderer, ctx, 0, y, bound.w, descend, debugDescendColor);
     }
     if (ctx.debugBaseline) {
-      DrawLine(renderer, ctx, 0, y, ctx.windowBound.w, y, debugBaselineColor);
+      DrawLine(renderer, ctx, 0, y, bound.w, y, debugBaselineColor);
     }
     y -= lineHeight;
   } while (y > 0);
@@ -71,18 +77,19 @@ void DrawVerticalLineDebug(SDL_Renderer *renderer, Context &ctx,
   if (!ctx.debug)
     return;
 
-  float x = ctx.windowBound.w - lineWidth;
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
+  float x = bound.w - lineWidth;
   do {
     if (ctx.debugAscend) {
-      DrawRect(renderer, ctx, x, 0, ascend, ctx.windowBound.h,
-               debugAscendColor);
+      DrawRect(renderer, ctx, x, 0, ascend, bound.h, debugAscendColor);
     }
     if (ctx.debugDescend) {
-      DrawRect(renderer, ctx, x, 0, descend, ctx.windowBound.h,
-               debugDescendColor);
+      DrawRect(renderer, ctx, x, 0, descend, bound.h, debugDescendColor);
     }
     if (ctx.debugBaseline) {
-      DrawLine(renderer, ctx, x, 0, x, ctx.windowBound.h, debugBaselineColor);
+      DrawLine(renderer, ctx, x, 0, x, bound.h, debugBaselineColor);
     }
     x += lineWidth;
   } while (x > 0);
@@ -94,7 +101,10 @@ void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
   if (!font.IsValid())
     return;
 
-  int x = 0, y = ctx.windowBound.h - font.LineHeight();
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
+  int x = 0, y = bound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
   DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
@@ -121,9 +131,12 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
   if (!font.IsValid())
     return;
 
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int y = ctx.windowBound.h - font.LineHeight();
+  int y = bound.h - font.LineHeight();
 
   DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
                           font.Descend());
@@ -185,7 +198,10 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
-  int y = ctx.windowBound.h - font.LineHeight();
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
+  int y = bound.h - font.LineHeight();
 
   DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
                           font.Descend());
@@ -215,7 +231,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
     hb_glyph_position_t *glyph_positions =
         hb_buffer_get_glyph_positions(buffer, NULL);
 
-    int x = ctx.windowBound.w;
+    int x = bound.w;
 
     for (int i = glyph_count - 1; i >= 0; i--) {
       auto index = glyph_infos[i].codepoint;
@@ -240,6 +256,9 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
+    
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, & bound);
 
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);
@@ -252,7 +271,7 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
-  int x = ctx.windowBound.w + lineWidth;
+  int x = bound.w + lineWidth;
 
   if (ctx.debug) {
     DrawVerticalLineDebug(renderer, ctx, lineWidth, ascend, descend);
@@ -283,7 +302,7 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
     hb_glyph_position_t *glyph_positions =
         hb_buffer_get_glyph_positions(buffer, NULL);
 
-    int y = ctx.windowBound.h;
+    int y = bound.h;
 
     for (int i = 0; i < glyph_count; i++) {
       auto index = glyph_infos[i].codepoint;

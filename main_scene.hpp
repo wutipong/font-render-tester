@@ -1,5 +1,6 @@
 #pragma once
 
+#include "colors.hpp"
 #include "font.hpp"
 #include "scene.hpp"
 #include "text_renderer.hpp"
@@ -10,13 +11,14 @@
 #include <magic_enum_containers.hpp>
 #include <string>
 
+
 #include "imgui-filebrowser/imfilebrowser.h"
 
 class MainScene : public Scene {
 public:
   virtual bool Init(Context &context) override;
   virtual void Tick(SDL_Renderer *renderer, Context &ctx) override;
-  virtual void Cleanup(Context &context) override;
+  virtual void CleanUp(Context &context) override;
   virtual void DoUI(Context &context) override;
 
 private:
@@ -37,14 +39,18 @@ private:
       "Aenean efficitur felis sed metus mollis varius.";
 
   std::array<char, 4096> buffer = {0};
-  float foregroundColor[3];
+
+  SDL_Color foregroundColor = defaultForegroundColor;
+  SDL_Color backgroundColor = defaultBackgroundColor;
+
   int fontSize = 64;
   bool isShaping = false;
 
   int selectedFontIndex = -1;
-  std::vector<std::filesystem::path> fontPaths;
+  std::vector<std::filesystem::path> fontFilePaths;
 
   ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
+  std::string fontDirPath{std::filesystem::absolute("fonts").string()};
 
   Font font{};
 
@@ -53,14 +59,16 @@ private:
     const hb_script_t script;
   };
 
-  static constexpr std::array<ScriptPair, 7> scripts{
+  static inline std::vector<ScriptPair> scripts{
       ScriptPair{"Common", HB_SCRIPT_COMMON},
       ScriptPair{"Thai", HB_SCRIPT_THAI},
       ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
       ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
       ScriptPair{"Han", HB_SCRIPT_HAN},
       ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+#ifdef ENABLE_RTL
       ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
+#endif
   };
 
   struct LanguagePair {
@@ -68,7 +76,7 @@ private:
     const char *code;
   };
 
-  static constexpr std::array<LanguagePair, 8> languages{
+  static inline std::vector<LanguagePair> languages{
       LanguagePair{
           "None",
           "",
@@ -97,10 +105,12 @@ private:
           "Chinese Taiwan",
           "zh-TW",
       },
+#ifdef ENABLE_RTL
       LanguagePair{
           "Arabic Saudi Arabia",
           "ar-SA",
       },
+#endif
   };
 
   int selectedScript = 0;

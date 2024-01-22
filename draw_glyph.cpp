@@ -23,13 +23,16 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
       static_cast<float>(g.bound.h),
   };
 
+  SDL_Rect bound;
+  SDL_RenderGetViewport(renderer, &bound);
+
   /*
    * Adjust the coordinate, and recalculate the new y origin of the rectangle.
    *
    * The given rectangle value has its origin in the bottom-left corner while
    * SDL expects the origin in the top-left corner.
    */
-  rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+  rect.y = static_cast<float>(bound.h) - rect.y - rect.h;
 
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -53,7 +56,7 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
         1,
     };
 
-    rect.y = static_cast<float>(ctx.windowBound.h) - rect.y - rect.h;
+    rect.y = static_cast<float>(bound.h) - rect.y - rect.h;
 
     SDL_SetRenderDrawColor(renderer, debugCaretColor.r, debugCaretColor.g,
                            debugCaretColor.b, debugCaretColor.a);
