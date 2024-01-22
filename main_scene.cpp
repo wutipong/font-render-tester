@@ -78,11 +78,10 @@ void MainScene::DoUI(Context &context) {
 
       if (ImGui::MenuItem("Exit", "Alt+F4")) {
         SDL_Event ev{
-            .quit =
-                {
-                    .type = SDL_QUIT,
-                    .timestamp = SDL_GetTicks(),
-                },
+            .quit{
+                .type = SDL_QUIT,
+                .timestamp = SDL_GetTicks(),
+            },
         };
         SDL_PushEvent(&ev);
       }
@@ -226,8 +225,23 @@ void MainScene::DoUI(Context &context) {
     }
 
     if (ImGui::CollapsingHeader("Draw colors")) {
-      ImGui::ColorPicker3("Foreground##color", foregroundColor,
-                          ImGuiColorEditFlags_InputRGB);
+      auto f4Foreground = SDLColorToFloat4(foregroundColor);
+      if (ImGui::ColorPicker3("Foreground##color", f4Foreground.data(),
+                              ImGuiColorEditFlags_InputRGB)) {
+        foregroundColor = Float4ToSDLColor(f4Foreground);
+      };
+      if (ImGui::Button("Reset##foreground color")) {
+        foregroundColor = defaultForegroundColor;
+      }
+
+      auto f4Background = SDLColorToFloat4(backgroundColor);
+      if (ImGui::ColorPicker3("Background##color", f4Background.data(),
+                              ImGuiColorEditFlags_InputRGB)) {
+        backgroundColor = Float4ToSDLColor(f4Background);
+      };
+      if (ImGui::Button("Reset##background color")) {
+        backgroundColor = defaultBackgroundColor;
+      }
     }
   }
   ImGui::End();
@@ -245,35 +259,35 @@ void MainScene::DoUI(Context &context) {
         ImGui::Checkbox("Baseline", &context.debugBaseline);
         ImGui::SameLine();
         ImGui::ColorButton(
-            "Baseline", f4DebugBaselineColor,
+            "Baseline", SDLColorToImVec4(debugBaselineColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Caret Positions", &context.debugCaret);
         ImGui::SameLine();
         ImGui::ColorButton(
-            "Caret Positions", f4DebugCaretColor,
+            "Caret Positions", SDLColorToImVec4(debugCaretColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Glyph Bound", &context.debugGlyphBound);
         ImGui::SameLine();
         ImGui::ColorButton(
-            "Glyph Bound", f4DebugGlyphBoundColor,
+            "Glyph Bound", SDLColorToImVec4(debugGlyphBoundColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Ascend", &context.debugAscend);
         ImGui::SameLine();
         ImGui::ColorButton(
-            "Ascend", f4DebugAscendColor,
+            "Ascend", SDLColorToImVec4(debugAscendColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
         ImGui::Checkbox("Descend", &context.debugDescend);
         ImGui::SameLine();
         ImGui::ColorButton(
-            "Descend", f4DebugDescendColor,
+            "Descend", SDLColorToImVec4(debugDescendColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
       }
@@ -367,8 +381,7 @@ void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
   auto language = languages[selectedLanguage].code;
   auto script = scripts[selectedScript].script;
 
-  SDL_Color sdlColor = Float4ToSDLColor(foregroundColor[0], foregroundColor[1],
-                                        foregroundColor[2]);
+  SDL_Color sdlColor = foregroundColor;
 
   if (!isShaping) {
     TextRenderNoShape(renderer, ctx, font, str, sdlColor);

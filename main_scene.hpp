@@ -1,5 +1,6 @@
 #pragma once
 
+#include "colors.hpp"
 #include "font.hpp"
 #include "scene.hpp"
 #include "text_renderer.hpp"
@@ -9,6 +10,7 @@
 #include <imgui.h>
 #include <magic_enum_containers.hpp>
 #include <string>
+
 
 #include "imgui-filebrowser/imfilebrowser.h"
 
@@ -37,7 +39,10 @@ private:
       "Aenean efficitur felis sed metus mollis varius.";
 
   std::array<char, 4096> buffer = {0};
-  float foregroundColor[3];
+
+  SDL_Color foregroundColor = defaultForegroundColor;
+  SDL_Color backgroundColor = defaultBackgroundColor;
+
   int fontSize = 64;
   bool isShaping = false;
 
