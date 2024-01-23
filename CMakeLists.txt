@@ -1,22 +1,28 @@
 cmake_minimum_required(VERSION 3.19)
 
-# set the project name
 project(font-render-tester)
 
-# add the executable
 add_executable(font-render-tester
-        "colors.hpp"
-        "context.hpp"
-        "draw_glyph.cpp" "io_util.hpp"
-        "font.cpp" "font.hpp"
-        "imgui-filebrowser/imfilebrowser.h"
-        "main_scene.hpp" "main_scene.cpp"
-        "main.cpp"
-        "scene.hpp" "scene.cpp"
-        "settings.hpp" "settings.cpp"
-        "text_renderer.hpp" "text_renderer.cpp"
-        "texture.hpp" "texture.cpp"
+        "src/colors.hpp"
+        "src/context.hpp"
+        "src/draw_glyph.cpp"
+        "src/draw_glyph.hpp"
+        "src/font.cpp"
+        "src/font.hpp"
+        "src/io_util.hpp"
+        "src/main_scene.cpp"
+        "src/main_scene.hpp"
+        "src/main.cpp"
+        "src/scene.cpp"
+        "src/scene.hpp"
+        "src/settings.cpp"
+        "src/settings.hpp"
+        "src/text_renderer.cpp"
+        "src/text_renderer.hpp"
+        "src/texture.cpp"
+        "src/texture.hpp"
 )
+target_include_directories(font-render-tester PRIVATE imgui-filebrowser)
 
 target_compile_features(font-render-tester PRIVATE cxx_std_23)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 23)
@@ -34,8 +40,6 @@ find_package(magic_enum CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(utf8cpp CONFIG REQUIRED)
-
-target_include_directories(font-render-tester PRIVATE ${STB_INCLUDE_DIRS})
 
 target_link_libraries(font-render-tester PRIVATE
         freetype 
