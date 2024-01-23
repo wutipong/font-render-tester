@@ -50,7 +50,7 @@ For variable fonts, you can change any of the 5 common axis, depends on whether 
 supported by the given font.
 
 __Notes__: screenshot contains lyrics from the song
-[_Slow Dancing in a Burning Room_ by _John Mayer_(https://www.youtube.com/watch?v=DZ_Ww5oCLPI)
+[_Slow Dancing in a Burning Room_ by _John Mayer_(https://www.youtube.com/watch?v=5MkfBNl_3pw)
 ℗2006 Aware Records LLC.
 
 ![Variable Font](doc/README/variable_font.webp)
