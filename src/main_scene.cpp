@@ -4,6 +4,7 @@
 #include "io_util.hpp"
 #include "settings.hpp"
 #include "text_renderer.hpp"
+#include "version.hpp"
 #include <algorithm>
 #include <array>
 #include <filesystem>
@@ -12,7 +13,9 @@
 #include <imgui_internal.h>
 #include <magic_enum_all.hpp>
 #include <magic_enum_containers.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <utf8/cpp20.h>
 
 namespace {
 constexpr int toolbarWidth = 400;
@@ -63,6 +66,7 @@ void MainScene::CleanUp(Context &context) {
 
 void MainScene::DoUI(Context &context) {
   int newSelected = selectedFontIndex;
+  bool showAbout = false;
   if (ImGui::BeginMainMenuBar()) {
 
     if (ImGui::BeginMenu("File##menu")) {
@@ -96,7 +100,20 @@ void MainScene::DoUI(Context &context) {
       ImGui::EndMenu();
     }
 
+    if (ImGui::BeginMenu("Help##menu")) {
+      if (ImGui::MenuItem("About##help-menu")) {
+        showAbout = true;
+      }
+
+      ImGui::EndMenu();
+    }
+
     ImGui::EndMainMenuBar();
+  }
+
+  if (showAbout) {
+    ImGui::OpenPopup("About##dialog");
+    showAbout = false;
   }
 
   if (ImGui::BeginViewportSideBar(
@@ -327,11 +344,43 @@ void MainScene::DoUI(Context &context) {
     }
   }
 
-  if (ImGui::BeginPopup("InvalidFont")) {
+  if (ImGui::BeginPopupModal("InvalidFont")) {
     ImGui::Text("Invalid Font File");
     if (ImGui::Button("Close")) {
       ImGui::CloseCurrentPopup();
     }
+    ImGui::EndPopup();
+  }
+
+  if (ImGui::BeginPopupModal("About##dialog")) {
+    ImGui::Text("Font-Render-Tester %d.%d.%d", majorVersion, minorVersion,
+                patchVersion);
+
+    ImGui::Text("http://github.com/wutipong/font-render-tester");
+
+    ImGui::SeparatorText("Dependencies");
+
+    ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
+    ImGui::Text("FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR,
+                FREETYPE_PATCH);
+    ImGui::Text("Harfbuzz %s", HB_VERSION_STRING);
+    ImGui::Text("imgui-filebrowser");
+    ImGui::Text("Magic-Enum %d.%d.%d", MAGIC_ENUM_VERSION_MAJOR,
+                MAGIC_ENUM_VERSION_MINOR, MAGIC_ENUM_VERSION_PATCH);
+    ImGui::Text("NLOHMANM-JSON %d.%d.%d", NLOHMANN_JSON_VERSION_MAJOR,
+                NLOHMANN_JSON_VERSION_MINOR, NLOHMANN_JSON_VERSION_PATCH);
+    ImGui::Text("SDL %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
+                SDL_PATCHLEVEL);
+    ImGui::Text("spdlog %d.%d.%d", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR,
+                SPDLOG_VER_PATCH);
+    ImGui::Text("UTF8-CPP");
+
+    ImGui::Separator();
+    
+    if (ImGui::Button("Close")) {
+      ImGui::CloseCurrentPopup();
+    }
+
     ImGui::EndPopup();
   }
 }
