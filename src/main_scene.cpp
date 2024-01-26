@@ -1,6 +1,7 @@
 #include "main_scene.hpp"
 
 #include "colors.hpp"
+#include "debug_settings.hpp"
 #include "font.hpp"
 #include "io_util.hpp"
 #include "settings.hpp"
@@ -109,6 +110,9 @@ const std::vector<LanguagePair> languages{
 #endif
 };
 
+DebugSettings debug{};
+
+bool isShowingTextEditor = true;
 int selectedScript = 0;
 int selectedLanguage = 0;
 
@@ -144,7 +148,7 @@ ListFontFiles(const std::filesystem::path &path) {
   return output;
 }
 
-void OnDirectorySelected(Context &ctx, const std::filesystem::path &path) {
+void OnDirectorySelected(const std::filesystem::path &path) {
   std::filesystem::path newPath = path;
 
   if (!std::filesystem::exists(newPath)) {
@@ -155,7 +159,7 @@ void OnDirectorySelected(Context &ctx, const std::filesystem::path &path) {
 }
 
 void RenderText(SDL_Renderer *renderer, bool isShaping, const char *language,
-                hb_script_t script, TextDirection direction, Context &ctx) {
+                hb_script_t script, TextDirection direction, DebugSettings &debug) {
   if (!font.IsValid())
     return;
 
@@ -164,29 +168,29 @@ void RenderText(SDL_Renderer *renderer, bool isShaping, const char *language,
   SDL_Color sdlColor = foregroundColor;
 
   if (!isShaping) {
-    TextRenderNoShape(renderer, ctx, font, str, sdlColor);
+    TextRenderNoShape(renderer, debug, font, str, sdlColor);
     return;
   }
 
   switch (direction) {
   case TextDirection::LeftToRight:
-    TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
+    TextRenderLeftToRight(renderer, debug, font, str, sdlColor, language, script);
     return;
 
   case TextDirection::TopToBottom:
-    TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
+    TextRenderTopToBottom(renderer, debug, font, str, sdlColor, language, script);
     return;
 
 #ifdef ENABLE_RTL
   case TextDirection::RightToLeft:
-    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
+    TextRenderRightToLeft(renderer, debug, font, str, sdlColor, language, script);
     return;
 #endif
   }
 };
 } // namespace
 
-bool SceneInit(Context &context) {
+bool SceneInit() {
   if (!Font::Init())
     return false;
 
@@ -194,7 +198,7 @@ bool SceneInit(Context &context) {
   fontDirPath = fontPath.string();
 
   dirChooser.SetTitle("Browse for font directory");
-  OnDirectorySelected(context, fontDirPath);
+  OnDirectorySelected(fontDirPath);
   dirChooser.SetPwd(fontDirPath);
 
   std::copy(std::cbegin(exampleText), std::cend(exampleText), buffer.begin());
@@ -202,8 +206,10 @@ bool SceneInit(Context &context) {
   return true;
 }
 
-void SceneTick(SDL_Renderer *renderer, Context &ctx) {
-  SDL_Rect viewport = ctx.windowBound;
+void SceneTick(SDL_Renderer *renderer) {
+  auto window = SDL_RenderGetWindow(renderer);
+  SDL_Rect viewport{0};
+  SDL_GetWindowSize(window, &viewport.w, &viewport.h);
 
   viewport.x += padding;
   viewport.y += padding;
@@ -222,17 +228,17 @@ void SceneTick(SDL_Renderer *renderer, Context &ctx) {
   auto script = scripts[selectedScript].script;
 
   RenderText(renderer, isShaping, language.data(), script, selectedDirection,
-             ctx);
+             debug);
 
   SDL_RenderGetViewport(renderer, nullptr);
 }
 
-void SceneCleanUp(Context &context) {
+void SceneCleanUp() {
   Font::CleanUp();
   SaveSettings({.fontPath = fontDirPath});
 }
 
-void SceneDoUI(Context &context) {
+void SceneDoUI() {
   int newSelected = selectedFontIndex;
   bool showAbout = false;
   if (ImGui::BeginMainMenuBar()) {
@@ -262,8 +268,8 @@ void SceneDoUI(Context &context) {
     }
 
     if (ImGui::BeginMenu("View##menu")) {
-      ImGui::MenuItem("Text editor##view-menu", "", &context.showTextEditor);
-      ImGui::MenuItem("Debug##view-menu", "", &context.debug);
+      ImGui::MenuItem("Text editor##view-menu", "", &isShowingTextEditor);
+      ImGui::MenuItem("Debug##view-menu", "", &debug.enabled);
 
       ImGui::EndMenu();
     }
@@ -433,45 +439,45 @@ void SceneDoUI(Context &context) {
   }
   ImGui::End();
 
-  if (context.showTextEditor) {
-    if (ImGui::Begin("Input text", &context.showTextEditor)) {
+  if (isShowingTextEditor) {
+    if (ImGui::Begin("Input text", &isShowingTextEditor)) {
       ImGui::InputTextMultiline("##InputText", buffer.data(), buffer.size());
     }
     ImGui::End();
   }
 
-  if (context.debug) {
-    if (ImGui::Begin("Debug", &context.debug)) {
+  if (debug.enabled) {
+    if (ImGui::Begin("Debug", &debug.enabled)) {
       if (ImGui::CollapsingHeader("Features", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Checkbox("Baseline", &context.debugBaseline);
+        ImGui::Checkbox("Baseline", &debug.debugBaseline);
         ImGui::SameLine();
         ImGui::ColorButton(
             "Baseline", SDLColorToImVec4(debugBaselineColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
-        ImGui::Checkbox("Caret Positions", &context.debugCaret);
+        ImGui::Checkbox("Caret Positions", &debug.debugCaret);
         ImGui::SameLine();
         ImGui::ColorButton(
             "Caret Positions", SDLColorToImVec4(debugCaretColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
-        ImGui::Checkbox("Glyph Bound", &context.debugGlyphBound);
+        ImGui::Checkbox("Glyph Bound", &debug.debugGlyphBound);
         ImGui::SameLine();
         ImGui::ColorButton(
             "Glyph Bound", SDLColorToImVec4(debugGlyphBoundColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
-        ImGui::Checkbox("Ascend", &context.debugAscend);
+        ImGui::Checkbox("Ascend", &debug.debugAscend);
         ImGui::SameLine();
         ImGui::ColorButton(
             "Ascend", SDLColorToImVec4(debugAscendColor),
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker |
                 ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoLabel);
 
-        ImGui::Checkbox("Descend", &context.debugDescend);
+        ImGui::Checkbox("Descend", &debug.debugDescend);
         ImGui::SameLine();
         ImGui::ColorButton(
             "Descend", SDLColorToImVec4(debugDescendColor),
@@ -484,7 +490,7 @@ void SceneDoUI(Context &context) {
 
   dirChooser.Display();
   if (dirChooser.HasSelected()) {
-    OnDirectorySelected(context, dirChooser.GetSelected());
+    OnDirectorySelected(dirChooser.GetSelected());
     dirChooser.ClearSelected();
     newSelected = -1;
   }

@@ -4,7 +4,7 @@ project(font-render-tester)
 
 add_executable(font-render-tester
         "src/colors.hpp"
-        "src/context.hpp"
+        "src/debug_settings.hpp"
         "src/draw_glyph.cpp"
         "src/draw_glyph.hpp"
         "src/font.cpp"
@@ -20,6 +20,7 @@ add_executable(font-render-tester
         "src/texture.cpp"
         "src/texture.hpp"
 )
+
 target_include_directories(font-render-tester PRIVATE 
         "ext/imgui-filebrowser"
         "ext/IconFontCppHeaders"
