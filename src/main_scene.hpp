@@ -2,7 +2,6 @@
 
 #include "colors.hpp"
 #include "font.hpp"
-#include "scene.hpp"
 #include "text_renderer.hpp"
 #include <SDL2/SDL.h>
 #include <array>
@@ -13,12 +12,12 @@
 
 #include <imfilebrowser.h>
 
-class MainScene : public Scene {
+class MainScene {
 public:
-  virtual bool Init(Context &context) override;
-  virtual void Tick(SDL_Renderer *renderer, Context &ctx) override;
-  virtual void CleanUp(Context &context) override;
-  virtual void DoUI(Context &context) override;
+  bool Init(Context &context);
+  void Tick(SDL_Renderer *renderer, Context &ctx);
+  void CleanUp(Context &context);
+  void DoUI(Context &context);
 
 private:
   void OnDirectorySelected(Context &context, const std::filesystem::path &path);

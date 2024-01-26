@@ -13,8 +13,6 @@ add_executable(font-render-tester
         "src/main_scene.cpp"
         "src/main_scene.hpp"
         "src/main.cpp"
-        "src/scene.cpp"
-        "src/scene.hpp"
         "src/settings.cpp"
         "src/settings.hpp"
         "src/text_renderer.cpp"
