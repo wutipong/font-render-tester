@@ -1,14 +1,14 @@
+#include "context.hpp"
+#include "io_util.hpp"
+#include "main_scene.hpp"
+#include "scene.hpp"
+#include <IconsForkAwesome.h>
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
-
-#include "context.hpp"
-#include "io_util.hpp"
-#include "main_scene.hpp"
-#include "scene.hpp"
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char logfile[] = "log.txt";
@@ -56,15 +56,21 @@ int main(int argc, char **argv) {
   ImFontConfig config;
   config.MergeMode = true;
 
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKjp-Regular.otf", 20.0f,
-                               &config, io.Fonts->GetGlyphRangesJapanese());
+  ImWchar iconRangesFK[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
+  io.Fonts->AddFontFromFileTTF("fonts/forkawesome-webfont.ttf", 20.0f, &config,
+                               iconRangesFK);
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansJP-Regular.ttf", 20.0f, &config,
+                               io.Fonts->GetGlyphRangesJapanese());
   io.Fonts->AddFontFromFileTTF("fonts/NotoSansThai-Regular.ttf", 20.0f, &config,
                                io.Fonts->GetGlyphRangesThai());
-  io.Fonts->AddFontFromFileTTF("fonts/NotoSansCJKkr-Regular.otf", 20.0f,
-                               &config, io.Fonts->GetGlyphRangesKorean());
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansKR-Regular.ttf", 20.0f, &config,
+                               io.Fonts->GetGlyphRangesKorean());
   io.Fonts->AddFontFromFileTTF(
-      "fonts/NotoSansCJKsc-Regular.otf", 20.0f, &config,
+      "fonts/NotoSansSC-Regular.ttf", 20.0f, &config,
       io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+
+  io.Fonts->AddFontFromFileTTF("fonts/NotoSansTC-Regular.ttf", 20.0f, &config,
+                               io.Fonts->GetGlyphRangesChineseFull());
 
   io.Fonts->Build();
 

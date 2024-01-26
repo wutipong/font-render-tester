@@ -22,7 +22,10 @@ add_executable(font-render-tester
         "src/texture.cpp"
         "src/texture.hpp"
 )
-target_include_directories(font-render-tester PRIVATE imgui-filebrowser)
+target_include_directories(font-render-tester PRIVATE 
+        "ext/imgui-filebrowser"
+        "ext/IconFontCppHeaders"
+)
 
 target_compile_features(font-render-tester PRIVATE cxx_std_23)
 set_property(TARGET font-render-tester PROPERTY CXX_STANDARD 23)
@@ -72,9 +75,12 @@ copy_resources(
         TARGET CopyFontFiles
         DESTINATION "fonts"
         INPUT 
-                "fonts/NotoSans-Regular.ttf" 
-                "fonts/NotoSansThai-Regular.ttf" 
-                "fonts/NotoSansCJKjp-Regular.otf" 
-                "fonts/NotoSansCJKkr-Regular.otf" 
-                "fonts/NotoSansCJKsc-Regular.otf"
+                "fonts/forkawesome-webfont.ttf"
+                "fonts/NotoSans-Regular.ttf"
+                "fonts/NotoSansArabic-Regular.ttf"
+                "fonts/NotoSansJP-Regular.ttf"
+                "fonts/NotoSansKR-Regular.ttf"
+                "fonts/NotoSansSC-Regular.ttf"
+                "fonts/NotoSansTC-Regular.ttf"
+                "fonts/NotoSansThai-Regular.ttf"
 )
