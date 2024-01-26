@@ -5,6 +5,7 @@
 #include "settings.hpp"
 #include "text_renderer.hpp"
 #include "version.hpp"
+#include <IconsForkAwesome.h>
 #include <algorithm>
 #include <array>
 #include <filesystem>
@@ -121,7 +122,7 @@ void MainScene::DoUI(Context &context) {
           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
               ImGuiWindowFlags_MenuBar)) {
     if (ImGui::BeginMenuBar()) {
-      ImGui::LabelText("Font Directory", fontDirPath.c_str());
+      ImGui::LabelText(ICON_FK_FOLDER " Font Directory", fontDirPath.c_str());
       ImGui::EndMenuBar();
     }
   }
@@ -358,6 +359,10 @@ void MainScene::DoUI(Context &context) {
 
     ImGui::Text("http://github.com/wutipong/font-render-tester");
 
+    ImGui::SeparatorText("Fonts");
+    ImGui::Text("Fork Awesome");
+    ImGui::Text("Noto Sans Family");
+
     ImGui::SeparatorText("Dependencies");
 
     ImGui::Text("Dear ImGui %s", ImGui::GetVersion());
@@ -376,7 +381,7 @@ void MainScene::DoUI(Context &context) {
     ImGui::Text("UTF8-CPP");
 
     ImGui::Separator();
-    
+
     if (ImGui::Button("Close")) {
       ImGui::CloseCurrentPopup();
     }
