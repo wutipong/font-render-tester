@@ -1,14 +1,15 @@
 #include "context.hpp"
 #include "io_util.hpp"
 #include "main_scene.hpp"
-#include "scene.hpp"
 #include <IconsForkAwesome.h>
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
+#include <memory>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
+
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char logfile[] = "log.txt";
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer2_Init(renderer);
 
-  if (!Scene::ChangeScene<MainScene>(ctx)) {
+  if (!SceneInit(ctx)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
@@ -99,19 +100,19 @@ int main(int argc, char **argv) {
 
     ImGui::NewFrame();
 
-    Scene::Current()->DoUI(ctx);
+    SceneDoUI(ctx);
 
     ImGui::EndFrame();
     ImGui::Render();
 
-    Scene::TickCurrent(renderer, ctx);
+    SceneTick(renderer, ctx);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
-  Scene::Current()->CleanUp(ctx);
+  SceneCleanUp(ctx);
 
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();
