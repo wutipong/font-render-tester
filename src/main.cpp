@@ -1,4 +1,3 @@
-#include "context.hpp"
 #include "io_util.hpp"
 #include "main_scene.hpp"
 #include <IconsForkAwesome.h>
@@ -9,7 +8,6 @@
 #include <memory>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
-
 
 static constexpr char imguiIni[] = "imgui.ini";
 static constexpr char logfile[] = "log.txt";
@@ -28,8 +26,6 @@ int main(int argc, char **argv) {
                                                  maxLogFileSize, maxLogFile);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
-
-  Context ctx{};
 
   SDL_Init(SDL_INIT_VIDEO);
 
@@ -78,7 +74,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer2_Init(renderer);
 
-  if (!SceneInit(ctx)) {
+  if (!SceneInit()) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
@@ -92,27 +88,25 @@ int main(int argc, char **argv) {
       if (event.type == SDL_QUIT)
         break;
     }
-    ctx.windowBound = {0};
-    SDL_GetWindowSize(window, &ctx.windowBound.w, &ctx.windowBound.h);
 
     ImGui_ImplSDL2_NewFrame(window);
     ImGui_ImplSDLRenderer2_NewFrame();
 
     ImGui::NewFrame();
 
-    SceneDoUI(ctx);
+    SceneDoUI();
 
     ImGui::EndFrame();
     ImGui::Render();
 
-    SceneTick(renderer, ctx);
+    SceneTick(renderer);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
-  SceneCleanUp(ctx);
+  SceneCleanUp();
 
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();

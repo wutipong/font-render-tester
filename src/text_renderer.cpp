@@ -7,7 +7,7 @@
 #include "font.hpp"
 
 namespace {
-void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
+void DrawRect(SDL_Renderer *renderer, DebugSettings &debug, const float &x,
               const float &y, const float &w, const float &h,
               const SDL_Color &color) {
 
@@ -32,7 +32,7 @@ void DrawRect(SDL_Renderer *renderer, Context &ctx, const float &x,
   SDL_RenderFillRectF(renderer, &rect);
 }
 
-void DrawLine(SDL_Renderer *renderer, Context &ctx, const float &x1,
+void DrawLine(SDL_Renderer *renderer, DebugSettings &debug, const float &x1,
               const float &y1, const float &x2, const float &y2,
               const SDL_Color &color) {
   SDL_Rect bound;
@@ -47,10 +47,10 @@ void DrawLine(SDL_Renderer *renderer, Context &ctx, const float &x1,
   SDL_RenderDrawLineF(renderer, x1, actualY1, x2, actualY2);
 }
 
-void DrawHorizontalLineDebug(SDL_Renderer *renderer, Context &ctx,
+void DrawHorizontalLineDebug(SDL_Renderer *renderer, DebugSettings &debug,
                              const float &lineHeight, const float &ascend,
                              const float &descend) {
-  if (!ctx.debug)
+  if (!debug.enabled)
     return;
 
   SDL_Rect bound;
@@ -58,23 +58,23 @@ void DrawHorizontalLineDebug(SDL_Renderer *renderer, Context &ctx,
 
   float y = bound.h - lineHeight;
   do {
-    if (ctx.debugAscend) {
-      DrawRect(renderer, ctx, 0, y, bound.w, ascend, debugAscendColor);
+    if (debug.debugAscend) {
+      DrawRect(renderer, debug, 0, y, bound.w, ascend, debugAscendColor);
     }
-    if (ctx.debugDescend) {
-      DrawRect(renderer, ctx, 0, y, bound.w, descend, debugDescendColor);
+    if (debug.debugDescend) {
+      DrawRect(renderer, debug, 0, y, bound.w, descend, debugDescendColor);
     }
-    if (ctx.debugBaseline) {
-      DrawLine(renderer, ctx, 0, y, bound.w, y, debugBaselineColor);
+    if (debug.debugBaseline) {
+      DrawLine(renderer, debug, 0, y, bound.w, y, debugBaselineColor);
     }
     y -= lineHeight;
   } while (y > 0);
 }
 
-void DrawVerticalLineDebug(SDL_Renderer *renderer, Context &ctx,
+void DrawVerticalLineDebug(SDL_Renderer *renderer, DebugSettings &debug,
                            const float &lineWidth, const float &ascend,
                            const float &descend) {
-  if (!ctx.debug)
+  if (!debug.enabled)
     return;
 
   SDL_Rect bound;
@@ -82,21 +82,21 @@ void DrawVerticalLineDebug(SDL_Renderer *renderer, Context &ctx,
 
   float x = bound.w - lineWidth;
   do {
-    if (ctx.debugAscend) {
-      DrawRect(renderer, ctx, x, 0, ascend, bound.h, debugAscendColor);
+    if (debug.debugAscend) {
+      DrawRect(renderer, debug, x, 0, ascend, bound.h, debugAscendColor);
     }
-    if (ctx.debugDescend) {
-      DrawRect(renderer, ctx, x, 0, descend, bound.h, debugDescendColor);
+    if (debug.debugDescend) {
+      DrawRect(renderer, debug, x, 0, descend, bound.h, debugDescendColor);
     }
-    if (ctx.debugBaseline) {
-      DrawLine(renderer, ctx, x, 0, x, bound.h, debugBaselineColor);
+    if (debug.debugBaseline) {
+      DrawLine(renderer, debug, x, 0, x, bound.h, debugBaselineColor);
     }
     x += lineWidth;
   } while (x > 0);
 }
 } // namespace
 
-void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
+void TextRenderNoShape(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
                        const std::string &str, const SDL_Color &color) {
   if (!font.IsValid())
     return;
@@ -107,7 +107,7 @@ void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
   int x = 0, y = bound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
 
-  DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
+  DrawHorizontalLineDebug(renderer, debug, font.LineHeight(), font.Ascend(),
                           font.Descend());
 
   for (auto &u : u16str) {
@@ -119,12 +119,12 @@ void TextRenderNoShape(SDL_Renderer *renderer, Context &ctx, Font &font,
     }
 
     auto &g = font.GetGlyphFromChar(renderer, u);
-    DrawGlyph(renderer, ctx, font, g, color, x, y);
+    DrawGlyph(renderer, debug, font, g, color, x, y);
     x += g.advance;
   }
 }
 
-void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
+void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
                            const std::string &str, const SDL_Color &color,
                            const std::string &language,
                            const hb_script_t &script) {
@@ -138,7 +138,7 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
   auto lineStart = u16str.begin();
   int y = bound.h - font.LineHeight();
 
-  DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
+  DrawHorizontalLineDebug(renderer, debug, font.LineHeight(), font.Ascend(),
                           font.Descend());
 
   while (true) {
@@ -172,7 +172,7 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
-      DrawGlyph(renderer, ctx, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(renderer, debug, font, g, color, x, y, glyph_positions[i]);
       x += g.advance;
     }
     hb_buffer_destroy(buffer);
@@ -185,7 +185,7 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, Context &ctx, Font &font,
   }
 }
 
-void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
+void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
                            const std::string &str, const SDL_Color &color,
                            const std::string &language,
                            const hb_script_t &script) {
@@ -203,7 +203,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
 
   int y = bound.h - font.LineHeight();
 
-  DrawHorizontalLineDebug(renderer, ctx, font.LineHeight(), font.Ascend(),
+  DrawHorizontalLineDebug(renderer, debug, font.LineHeight(), font.Ascend(),
                           font.Descend());
 
   while (true) {
@@ -238,7 +238,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
 
       auto &g = font.GetGlyph(renderer, index);
       x -= HBPosToFloat(glyph_positions[i].x_advance);
-      DrawGlyph(renderer, ctx, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(renderer, debug, font, g, color, x, y, glyph_positions[i]);
     }
     hb_buffer_destroy(buffer);
 
@@ -250,7 +250,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, Context &ctx, Font &font,
   }
 }
 
-void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
+void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
                            const std::string &str, const SDL_Color &color,
                            const std::string &language,
                            const hb_script_t &script) {
@@ -273,8 +273,8 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
   auto lineStart = u16str.begin();
   int x = bound.w + lineWidth;
 
-  if (ctx.debug) {
-    DrawVerticalLineDebug(renderer, ctx, lineWidth, ascend, descend);
+  if (debug.enabled) {
+    DrawVerticalLineDebug(renderer, debug, lineWidth, ascend, descend);
   }
 
   while (true) {
@@ -308,7 +308,7 @@ void TextRenderTopToBottom(SDL_Renderer *renderer, Context &ctx, Font &font,
       auto index = glyph_infos[i].codepoint;
 
       auto &g = font.GetGlyph(renderer, index);
-      DrawGlyph(renderer, ctx, font, g, color, x, y, glyph_positions[i]);
+      DrawGlyph(renderer, debug, font, g, color, x, y, glyph_positions[i]);
 
       y += HBPosToFloat(glyph_positions[i].y_advance);
     }

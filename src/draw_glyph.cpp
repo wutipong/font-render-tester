@@ -12,7 +12,7 @@
  * direction is to match the modern rendering apis such as OpenGL or DirectX.
  */
 
-void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+void DrawGlyph(SDL_Renderer *renderer, DebugSettings &debug, const Font &font,
                const Glyph &g, const SDL_Color &color, const int &x,
                const int &y) {
 
@@ -40,7 +40,7 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
 
   SDL_RenderCopyF(renderer, g.texture, nullptr, &rect);
 
-  if (ctx.debug && ctx.debugGlyphBound) {
+  if (debug.enabled && debug.debugGlyphBound) {
     SDL_SetRenderDrawColor(renderer, debugGlyphBoundColor.r,
                            debugGlyphBoundColor.g, debugGlyphBoundColor.b,
                            debugGlyphBoundColor.a);
@@ -48,7 +48,7 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
     SDL_RenderDrawRectF(renderer, &rect);
   }
 
-  if (ctx.debug && ctx.debugCaret) {
+  if (debug.enabled && debug.debugCaret) {
     SDL_FRect rect{
         static_cast<float>(x),
         static_cast<float>(y),
@@ -66,12 +66,12 @@ void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
   }
 }
 
-void DrawGlyph(SDL_Renderer *renderer, Context &ctx, const Font &font,
+void DrawGlyph(SDL_Renderer *renderer, DebugSettings &debug, const Font &font,
                const Glyph &g, const SDL_Color &color, const int &x,
                const int &y, const hb_glyph_position_t &hb_glyph_pos) {
 
   auto xPos = x + HBPosToFloat(hb_glyph_pos.x_offset);
   auto yPos = y + HBPosToFloat(hb_glyph_pos.y_offset);
 
-  DrawGlyph(renderer, ctx, font, g, color, xPos, yPos);
+  DrawGlyph(renderer, debug, font, g, color, xPos, yPos);
 }
