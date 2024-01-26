@@ -1,6 +1,7 @@
 #include "main_scene.hpp"
 
 #include "colors.hpp"
+#include "font.hpp"
 #include "io_util.hpp"
 #include "settings.hpp"
 #include "text_renderer.hpp"
@@ -18,12 +19,174 @@
 #include <spdlog/spdlog.h>
 #include <utf8/cpp20.h>
 
+#include <imfilebrowser.h>
+
 namespace {
 constexpr int toolbarWidth = 400;
 constexpr int padding = 30;
+
+constexpr std::string_view exampleText{
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non \n"
+    "turpis justo. Etiam luctus vulputate ante ac congue. Nunc vitae \n"
+    "ultricies turpis, eu mollis libero. Quisque eu faucibus neque. \n"
+    "Aliquam risus urna, ullamcorper sit amet arcu id, feugiat semper \n"
+    "dolor. Maecenas commodo turpis orci, vel laoreet felis placerat \n"
+    "in. In nec metus tincidunt sem sagittis dapibus ut eget magna. \n"
+    "Aenean efficitur felis sed metus mollis varius."};
+
+std::array<char, 4096> buffer = {0};
+
+SDL_Color foregroundColor = defaultForegroundColor;
+SDL_Color backgroundColor = defaultBackgroundColor;
+
+int fontSize = 64;
+bool isShaping = false;
+
+int selectedFontIndex = -1;
+std::vector<std::filesystem::path> fontFilePaths;
+
+ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
+std::string fontDirPath{std::filesystem::absolute("fonts").string()};
+
+Font font{};
+
+struct ScriptPair {
+  const char *name;
+  const hb_script_t script;
+};
+
+const std::vector<ScriptPair> scripts{
+    ScriptPair{"Common", HB_SCRIPT_COMMON},
+    ScriptPair{"Thai", HB_SCRIPT_THAI},
+    ScriptPair{"Hiragana", HB_SCRIPT_HIRAGANA},
+    ScriptPair{"Katakana", HB_SCRIPT_KATAKANA},
+    ScriptPair{"Han", HB_SCRIPT_HAN},
+    ScriptPair{"Hangul", HB_SCRIPT_HANGUL},
+#ifdef ENABLE_RTL
+    ScriptPair{"Arabic", HB_SCRIPT_ARABIC},
+#endif
+};
+
+struct LanguagePair {
+  const std::string_view name;
+  const std::string_view code;
+};
+
+const std::vector<LanguagePair> languages{
+    LanguagePair{
+        "None",
+        "",
+    },
+    LanguagePair{
+        "English US",
+        "en-US",
+    },
+    LanguagePair{
+        "Thai Thailand",
+        "th-TH",
+    },
+    LanguagePair{
+        "Japanese Japan",
+        "ja-JP",
+    },
+    LanguagePair{
+        "Korean Republic of Korea",
+        "ko-KR",
+    },
+    LanguagePair{
+        "Chinese China",
+        "zh-CN",
+    },
+    LanguagePair{
+        "Chinese Taiwan",
+        "zh-TW",
+    },
+#ifdef ENABLE_RTL
+    LanguagePair{
+        "Arabic Saudi Arabia",
+        "ar-SA",
+    },
+#endif
+};
+
+int selectedScript = 0;
+int selectedLanguage = 0;
+
+TextDirection selectedDirection{TextDirection::LeftToRight};
+
+magic_enum::containers::array<VariationAxis, float> axisValue;
+magic_enum::containers::array<VariationAxis, std::optional<AxisInfo>>
+    axisLimits;
+
+std::vector<std::filesystem::path>
+ListFontFiles(const std::filesystem::path &path) {
+  std::vector<std::filesystem::path> output;
+  for (auto &p : std::filesystem::directory_iterator(path)) {
+    if (!p.is_regular_file()) {
+      continue;
+    }
+
+    auto entryPath = p.path();
+    auto extension = entryPath.extension().string();
+
+    static auto compare = [](const char &c1, const char &c2) -> bool {
+      return std::tolower(c1) == std::tolower(c2);
+    };
+
+    if (!std::equal(extension.begin(), extension.end(), ".otf", compare) &&
+        !std::equal(extension.begin(), extension.end(), ".ttf", compare)) {
+      continue;
+    }
+
+    output.push_back(p);
+  }
+
+  return output;
+}
+
+void OnDirectorySelected(Context &ctx, const std::filesystem::path &path) {
+  std::filesystem::path newPath = path;
+
+  if (!std::filesystem::exists(newPath)) {
+    newPath = std::filesystem::absolute("fonts");
+  }
+  fontDirPath = path.string();
+  fontFilePaths = ListFontFiles(fontDirPath);
+}
+
+void RenderText(SDL_Renderer *renderer, bool isShaping, const char *language,
+                hb_script_t script, TextDirection direction, Context &ctx) {
+  if (!font.IsValid())
+    return;
+
+  std::string str(buffer.data());
+
+  SDL_Color sdlColor = foregroundColor;
+
+  if (!isShaping) {
+    TextRenderNoShape(renderer, ctx, font, str, sdlColor);
+    return;
+  }
+
+  switch (direction) {
+  case TextDirection::LeftToRight:
+    TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+  case TextDirection::TopToBottom:
+    TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+
+#ifdef ENABLE_RTL
+  case TextDirection::RightToLeft:
+    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
+    return;
+#endif
+  }
+};
 } // namespace
 
-bool MainScene::Init(Context &context) {
+bool SceneInit(Context &context) {
   if (!Font::Init())
     return false;
 
@@ -39,7 +202,7 @@ bool MainScene::Init(Context &context) {
   return true;
 }
 
-void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
+void SceneTick(SDL_Renderer *renderer, Context &ctx) {
   SDL_Rect viewport = ctx.windowBound;
 
   viewport.x += padding;
@@ -55,17 +218,21 @@ void MainScene::Tick(SDL_Renderer *renderer, Context &ctx) {
 
   font.SetFontSize(fontSize);
 
-  RenderText(renderer, ctx);
+  auto language = languages[selectedLanguage].code;
+  auto script = scripts[selectedScript].script;
+
+  RenderText(renderer, isShaping, language.data(), script, selectedDirection,
+             ctx);
 
   SDL_RenderGetViewport(renderer, nullptr);
 }
 
-void MainScene::CleanUp(Context &context) {
+void SceneCleanUp(Context &context) {
   Font::CleanUp();
   SaveSettings({.fontPath = fontDirPath});
 }
 
-void MainScene::DoUI(Context &context) {
+void SceneDoUI(Context &context) {
   int newSelected = selectedFontIndex;
   bool showAbout = false;
   if (ImGui::BeginMainMenuBar()) {
@@ -174,7 +341,7 @@ void MainScene::DoUI(Context &context) {
           };
 
       magic_enum::enum_for_each<VariationAxis>(
-          [this, &axisChanged, &axisLabel](const VariationAxis &axis) {
+          [&axisChanged, &axisLabel](const VariationAxis &axis) {
             if (axisLimits[axis].has_value()) {
               [[maybe_unused]] auto [min, max, _] = *axisLimits[axis];
               axisChanged |= ImGui::DragFloat(axisLabel[axis], &axisValue[axis],
@@ -201,9 +368,11 @@ void MainScene::DoUI(Context &context) {
       ImGui::Checkbox("Enable##Shape Text", &isShaping);
 
       ImGui::BeginDisabled(!isShaping);
-      if (ImGui::BeginCombo("Language", languages[selectedLanguage].name)) {
+      if (ImGui::BeginCombo("Language",
+                            languages[selectedLanguage].name.data())) {
         for (size_t i = 0; i < languages.size(); i++) {
-          if (ImGui::Selectable(languages[i].name, i == selectedLanguage)) {
+          if (ImGui::Selectable(languages[i].name.data(),
+                                i == selectedLanguage)) {
             selectedLanguage = i;
           }
         }
@@ -230,7 +399,7 @@ void MainScene::DoUI(Context &context) {
 
       if (ImGui::BeginCombo("Direction", directionLabels[selectedDirection])) {
         magic_enum::enum_for_each<TextDirection>(
-            [this, &directionLabels](const auto &dir) {
+            [&directionLabels](const auto &dir) {
               if (ImGui::Selectable(directionLabels[dir],
                                     dir == selectedDirection)) {
                 selectedDirection = dir;
@@ -332,13 +501,12 @@ void MainScene::DoUI(Context &context) {
         font = newFont;
         axisLimits = font.GetAxisInfos();
 
-        magic_enum::enum_for_each<VariationAxis>(
-            [this](const VariationAxis &axis) {
-              if (!axisLimits[axis].has_value())
-                return;
+        magic_enum::enum_for_each<VariationAxis>([](const VariationAxis &axis) {
+          if (!axisLimits[axis].has_value())
+            return;
 
-              axisValue[axis] = axisLimits[axis]->defaultValue;
-            });
+          axisValue[axis] = axisLimits[axis]->defaultValue;
+        });
 
         selectedFontIndex = newSelected;
       }
@@ -387,74 +555,5 @@ void MainScene::DoUI(Context &context) {
     }
 
     ImGui::EndPopup();
-  }
-}
-
-void MainScene::OnDirectorySelected(Context &ctx,
-                                    const std::filesystem::path &path) {
-  std::filesystem::path newPath = path;
-
-  if (!std::filesystem::exists(newPath)) {
-    newPath = std::filesystem::absolute("fonts");
-  }
-  fontDirPath = path.string();
-  fontFilePaths = ListFontFiles(fontDirPath);
-}
-
-std::vector<std::filesystem::path>
-MainScene::ListFontFiles(const std::filesystem::path &path) {
-  std::vector<std::filesystem::path> output;
-  for (auto &p : std::filesystem::directory_iterator(path)) {
-    if (!p.is_regular_file()) {
-      continue;
-    }
-
-    auto entryPath = p.path();
-    auto extension = entryPath.extension().string();
-
-    static auto compare = [](const char &c1, const char &c2) -> bool {
-      return std::tolower(c1) == std::tolower(c2);
-    };
-
-    if (!std::equal(extension.begin(), extension.end(), ".otf", compare) &&
-        !std::equal(extension.begin(), extension.end(), ".ttf", compare)) {
-      continue;
-    }
-
-    output.push_back(p);
-  }
-
-  return output;
-}
-
-void MainScene::RenderText(SDL_Renderer *renderer, Context &ctx) {
-  if (!font.IsValid())
-    return;
-
-  std::string str(buffer.data());
-  auto language = languages[selectedLanguage].code;
-  auto script = scripts[selectedScript].script;
-
-  SDL_Color sdlColor = foregroundColor;
-
-  if (!isShaping) {
-    TextRenderNoShape(renderer, ctx, font, str, sdlColor);
-    return;
-  }
-
-  switch (selectedDirection) {
-  case TextDirection::LeftToRight:
-    TextRenderLeftToRight(renderer, ctx, font, str, sdlColor, language, script);
-    return;
-
-  case TextDirection::TopToBottom:
-    TextRenderTopToBottom(renderer, ctx, font, str, sdlColor, language, script);
-    return;
-
-#ifdef ENABLE_RTL
-  case TextDirection::RightToLeft:
-    TextRenderRightToLeft(renderer, ctx, font, str, sdlColor, language, script);
-    return;
-#endif
   }
 }

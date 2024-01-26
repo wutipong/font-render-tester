@@ -78,9 +78,7 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer2_Init(renderer);
 
-  auto scene = std::make_unique<MainScene>();
-
-  if (!scene->Init(ctx)) {
+  if (!SceneInit(ctx)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
@@ -102,20 +100,19 @@ int main(int argc, char **argv) {
 
     ImGui::NewFrame();
 
-    scene->DoUI(ctx);
+    SceneDoUI(ctx);
 
     ImGui::EndFrame();
     ImGui::Render();
 
-    scene->Tick(renderer, ctx);
+    SceneTick(renderer, ctx);
 
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
-  scene->CleanUp(ctx);
-  scene.reset();
+  SceneCleanUp(ctx);
 
   ImGui_ImplSDLRenderer2_Shutdown();
   ImGui_ImplSDL2_Shutdown();
