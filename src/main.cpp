@@ -1,3 +1,5 @@
+#define SDL_MAIN_USE_CALLBACKS
+
 #include "io_util.hpp"
 #include "main_scene.hpp"
 #include <IconsForkAwesome.h>
@@ -19,7 +21,12 @@ static constexpr int WINDOW_MINIMUM_HEIGHT = 720;
 static constexpr size_t MAX_LOG_FILE_SIZE = 5 * 1024 * 1024;
 static constexpr size_t MAX_LOG_FILE = 3;
 
-int main(int argc, char **argv) {
+namespace {
+  SDL_Renderer *renderer = nullptr;
+  SDL_Window *window = nullptr;
+}
+
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv){
   const auto logFilePath = GetPreferencePath() / LOGFILE;
   const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
                                                  MAX_LOG_FILE_SIZE, MAX_LOG_FILE);
@@ -28,13 +35,13 @@ int main(int argc, char **argv) {
 
   SDL_Init(SDL_INIT_VIDEO);
 
-  SDL_Window *window = SDL_CreateWindow(
+  window = SDL_CreateWindow(
       "font-render-tester",  WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
   SDL_SetWindowMinimumSize(window, WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
+  renderer = SDL_CreateRenderer(window, nullptr);
 
   const auto imguiIniPath = GetPreferencePath() / IMGUI_INI;
   std::string imguiIniStr = imguiIniPath.string();
@@ -74,34 +81,40 @@ int main(int argc, char **argv) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
-    return EXIT_FAILURE;
+    return SDL_APP_FAILURE;
   };
 
-  while (true) {
-    SDL_Event event;
-    if (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL3_ProcessEvent(&event);
-      if (event.type == SDL_EVENT_QUIT)
-        break;
-    }
+  return SDL_APP_CONTINUE;
+}
 
-    ImGui_ImplSDL3_NewFrame();
-    ImGui_ImplSDLRenderer3_NewFrame();
+SDL_AppResult SDL_AppIterate(void *appstate){
+  ImGui_ImplSDL3_NewFrame();
+  ImGui_ImplSDLRenderer3_NewFrame();
 
-    ImGui::NewFrame();
+  ImGui::NewFrame();
 
-    SceneDoUI();
+  SceneDoUI();
 
-    ImGui::EndFrame();
-    ImGui::Render();
+  ImGui::EndFrame();
+  ImGui::Render();
 
-    SceneTick(renderer);
+  SceneTick(renderer);
 
-    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(1);
+  ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+  SDL_RenderPresent(renderer);
+
+  return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event){
+  ImGui_ImplSDL3_ProcessEvent(event);
+  if (event->type == SDL_EVENT_QUIT){
+    return SDL_APP_SUCCESS;
   }
+  return SDL_APP_CONTINUE;
+}
 
+void SDL_AppQuit(void *appstate, SDL_AppResult result){
   SceneCleanUp();
 
   ImGui_ImplSDLRenderer3_Shutdown();
@@ -111,6 +124,4 @@ int main(int argc, char **argv) {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
-
-  return EXIT_SUCCESS;
 }
