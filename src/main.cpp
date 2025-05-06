@@ -10,35 +10,33 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
-static constexpr char imguiIni[] = "imgui.ini";
-static constexpr char logfile[] = "log.txt";
+static constexpr char IMGUI_INI[] = "imgui.ini";
+static constexpr char LOGFILE[] = "log.txt";
 
-static constexpr int windowMinimumWidth = 1280;
-static constexpr int windowMinimumHeight = 720;
+static constexpr int WINDOW_MINIMUM_WIDTH = 1280;
+static constexpr int WINDOW_MINIMUM_HEIGHT = 720;
+
+static constexpr size_t MAX_LOG_FILE_SIZE = 5 * 1024 * 1024;
+static constexpr size_t MAX_LOG_FILE = 3;
 
 int main(int argc, char **argv) {
-  const auto preferencePath = GetPreferencePath();
-
-  constexpr auto maxLogFileSize = 5 * 1024 * 1024;
-  constexpr auto maxLogFile = 3;
-
-  const auto logFilePath = preferencePath / logfile;
+  const auto logFilePath = GetPreferencePath() / LOGFILE;
   const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
-                                                 maxLogFileSize, maxLogFile);
+                                                 MAX_LOG_FILE_SIZE, MAX_LOG_FILE);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_Window *window = SDL_CreateWindow(
-      "font-render-tester",  windowMinimumWidth, windowMinimumHeight,
+      "font-render-tester",  WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT,
       SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
-  SDL_SetWindowMinimumSize(window, windowMinimumWidth, windowMinimumHeight);
+  SDL_SetWindowMinimumSize(window, WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
 
-  const auto imguiIniPath = preferencePath / imguiIni;
+  const auto imguiIniPath = GetPreferencePath() / IMGUI_INI;
   std::string imguiIniStr = imguiIniPath.string();
 
   IMGUI_CHECKVERSION();
