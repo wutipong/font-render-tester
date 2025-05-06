@@ -1,7 +1,7 @@
 #ifndef COLORS_HPP
 #define COLORS_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <array>
 #include <imgui.h>
 

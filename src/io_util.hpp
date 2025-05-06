@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <streambuf>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 template <class container_type>
 container_type LoadFile(const std::filesystem::path &path,

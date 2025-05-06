@@ -39,7 +39,7 @@ find_package(freetype CONFIG REQUIRED)
 find_package(harfbuzz CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(utf8cpp CONFIG REQUIRED)
 
@@ -48,7 +48,7 @@ target_link_libraries(font-render-tester PRIVATE
         harfbuzz::harfbuzz
         imgui::imgui 
         magic_enum::magic_enum
-        SDL2::SDL2 SDL2::SDL2main
+        SDL3::SDL3
         spdlog::spdlog spdlog::spdlog_header_only 
         utf8::cpp utf8cpp::utf8cpp 
 )

@@ -1,10 +1,11 @@
 #include "io_util.hpp"
 #include "main_scene.hpp"
 #include <IconsForkAwesome.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL.h>
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 #include <memory>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
@@ -29,16 +30,13 @@ int main(int argc, char **argv) {
 
   SDL_Init(SDL_INIT_VIDEO);
 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-
   SDL_Window *window = SDL_CreateWindow(
-      "font-render-tester", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-      windowMinimumWidth, windowMinimumHeight,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+      "font-render-tester",  windowMinimumWidth, windowMinimumHeight,
+      SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
   SDL_SetWindowMinimumSize(window, windowMinimumWidth, windowMinimumHeight);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, nullptr);
 
   const auto imguiIniPath = preferencePath / imguiIni;
   std::string imguiIniStr = imguiIniPath.string();
@@ -71,8 +69,8 @@ int main(int argc, char **argv) {
 
   io.Fonts->Build();
 
-  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-  ImGui_ImplSDLRenderer2_Init(renderer);
+  ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+  ImGui_ImplSDLRenderer3_Init(renderer);
 
   if (!SceneInit()) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
@@ -84,13 +82,13 @@ int main(int argc, char **argv) {
   while (true) {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL2_ProcessEvent(&event);
-      if (event.type == SDL_QUIT)
+      ImGui_ImplSDL3_ProcessEvent(&event);
+      if (event.type == SDL_EVENT_QUIT)
         break;
     }
 
-    ImGui_ImplSDL2_NewFrame(window);
-    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui_ImplSDLRenderer3_NewFrame();
 
     ImGui::NewFrame();
 
@@ -101,15 +99,15 @@ int main(int argc, char **argv) {
 
     SceneTick(renderer);
 
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
     SDL_RenderPresent(renderer);
     SDL_Delay(1);
   }
 
   SceneCleanUp();
 
-  ImGui_ImplSDLRenderer2_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
+  ImGui_ImplSDLRenderer3_Shutdown();
+  ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
   SDL_DestroyRenderer(renderer);

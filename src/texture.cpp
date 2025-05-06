@@ -9,19 +9,19 @@ SDL_Texture *LoadTextureFromBitmap(SDL_Renderer *renderer, FT_Bitmap &bitmap) {
 
   auto glyphPalette = glyphPaletteColor();
 
-  auto *palette = SDL_AllocPalette(glyphPalette.size());
+  auto *palette = SDL_CreatePalette(glyphPalette.size());
   SDL_SetPaletteColors(palette, glyphPalette.data(), 0, glyphPalette.size());
 
-  auto *surface = SDL_CreateRGBSurfaceWithFormatFrom(
-      bitmap.buffer, static_cast<int>(bitmap.width),
-      static_cast<int>(bitmap.rows), 8, static_cast<int>(bitmap.pitch),
-      SDL_PIXELFORMAT_INDEX8);
+  auto *surface = SDL_CreateSurfaceFrom(
+      static_cast<int>(bitmap.width),
+      static_cast<int>(bitmap.rows), SDL_PIXELFORMAT_INDEX8, bitmap.buffer, static_cast<int>(bitmap.pitch)
+      );
 
   SDL_SetSurfacePalette(surface, palette);
 
   auto *texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_FreeSurface(surface);
-  SDL_FreePalette(palette);
+  SDL_DestroySurface(surface);
+  SDL_DestroyPalette(palette);
 
   SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 

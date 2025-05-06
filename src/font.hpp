@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <harfbuzz/hb.h>
 
 #include <ft2build.h>
@@ -10,7 +10,7 @@
 #include <functional>
 #include <hb-ot.h>
 #include <iterator>
-#include <magic_enum_containers.hpp>
+#include <magic_enum/magic_enum_containers.hpp>
 #include <map>
 #include <string>
 #include <vector>

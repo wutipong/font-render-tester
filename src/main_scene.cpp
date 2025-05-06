@@ -14,8 +14,8 @@
 #include <fstream>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <magic_enum_all.hpp>
-#include <magic_enum_containers.hpp>
+#include <magic_enum/magic_enum_all.hpp>
+#include <magic_enum/magic_enum_containers.hpp>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <utf8/cpp20.h>
@@ -207,7 +207,7 @@ bool SceneInit() {
 }
 
 void SceneTick(SDL_Renderer *renderer) {
-  auto window = SDL_RenderGetWindow(renderer);
+  auto window = SDL_GetRenderWindow(renderer);
   SDL_Rect viewport{0};
   SDL_GetWindowSize(window, &viewport.w, &viewport.h);
 
@@ -216,7 +216,7 @@ void SceneTick(SDL_Renderer *renderer) {
   viewport.w -= (toolbarWidth + padding * 2);
   viewport.h -= 2 * padding;
 
-  SDL_RenderSetViewport(renderer, &viewport);
+  SDL_SetRenderViewport(renderer, &viewport);
 
   SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
@@ -230,7 +230,7 @@ void SceneTick(SDL_Renderer *renderer) {
   RenderText(renderer, isShaping, language.data(), script, selectedDirection,
              debug);
 
-  SDL_RenderGetViewport(renderer, nullptr);
+  SDL_GetRenderViewport(renderer, nullptr);
 }
 
 void SceneCleanUp() {
@@ -257,8 +257,7 @@ void SceneDoUI() {
       if (ImGui::MenuItem("Exit", "Alt+F4")) {
         SDL_Event ev{
             .quit{
-                .type = SDL_QUIT,
-                .timestamp = SDL_GetTicks(),
+                .type = SDL_EVENT_QUIT,
             },
         };
         SDL_PushEvent(&ev);
@@ -341,7 +340,7 @@ void SceneDoUI() {
       bool axisChanged = false;
 
       constexpr magic_enum::containers::array<VariationAxis, const char *>
-          axisLabel = {
+          axisLabel {
               "Italic##axis", "Optical size##axis", "Slant##axis",
               "Weight##axis", "Width##axis",
           };
@@ -549,7 +548,7 @@ void SceneDoUI() {
     ImGui::Text("NLOHMANM-JSON %d.%d.%d", NLOHMANN_JSON_VERSION_MAJOR,
                 NLOHMANN_JSON_VERSION_MINOR, NLOHMANN_JSON_VERSION_PATCH);
     ImGui::Text("SDL %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
-                SDL_PATCHLEVEL);
+                SDL_MICRO_VERSION);
     ImGui::Text("spdlog %d.%d.%d", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR,
                 SPDLOG_VER_PATCH);
     ImGui::Text("UTF8-CPP");
