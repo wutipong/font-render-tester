@@ -1,7 +1,8 @@
 #include "font.hpp"
 
+#include <algorithm>
 #include <harfbuzz/hb-ft.h>
-#include <magic_enum_all.hpp>
+#include <magic_enum/magic_enum_all.hpp>
 #include <spdlog/spdlog.h>
 #include <utf8cpp/utf8.h>
 
@@ -39,7 +40,7 @@ bool Font::Init() {
 
 void Font::CleanUp() { FT_Done_FreeType(library); }
 
-Font::Font(){};
+Font::Font() {};
 
 Font &Font::operator=(const Font &f) {
   data = f.data;
@@ -73,7 +74,7 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
   const char16_t *c16str = reinterpret_cast<const char16_t *>(str);
   std::vector<char16_t> buffer;
   for (int i = 0; i < length / 2; i++) {
-    buffer.push_back(SDL_SwapBE16(c16str[i]));
+    buffer.push_back(SDL_Swap16BE(c16str[i]));
   }
 
   std::string output;

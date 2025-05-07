@@ -6,14 +6,14 @@
     "harfbuzz",
     "magic-enum",
     "nlohmann-json",
-    "sdl2",
+    "sdl3",
     "spdlog",
     "utfcpp",
     {
       "name": "imgui",
       "features": [
-        "sdl2-binding",
-        "sdl2-renderer-binding"
+        "sdl3-binding",
+        "sdl3-renderer-binding"
       ]
     }
   ]

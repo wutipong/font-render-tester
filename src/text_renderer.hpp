@@ -2,7 +2,7 @@
 
 #include "debug_settings.hpp"
 #include "font.hpp"
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <functional>
 #include <harfbuzz/hb.h>
 
@@ -17,14 +17,14 @@ enum class TextDirection {
 void TextRenderNoShape(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
                        const std::string &str, const SDL_Color &color);
 
-void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script);
 
-void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script);
 
 #ifdef ENABLE_RTL

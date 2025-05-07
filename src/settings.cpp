@@ -6,7 +6,7 @@
 using namespace nlohmann;
 
 namespace {
-static constexpr char contextJson[] = "settings.json";
+static constexpr char CONTEXT_JSON[] = "settings.json";
 }
 
 void SaveSettings(const Settings &settings) {
@@ -17,7 +17,7 @@ void SaveSettings(const Settings &settings) {
   std::string str = js.dump();
 
   const auto preferencePath = GetPreferencePath();
-  const auto path = preferencePath / contextJson;
+  const auto path = preferencePath / CONTEXT_JSON;
 
   std::fstream output(path, std::ios::out);
 
@@ -27,7 +27,7 @@ void SaveSettings(const Settings &settings) {
 
 Settings LoadSettings() {
   const auto preferencePath = GetPreferencePath();
-  const auto path = preferencePath / contextJson;
+  const auto path = preferencePath / CONTEXT_JSON;
 
   if (!std::filesystem::exists(path)) {
     return Settings{};

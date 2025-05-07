@@ -1,46 +1,50 @@
+#define SDL_MAIN_USE_CALLBACKS
+
 #include "io_util.hpp"
 #include "main_scene.hpp"
 #include <IconsForkAwesome.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 #include <memory>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
-static constexpr char imguiIni[] = "imgui.ini";
-static constexpr char logfile[] = "log.txt";
+static constexpr char IMGUI_INI[] = "imgui.ini";
+static constexpr char LOGFILE[] = "log.txt";
 
-static constexpr int windowMinimumWidth = 1280;
-static constexpr int windowMinimumHeight = 720;
+static constexpr int WINDOW_MINIMUM_WIDTH = 1280;
+static constexpr int WINDOW_MINIMUM_HEIGHT = 720;
 
-int main(int argc, char **argv) {
-  const auto preferencePath = GetPreferencePath();
+static constexpr size_t MAX_LOG_FILE_SIZE = 5 * 1024 * 1024;
+static constexpr size_t MAX_LOG_FILE = 3;
 
-  constexpr auto maxLogFileSize = 5 * 1024 * 1024;
-  constexpr auto maxLogFile = 3;
+namespace {
+SDL_Renderer *renderer = nullptr;
+SDL_Window *window = nullptr;
+} // namespace
 
-  const auto logFilePath = preferencePath / logfile;
-  const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
-                                                 maxLogFileSize, maxLogFile);
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
+  const auto logFilePath = GetPreferencePath() / LOGFILE;
+  const auto logger = spdlog::rotating_logger_mt(
+      "logger", logFilePath.string(), MAX_LOG_FILE_SIZE, MAX_LOG_FILE);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   SDL_Init(SDL_INIT_VIDEO);
 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+  // High DPI is currently not working properly on MacOS
+  window = SDL_CreateWindow(
+      "font-render-tester", WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT,
+      SDL_WINDOW_RESIZABLE /* | SDL_WINDOW_HIGH_PIXEL_DENSITY*/);
 
-  SDL_Window *window = SDL_CreateWindow(
-      "font-render-tester", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-      windowMinimumWidth, windowMinimumHeight,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+  SDL_SetWindowMinimumSize(window, WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT);
 
-  SDL_SetWindowMinimumSize(window, windowMinimumWidth, windowMinimumHeight);
+  renderer = SDL_CreateRenderer(window, nullptr);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-
-  const auto imguiIniPath = preferencePath / imguiIni;
+  const auto imguiIniPath = GetPreferencePath() / IMGUI_INI;
   std::string imguiIniStr = imguiIniPath.string();
 
   IMGUI_CHECKVERSION();
@@ -71,50 +75,54 @@ int main(int argc, char **argv) {
 
   io.Fonts->Build();
 
-  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-  ImGui_ImplSDLRenderer2_Init(renderer);
+  ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+  ImGui_ImplSDLRenderer3_Init(renderer);
 
   if (!SceneInit()) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
                              "Unable to initialize the new scene", window);
 
-    return EXIT_FAILURE;
+    return SDL_APP_FAILURE;
   };
 
-  while (true) {
-    SDL_Event event;
-    if (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL2_ProcessEvent(&event);
-      if (event.type == SDL_QUIT)
-        break;
-    }
+  return SDL_APP_CONTINUE;
+}
 
-    ImGui_ImplSDL2_NewFrame(window);
-    ImGui_ImplSDLRenderer2_NewFrame();
+SDL_AppResult SDL_AppIterate(void *appstate) {
+  ImGui_ImplSDL3_NewFrame();
+  ImGui_ImplSDLRenderer3_NewFrame();
 
-    ImGui::NewFrame();
+  ImGui::NewFrame();
 
-    SceneDoUI();
+  SceneDoUI();
 
-    ImGui::EndFrame();
-    ImGui::Render();
+  ImGui::EndFrame();
+  ImGui::Render();
 
-    SceneTick(renderer);
+  SceneTick(renderer);
 
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
-    SDL_RenderPresent(renderer);
-    SDL_Delay(1);
+  ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+  SDL_RenderPresent(renderer);
+
+  return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
+  ImGui_ImplSDL3_ProcessEvent(event);
+  if (event->type == SDL_EVENT_QUIT) {
+    return SDL_APP_SUCCESS;
   }
+  return SDL_APP_CONTINUE;
+}
 
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   SceneCleanUp();
 
-  ImGui_ImplSDLRenderer2_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
+  ImGui_ImplSDLRenderer3_Shutdown();
+  ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
-
-  return EXIT_SUCCESS;
 }

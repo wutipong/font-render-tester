@@ -1,7 +1,7 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include <freetype/freetype.h>
 #include FT_BITMAP_H

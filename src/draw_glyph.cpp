@@ -24,7 +24,7 @@ void DrawGlyph(SDL_Renderer *renderer, DebugSettings &debug, const Font &font,
   };
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   /*
    * Adjust the coordinate, and recalculate the new y origin of the rectangle.
@@ -38,14 +38,14 @@ void DrawGlyph(SDL_Renderer *renderer, DebugSettings &debug, const Font &font,
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   SDL_SetTextureColorMod(g.texture, color.r, color.g, color.b);
 
-  SDL_RenderCopyF(renderer, g.texture, nullptr, &rect);
+  SDL_RenderTexture(renderer, g.texture, nullptr, &rect);
 
   if (debug.enabled && debug.debugGlyphBound) {
     SDL_SetRenderDrawColor(renderer, debugGlyphBoundColor.r,
                            debugGlyphBoundColor.g, debugGlyphBoundColor.b,
                            debugGlyphBoundColor.a);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderDrawRectF(renderer, &rect);
+    SDL_RenderRect(renderer, &rect);
   }
 
   if (debug.enabled && debug.debugCaret) {
@@ -62,7 +62,7 @@ void DrawGlyph(SDL_Renderer *renderer, DebugSettings &debug, const Font &font,
                            debugCaretColor.b, debugCaretColor.a);
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_RenderDrawRectF(renderer, &rect);
+    SDL_RenderRect(renderer, &rect);
   }
 }
 

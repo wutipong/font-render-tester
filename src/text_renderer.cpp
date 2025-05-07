@@ -16,7 +16,7 @@ void DrawRect(SDL_Renderer *renderer, DebugSettings &debug, const float &x,
 
   SDL_FRect rect{x, y, w, h};
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   /*
    * Adjust the coordinate, and recalculate the new y origin of the rectangle.
@@ -29,14 +29,14 @@ void DrawRect(SDL_Renderer *renderer, DebugSettings &debug, const float &x,
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-  SDL_RenderFillRectF(renderer, &rect);
+  SDL_RenderFillRect(renderer, &rect);
 }
 
 void DrawLine(SDL_Renderer *renderer, DebugSettings &debug, const float &x1,
               const float &y1, const float &x2, const float &y2,
               const SDL_Color &color) {
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -44,7 +44,7 @@ void DrawLine(SDL_Renderer *renderer, DebugSettings &debug, const float &x1,
   float actualY1 = static_cast<float>(bound.h) - y1;
   float actualY2 = static_cast<float>(bound.h) - y2;
 
-  SDL_RenderDrawLineF(renderer, x1, actualY1, x2, actualY2);
+  SDL_RenderLine(renderer, x1, actualY1, x2, actualY2);
 }
 
 void DrawHorizontalLineDebug(SDL_Renderer *renderer, DebugSettings &debug,
@@ -54,7 +54,7 @@ void DrawHorizontalLineDebug(SDL_Renderer *renderer, DebugSettings &debug,
     return;
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   float y = bound.h - lineHeight;
   do {
@@ -78,7 +78,7 @@ void DrawVerticalLineDebug(SDL_Renderer *renderer, DebugSettings &debug,
     return;
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   float x = bound.w - lineWidth;
   do {
@@ -102,7 +102,7 @@ void TextRenderNoShape(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
     return;
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   int x = 0, y = bound.h - font.LineHeight();
   auto u16str = utf8::utf8to16(str);
@@ -124,15 +124,15 @@ void TextRenderNoShape(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
   }
 }
 
-void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   auto u16str = utf8::utf8to16(str);
   auto lineStart = u16str.begin();
@@ -185,9 +185,9 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &f
   }
 }
 
-void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -199,7 +199,7 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &f
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_RTL, &extents);
 
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, &bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   int y = bound.h - font.LineHeight();
 
@@ -250,15 +250,15 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &f
   }
 }
 
-void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
-    
+
   SDL_Rect bound;
-  SDL_RenderGetViewport(renderer, & bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);
