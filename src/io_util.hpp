@@ -1,9 +1,9 @@
 #pragma once
 
+#include <SDL3/SDL.h>
 #include <filesystem>
 #include <fstream>
 #include <streambuf>
-#include <SDL3/SDL.h>
 
 template <class container_type>
 container_type LoadFile(const std::filesystem::path &path,

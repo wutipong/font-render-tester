@@ -3,8 +3,8 @@
 #include "io_util.hpp"
 #include "main_scene.hpp"
 #include <IconsForkAwesome.h>
-#include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
@@ -22,22 +22,23 @@ static constexpr size_t MAX_LOG_FILE_SIZE = 5 * 1024 * 1024;
 static constexpr size_t MAX_LOG_FILE = 3;
 
 namespace {
-  SDL_Renderer *renderer = nullptr;
-  SDL_Window *window = nullptr;
-}
+SDL_Renderer *renderer = nullptr;
+SDL_Window *window = nullptr;
+} // namespace
 
-SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv){
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   const auto logFilePath = GetPreferencePath() / LOGFILE;
-  const auto logger = spdlog::rotating_logger_mt("logger", logFilePath.string(),
-                                                 MAX_LOG_FILE_SIZE, MAX_LOG_FILE);
+  const auto logger = spdlog::rotating_logger_mt(
+      "logger", logFilePath.string(), MAX_LOG_FILE_SIZE, MAX_LOG_FILE);
   logger->flush_on(spdlog::level::info);
   spdlog::set_default_logger(logger);
 
   SDL_Init(SDL_INIT_VIDEO);
 
+  // High DPI is currently not working properly on MacOS
   window = SDL_CreateWindow(
-      "font-render-tester",  WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT,
-      SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+      "font-render-tester", WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT,
+      SDL_WINDOW_RESIZABLE /* | SDL_WINDOW_HIGH_PIXEL_DENSITY*/);
 
   SDL_SetWindowMinimumSize(window, WINDOW_MINIMUM_WIDTH, WINDOW_MINIMUM_HEIGHT);
 
@@ -87,7 +88,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv){
   return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void *appstate){
+SDL_AppResult SDL_AppIterate(void *appstate) {
   ImGui_ImplSDL3_NewFrame();
   ImGui_ImplSDLRenderer3_NewFrame();
 
@@ -106,15 +107,15 @@ SDL_AppResult SDL_AppIterate(void *appstate){
   return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event){
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   ImGui_ImplSDL3_ProcessEvent(event);
-  if (event->type == SDL_EVENT_QUIT){
+  if (event->type == SDL_EVENT_QUIT) {
     return SDL_APP_SUCCESS;
   }
   return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate, SDL_AppResult result){
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   SceneCleanUp();
 
   ImGui_ImplSDLRenderer3_Shutdown();

@@ -1,5 +1,6 @@
 #include "font.hpp"
 
+#include <algorithm>
 #include <harfbuzz/hb-ft.h>
 #include <magic_enum/magic_enum_all.hpp>
 #include <spdlog/spdlog.h>
@@ -39,7 +40,7 @@ bool Font::Init() {
 
 void Font::CleanUp() { FT_Done_FreeType(library); }
 
-Font::Font(){};
+Font::Font() {};
 
 Font &Font::operator=(const Font &f) {
   data = f.data;

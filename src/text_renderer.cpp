@@ -124,9 +124,9 @@ void TextRenderNoShape(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
   }
 }
 
-void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -185,9 +185,9 @@ void TextRenderLeftToRight(SDL_Renderer *renderer, DebugSettings &debug, Font &f
   }
 }
 
-void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
@@ -250,15 +250,15 @@ void TextRenderRightToLeft(SDL_Renderer *renderer, DebugSettings &debug, Font &f
   }
 }
 
-void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug, Font &font,
-                           const std::string &str, const SDL_Color &color,
-                           const std::string &language,
+void TextRenderTopToBottom(SDL_Renderer *renderer, DebugSettings &debug,
+                           Font &font, const std::string &str,
+                           const SDL_Color &color, const std::string &language,
                            const hb_script_t &script) {
   if (!font.IsValid())
     return;
-    
+
   SDL_Rect bound;
-  SDL_GetRenderViewport(renderer, & bound);
+  SDL_GetRenderViewport(renderer, &bound);
 
   hb_font_extents_t extents;
   hb_font_get_extents_for_direction(font.HbFont(), HB_DIRECTION_TTB, &extents);

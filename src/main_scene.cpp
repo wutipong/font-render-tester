@@ -23,10 +23,10 @@
 #include <imfilebrowser.h>
 
 namespace {
-constexpr int toolbarWidth = 400;
-constexpr int padding = 30;
+constexpr int TOOLBAR_WIDTH = 400;
+constexpr int PADDING = 30;
 
-constexpr std::string_view exampleText{
+constexpr std::string_view EXAMPLE_TEXT{
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non \n"
     "turpis justo. Etiam luctus vulputate ante ac congue. Nunc vitae \n"
     "ultricies turpis, eu mollis libero. Quisque eu faucibus neque. \n"
@@ -159,7 +159,8 @@ void OnDirectorySelected(const std::filesystem::path &path) {
 }
 
 void RenderText(SDL_Renderer *renderer, bool isShaping, const char *language,
-                hb_script_t script, TextDirection direction, DebugSettings &debug) {
+                hb_script_t script, TextDirection direction,
+                DebugSettings &debug) {
   if (!font.IsValid())
     return;
 
@@ -174,16 +175,19 @@ void RenderText(SDL_Renderer *renderer, bool isShaping, const char *language,
 
   switch (direction) {
   case TextDirection::LeftToRight:
-    TextRenderLeftToRight(renderer, debug, font, str, sdlColor, language, script);
+    TextRenderLeftToRight(renderer, debug, font, str, sdlColor, language,
+                          script);
     return;
 
   case TextDirection::TopToBottom:
-    TextRenderTopToBottom(renderer, debug, font, str, sdlColor, language, script);
+    TextRenderTopToBottom(renderer, debug, font, str, sdlColor, language,
+                          script);
     return;
 
 #ifdef ENABLE_RTL
   case TextDirection::RightToLeft:
-    TextRenderRightToLeft(renderer, debug, font, str, sdlColor, language, script);
+    TextRenderRightToLeft(renderer, debug, font, str, sdlColor, language,
+                          script);
     return;
 #endif
   }
@@ -201,7 +205,7 @@ bool SceneInit() {
   OnDirectorySelected(fontDirPath);
   dirChooser.SetPwd(fontDirPath);
 
-  std::copy(std::cbegin(exampleText), std::cend(exampleText), buffer.begin());
+  std::copy(std::cbegin(EXAMPLE_TEXT), std::cend(EXAMPLE_TEXT), buffer.begin());
 
   return true;
 }
@@ -211,10 +215,10 @@ void SceneTick(SDL_Renderer *renderer) {
   SDL_Rect viewport{0};
   SDL_GetWindowSize(window, &viewport.w, &viewport.h);
 
-  viewport.x += padding;
-  viewport.y += padding;
-  viewport.w -= (toolbarWidth + padding * 2);
-  viewport.h -= 2 * padding;
+  viewport.x += PADDING;
+  viewport.y += PADDING;
+  viewport.w -= (TOOLBAR_WIDTH + PADDING * 2);
+  viewport.h -= 2 * PADDING;
 
   SDL_SetRenderViewport(renderer, &viewport);
 
@@ -294,14 +298,14 @@ void SceneDoUI() {
           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
               ImGuiWindowFlags_MenuBar)) {
     if (ImGui::BeginMenuBar()) {
-      ImGui::LabelText(ICON_FK_FOLDER " Font Directory", fontDirPath.c_str());
+      ImGui::LabelText(ICON_FK_FOLDER " Font Directory", "%s", fontDirPath.c_str());
       ImGui::EndMenuBar();
     }
   }
   ImGui::End();
 
   if (ImGui::BeginViewportSideBar("toolbar", nullptr, ImGuiDir_Right,
-                                  toolbarWidth,
+                                  TOOLBAR_WIDTH,
                                   ImGuiWindowFlags_NoSavedSettings)) {
 
     if (ImGui::CollapsingHeader("Font", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -327,8 +331,8 @@ void SceneDoUI() {
         ImGui::EndCombo();
       }
 
-      ImGui::LabelText("Family name", font.GetFamilyName().c_str());
-      ImGui::LabelText("Sub-family name", font.GetSubFamilyName().c_str());
+      ImGui::LabelText("Family name", "%s", font.GetFamilyName().c_str());
+      ImGui::LabelText("Sub-family name", "%s", font.GetSubFamilyName().c_str());
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -340,7 +344,7 @@ void SceneDoUI() {
       bool axisChanged = false;
 
       constexpr magic_enum::containers::array<VariationAxis, const char *>
-          axisLabel {
+          axisLabel{
               "Italic##axis", "Optical size##axis", "Slant##axis",
               "Weight##axis", "Width##axis",
           };

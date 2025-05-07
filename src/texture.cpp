@@ -13,9 +13,8 @@ SDL_Texture *LoadTextureFromBitmap(SDL_Renderer *renderer, FT_Bitmap &bitmap) {
   SDL_SetPaletteColors(palette, glyphPalette.data(), 0, glyphPalette.size());
 
   auto *surface = SDL_CreateSurfaceFrom(
-      static_cast<int>(bitmap.width),
-      static_cast<int>(bitmap.rows), SDL_PIXELFORMAT_INDEX8, bitmap.buffer, static_cast<int>(bitmap.pitch)
-      );
+      static_cast<int>(bitmap.width), static_cast<int>(bitmap.rows),
+      SDL_PIXELFORMAT_INDEX8, bitmap.buffer, static_cast<int>(bitmap.pitch));
 
   SDL_SetSurfacePalette(surface, palette);
 
