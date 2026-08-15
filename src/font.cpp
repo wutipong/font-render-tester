@@ -52,6 +52,10 @@ Font &Font::operator=(const Font &f) {
 Font::Font(const Font &f) : data(f.data) { Initialize(); }
 
 Font::~Font() {
+  if (data.size() == 0){
+    return;
+  }
+
   hb_font_destroy(hbFont);
   hbFont = nullptr;
 
@@ -84,6 +88,10 @@ static std::string ConvertFromFontString(const char *str, const int &length) {
 }
 
 bool Font::Initialize() {
+  if(data.size() == 0 ) {
+    return false;
+  }
+
   family = "";
   subFamily = "";
 
