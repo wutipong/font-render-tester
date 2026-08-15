@@ -1,7 +1,7 @@
 {
   "name": "font-render-tester",
   "version-string": "0.1.0-dev",
-  "builtin-baseline": "ddf0518c31a259dcc359fd4c7bcb1ce8a27e9855",
+  "builtin-baseline": "9e593bb18ea69cc5095e012465dcd675a822ed0d",
   "dependencies": [
     "freetype",
     "harfbuzz",
