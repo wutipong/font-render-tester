@@ -37,7 +37,7 @@ jobs:
       - uses: EndBug/latest-tag@latest
         
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           body: |
             This is the latest, the bleeding edge. Might not work properly and might harm your system. Use with care.
