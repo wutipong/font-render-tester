@@ -73,8 +73,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   io.Fonts->AddFontFromFileTTF("fonts/NotoSansTC-Regular.ttf", 20.0f, &config,
                                io.Fonts->GetGlyphRangesChineseFull());
 
-  io.Fonts->Build();
-
   ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
   ImGui_ImplSDLRenderer3_Init(renderer);
 
