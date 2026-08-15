@@ -20,8 +20,6 @@
 #include <spdlog/spdlog.h>
 #include <utf8/cpp20.h>
 
-#include <imfilebrowser.h>
-
 namespace {
 constexpr int TOOLBAR_WIDTH = 400;
 constexpr int PADDING = 30;
@@ -549,7 +547,6 @@ void SceneDoUI(SDL_Window *window) {
     ImGui::Text("FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR,
                 FREETYPE_PATCH);
     ImGui::Text("Harfbuzz %s", HB_VERSION_STRING);
-    ImGui::Text("imgui-filebrowser");
     ImGui::Text("Magic-Enum %d.%d.%d", MAGIC_ENUM_VERSION_MAJOR,
                 MAGIC_ENUM_VERSION_MINOR, MAGIC_ENUM_VERSION_PATCH);
     ImGui::Text("NLOHMANM-JSON %d.%d.%d", NLOHMANN_JSON_VERSION_MAJOR,
