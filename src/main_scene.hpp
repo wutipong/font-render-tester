@@ -7,6 +7,6 @@
 bool SceneInit();
 void SceneTick(SDL_Renderer *renderer);
 void SceneCleanUp();
-void SceneDoUI();
+void SceneDoUI(SDL_Window *window);
 
 #endif

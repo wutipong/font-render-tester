@@ -22,7 +22,6 @@ add_executable(font-render-tester
 )
 
 target_include_directories(font-render-tester PRIVATE 
-        "ext/imgui-filebrowser"
         "ext/IconFontCppHeaders"
 )
 
