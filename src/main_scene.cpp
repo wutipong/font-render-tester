@@ -45,8 +45,6 @@ bool isShaping = false;
 
 int selectedFontIndex = -1;
 std::vector<std::filesystem::path> fontFilePaths;
-
-ImGui::FileBrowser dirChooser{ImGuiFileBrowserFlags_SelectDirectory};
 std::string fontDirPath{std::filesystem::absolute("fonts").string()};
 
 Font font{};
@@ -201,9 +199,7 @@ bool SceneInit() {
   auto [fontPath] = LoadSettings();
   fontDirPath = fontPath.string();
 
-  dirChooser.SetTitle("Browse for font directory");
   OnDirectorySelected(fontDirPath);
-  dirChooser.SetPwd(fontDirPath);
 
   std::copy(std::cbegin(EXAMPLE_TEXT), std::cend(EXAMPLE_TEXT), buffer.begin());
 
@@ -238,18 +234,30 @@ void SceneTick(SDL_Renderer *renderer) {
 }
 
 void SceneCleanUp() {
+  font = {};
   Font::CleanUp();
   SaveSettings({.fontPath = fontDirPath});
 }
 
-void SceneDoUI() {
+void SceneDoUI(SDL_Window *window) {
   int newSelected = selectedFontIndex;
   bool showAbout = false;
   if (ImGui::BeginMainMenuBar()) {
 
     if (ImGui::BeginMenu("File##menu")) {
       if (ImGui::MenuItem("Change font directory##file-menu")) {
-        dirChooser.Open();
+        SDL_ShowOpenFolderDialog(
+            [](void *userdata, const char *const *filelist,
+               int filter) -> void {
+              if (filelist == nullptr) {
+                return;
+              }
+              if (filelist[0] == nullptr) {
+                return;
+              }
+              OnDirectorySelected(filelist[0]);
+            },
+            nullptr, window, fontDirPath.c_str(), false);
       }
 
       if (ImGui::MenuItem("Re-scan font directory##file-menu")) {
@@ -298,7 +306,8 @@ void SceneDoUI() {
           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
               ImGuiWindowFlags_MenuBar)) {
     if (ImGui::BeginMenuBar()) {
-      ImGui::LabelText(ICON_FK_FOLDER " Font Directory", "%s", fontDirPath.c_str());
+      ImGui::LabelText(ICON_FK_FOLDER " Font Directory", "%s",
+                       fontDirPath.c_str());
       ImGui::EndMenuBar();
     }
   }
@@ -332,7 +341,8 @@ void SceneDoUI() {
       }
 
       ImGui::LabelText("Family name", "%s", font.GetFamilyName().c_str());
-      ImGui::LabelText("Sub-family name", "%s", font.GetSubFamilyName().c_str());
+      ImGui::LabelText("Sub-family name", "%s",
+                       font.GetSubFamilyName().c_str());
     }
 
     if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -489,13 +499,6 @@ void SceneDoUI() {
       }
     }
     ImGui::End();
-  }
-
-  dirChooser.Display();
-  if (dirChooser.HasSelected()) {
-    OnDirectorySelected(dirChooser.GetSelected());
-    dirChooser.ClearSelected();
-    newSelected = -1;
   }
 
   if (newSelected != selectedFontIndex) {

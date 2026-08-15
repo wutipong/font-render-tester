@@ -94,7 +94,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
   ImGui::NewFrame();
 
-  SceneDoUI();
+  SceneDoUI(window);
 
   ImGui::EndFrame();
   ImGui::Render();
